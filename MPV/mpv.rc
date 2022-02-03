@@ -1,0 +1,5 @@
+PROJECT RCDATA mpv.dpr
+INPUT RCDATA mpv\input.conf
+CONF RCDATA mpv\mpv.conf
+MPV RCDATA mpv.zip
+1 ICON 1.ico

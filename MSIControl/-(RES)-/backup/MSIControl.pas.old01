@@ -1,0 +1,815 @@
+unit MSIControl;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Dialogs, Classes, Variants, Forms, Menus, Graphics, ShellAPI,
+  ComCtrls, Controls, StdCtrls, ExtCtrls, TFlatComboBoxUnit, ActiveX, CustoHotKey, CustoBevel,
+  XiTrackBar, XiButton, WbemScripting_TLB, ZipForge, TNTSystem, MMSystem, uTaskbarRestart,
+  uHotKey, Functions, WinXP, TFlatCheckBoxUnit;
+
+const
+  WM_CALLBACK_MESSAGE = WM_USER + 10382;
+
+type
+  TForm1 = class(TForm)
+    PopupMenu1: TPopupMenu;
+    ToggleCoolerBoost1: TMenuItem;
+    AddToAutoruns1: TMenuItem;
+    RemoveFromAutoruns1: TMenuItem;
+    Exit1: TMenuItem;
+    Bevel1: TCustoBevel;
+    ComboBox1: TFlatComboBox;
+    HotKey1: TCustoHotKey;
+    Bevel2: TCustoBevel;
+    TrackBar1: TXiTrackBar;
+    Bevel3: TCustoBevel;
+    Button1: TXiButton;
+    ComboBox2: TFlatComboBox;
+    Button2: TXiButton;
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    CheckBox1: TFlatCheckBox;
+    procedure TrayOnClick(var msg: TMessage); message WM_CALLBACK_MESSAGE;
+    procedure ToggleCoolerBoost1Click(Sender: TObject);
+    procedure AddToAutoruns1Click(Sender: TObject);
+    procedure RemoveFromAutoruns1Click(Sender: TObject);
+    procedure Exit1Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure HotKey1Exit(Sender: TObject);
+    procedure ComboBox1Change(Sender: TObject);
+    procedure FormClick(Sender: TObject);
+    procedure FormDeactivate(Sender: TObject);
+    procedure FormHide(Sender: TObject);
+    procedure TrackBar1Change(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure ComboBox2Change(Sender: TObject);
+    procedure TrackBar1MouseUp(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure ComboBoxKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure ComboBoxKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure HotKey1Enter(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+type
+  TNotifyIconData = record
+    cbSize: DWORD;
+    Wnd: HWND;
+    uID: UINT;
+    uFlags: UINT;
+    uCallbackMessage: UINT;
+    hIcon: HICON;
+    szTip: array [0..63] of AnsiChar;
+  end;
+
+type
+  TRGB = record
+    R, G, B: Byte;
+  end;
+
+type
+  THotKey = record
+    Key: Integer;
+    ShortCut: Integer;
+    Name: WideString;
+    Description: WideString;
+  end;
+
+var
+  HotKeys: array[0..2] of THotKey = (
+    (Key: 0; ShortCut: 49275; Name: 'TOGGLE_COOLER_BOOST'; Description: 'Toggle Cooler Boost'),
+    (Key: 0; ShortCut: 49274; Name: 'CHANGE_MODE_BASIC'; Description: 'Change Mode To Basic'),
+    (Key: 0; ShortCut: 49273; Name: 'CHANGE_MODE_AUTO'; Description: 'Change Mode To Auto')
+  );
+
+const
+  DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
+  DEFAULT_KEY = '\Software\MSIControl';
+  DEFAULT_HOTKEY_KEY = '\Software\MSIControl\HotKeys';
+  INACTIVE_TIMEOUT = 350;
+
+const
+  BLACK_WHITE_COLOR: array[0..1] of TRGB = ((R: 255; G: 255; B: 255), (R: 0; G: 0; B: 0));
+  EERIE_BLACK_COLOR: array[0..1] of TRGB = ((R: 31; G: 31; B: 31), (R: 228; G: 228; B: 228));
+  BEVEL_COLOR: array[0..1] of TRGB = ((R: 76; G: 76; B: 76), (R: 182; G: 182; B: 182));
+
+const
+  TRACKBAR_BUTTON: array[0..1] of TRGB = ((R: 41; G: 204; B: 186), (R: 41; G: 204; B: 186));
+  TRACKBAR_BUTTON_HOVER: array[0..1] of TRGB = ((R: 255; G: 255; B: 255), (R: 0; G: 0; B: 0));
+  TRACKBAR_BEFORE: array[0..1] of TRGB = ((R: 89; G: 255; B: 237), (R: 41; G: 204; B: 186));
+  TRACKBAR_AFTER: array[0..1] of TRGB = ((R: 121; G: 121; B: 121), (R: 137; G: 137; B: 137));
+
+const
+  BUTTON: array[0..1] of TRGB = ((R: 41; G: 204; B: 186), (R: 41; G: 204; B: 186));
+  BUTTON_HOVER: array[0..1] of TRGB = ((R: 255; G: 255; B: 255), (R: 0; G: 0; B: 0));
+  BUTTON_BORDER: array[0..1] of TRGB = ((R: 76; G: 76; B: 76), (R: 239; G: 239; B: 239));
+  BUTTON_BORDER_HOVER: array[0..1] of TRGB = ((R: 148; G: 148; B: 148), (R: 146; G: 146; B: 146));
+
+const
+  AUTO_MODE = 12;
+  BASIC_MODE = 76;
+  ADVANCED_MODE = 140;
+
+var
+  Form1: TForm1;
+  TrayIconData: TNotifyIconData;
+  OperationPending: Boolean = False;
+  AppInactive: Boolean = False;
+  Theme: Boolean = False;
+
+procedure HotKeyCallback(Key: Integer);
+procedure ToggleCoolerBoost;
+
+implementation
+
+{$R *.dfm}
+
+//GetWMI
+function GetWMI(wmiHost, wmiRoot, wmiClass, wmiProperty: String; Index: Integer): OleVariant;
+var
+  WbemLocator: TSWbemLocator;
+  WbemServices: ISWbemServices;
+  WbemObjectSet: ISWbemObjectSet;
+  WbemObject: ISWbemObject;
+  WbemProperty: ISWbemProperty;
+  Enum: IEnumVariant;
+  colItem: OleVariant;
+  iValue, i: Cardinal;
+begin
+  WbemLocator := TSWbemLocator.Create(nil);
+  WbemServices := WbemLocator.ConnectServer(wmiHost, wmiRoot, '', '', '', '', 0, nil);
+  WbemObjectSet := WbemServices.ExecQuery('SELECT * FROM ' + wmiClass, 'WQL', wbemFlagReturnImmediately and wbemFlagForwardOnly, nil);
+  Enum := (WbemObjectSet._NewEnum) as IEnumVariant;
+
+  for i := 0 to Index do begin
+    if Enum.Next(1, colItem, iValue) = S_OK then begin
+      WbemObject := IUnknown(colItem) as ISWBemObject;
+      colItem := Unassigned;
+      WbemProperty := WbemObject.Properties_.Item(wmiProperty, 0);
+      Result := WbemProperty.Get_Value;
+    end;
+  end;
+
+  Enum := nil;
+  WbemProperty := nil;
+  WbemObject := nil;
+  WbemObjectSet := nil;
+  WbemServices := nil;
+  WbemLocator.Destroy;
+end;
+//GetWMI
+
+
+//SetWMI
+procedure SetWMI(wmiHost, wmiRoot, wmiClass, wmiProperty: String; Index: Integer; Value: OleVariant);
+var
+  WbemLocator: TSWbemLocator;
+  WbemServices: ISWbemServices;
+  WbemObjectSet: ISWbemObjectSet;
+  WbemObject: ISWbemObject;
+  WbemProperty: ISWbemProperty;
+  Enum: IEnumVariant;
+  colItem: OleVariant;
+  iValue, i: Cardinal;
+begin
+  WbemLocator := TSWbemLocator.Create(nil);
+  WbemServices := WbemLocator.ConnectServer(wmiHost, wmiRoot, '', '', '', '', 0, nil);
+  WbemObjectSet := WbemServices.ExecQuery('SELECT * FROM ' + wmiClass, 'WQL', wbemFlagReturnImmediately and wbemFlagForwardOnly, nil);
+  Enum := (WbemObjectSet._NewEnum) as IEnumVariant;
+
+  for i := 0 to Index do begin
+    if Enum.Next(1, colItem, iValue) = S_OK then begin
+      WbemObject := IUnknown(colItem) as ISWBemObject;
+      colItem := Unassigned;
+      WbemProperty := WbemObject.Properties_.Item(wmiProperty, 0);
+    end;
+  end;
+
+  WbemProperty.Set_Value(Value);
+  WbemObject.Put_(0, WbemProperty);
+
+  Enum := nil;
+  WbemProperty := nil;
+  WbemObject := nil;
+  WbemObjectSet := nil;
+  WbemServices := nil;
+  WbemLocator.Destroy;
+end;
+//SetWMI
+
+
+//SetAutoMode
+function SetAutoMode: Boolean;
+begin
+  Result := False;
+
+  try
+    SetWMI('.', 'root\WMI', 'MSI_System', 'System', 9, 12);
+  except
+    Exit;
+  end;
+
+  Result := True;
+end;
+//SetAutoMode
+
+
+//GetBasicValue
+function GetBasicValue: Integer;
+begin
+  Result := -MaxInt;
+
+  try
+    Result := GetWMI('.', 'root\WMI', 'MSI_System', 'System', 10);
+    if Result >= 128 then Result := 128 - Result
+  except
+    Exit;
+  end;
+end;
+//GetBasicValue
+
+
+//SetBasicMode
+function SetBasicMode(Value: Integer): Boolean;
+begin
+  Result := False;
+  if (Value < -15) or (Value > 15) then Exit;
+  if (Value <= 0) then Value := 128 + Abs(Value);
+
+  try
+    SetWMI('.', 'root\WMI', 'MSI_System', 'System', 9, 76);
+    SetWMI('.', 'root\WMI', 'MSI_System', 'System', 10, Value);
+  except
+    Exit;
+  end;
+
+  Result := True;
+end;
+//SetBasicMode
+
+
+//GetMode
+function GetMode: Integer;
+begin
+  Result := -1;
+
+  try
+    Result := GetWMI('.', 'root\WMI', 'MSI_System', 'System', 9);
+  except
+    Exit;
+  end;
+end;
+//GetMode
+
+
+//HotKeyCallback
+procedure HotKeyCallback(Key: Integer);
+var
+  i: Integer;
+  Name: WideString;
+begin
+  for i := 0 to Length(HotKeys)-1 do begin
+    if HotKeys[i].Key = Key then Name := HotKeys[i].Name;
+  end;
+
+  if (Name = 'TOGGLE_COOLER_BOOST') then begin
+    if Form1.CheckBox1.Checked then PlaySoundW(PWideChar(Name), 0, SND_RESOURCE or SND_ASYNC);
+    ToggleCoolerBoost;
+  end;
+
+  if (Name = 'CHANGE_MODE_AUTO') then begin
+    if Form1.CheckBox1.Checked then PlaySoundW(PWideChar(Name), 0, SND_RESOURCE or SND_ASYNC);
+    Form1.ComboBox2.ItemIndex := 0;
+    Form1.ComboBox2Change(nil);
+  end;
+
+  if (Name = 'CHANGE_MODE_BASIC') then begin
+    if Form1.CheckBox1.Checked then PlaySoundW(PWideChar(Name), 0, SND_RESOURCE or SND_ASYNC);
+    Form1.ComboBox2.ItemIndex := 1;
+    Form1.ComboBox2Change(nil);
+  end;
+end;
+//HotKeyCallback
+
+
+//LoadSettings
+procedure LoadSettings;
+var
+  i: Integer;
+  b: Boolean;
+begin
+  LoadRegistryBoolean(Theme, DEFAULT_ROOT_KEY, DEFAULT_HOTKEY_KEY, 'Theme');
+
+  b := True;
+  LoadRegistryBoolean(b, DEFAULT_ROOT_KEY, DEFAULT_HOTKEY_KEY, 'Sound');
+  Form1.CheckBox1.Checked := b;
+
+  for i := 0 to Length(HotKeys)-1 do begin
+    Form1.ComboBox1.Items.Add(HotKeys[i].Description);
+    LoadRegistryInteger(HotKeys[i].ShortCut, DEFAULT_ROOT_KEY, DEFAULT_HOTKEY_KEY, HotKeys[i].Name);
+    HotKeys[i].Key := SetShortCut(HotKeyCallback, HotKeys[i].ShortCut);
+  end;
+
+  Form1.ComboBox1.ItemIndex := 0;
+end;
+//LoadSettings
+
+
+//SaveSettings
+procedure SaveSettings;
+var
+  i: Integer;
+begin
+  SaveRegistryBoolean(Theme, DEFAULT_ROOT_KEY, DEFAULT_HOTKEY_KEY, 'Theme');
+  SaveRegistryBoolean(Form1.CheckBox1.Checked, DEFAULT_ROOT_KEY, DEFAULT_HOTKEY_KEY, 'Sound');
+
+  for i := 0 to Length(HotKeys)-1 do begin
+    SaveRegistryInteger(HotKeys[i].ShortCut, DEFAULT_ROOT_KEY, DEFAULT_HOTKEY_KEY, HotKeys[i].Name);
+  end;
+end;
+//SaveSettings
+
+
+//MsiMofInstalled
+function MsiMofInstall: Boolean;
+var
+  ZipArchive: TZipForge;
+  Path: WideString;
+  F1, F2, F3: WideString;
+  hProcess: THandle;
+begin
+  Result := False;
+  if not IsAdmin then Exit;
+
+  Path := GetTempDirectory + RandomString(32, True);
+  F1 := GetWindowsDirectory + '\SysWOW64\MsiWmiAcpiMof.dll';
+  F2 := Path + '\MsiWmiAcpiMof.dll';
+  F3 := Path + '\MsiWmiAcpiMof.reg';
+
+  ZipArchive := TZipForge.Create(nil);
+  ZipArchive.OpenArchive(TResourceStream.Create(HInstance, 'MsiFanControl', RT_RCDATA), False);
+  ZipArchive.BaseDir := Path;
+  ZipArchive.ExtractFiles('*.*');
+  ZipArchive.CloseArchive();
+  ZipArchive.Free;
+
+  Result := CopyFileW(PWideChar(F2), PWideChar(F1), False);
+  if not Result then DeleteDirectory(Path);
+  if not Result then Exit;
+
+  hProcess := ExecuteProcessAsAdmin('reg.exe', 'import "' + F3 + '"', SW_HIDE);
+  if (hProcess <> 0) then WaitForSingleObject(hProcess, INFINITE);
+  Result := Result and (hProcess <> 0);
+  if not Result then DeleteFileW(PWideChar(F1));
+  DeleteDirectory(Path);
+end;
+//MsiMofInstalled
+
+
+//ToggleCoolerBoost
+procedure ToggleCoolerBoost;
+var
+  Path: WideString;
+  hProcess, ExitCode: THandle;
+  ZipArchive: TZipForge;
+begin
+  OperationPending := True;
+  Path := GetTempDirectory + RandomString(32, True);
+
+  ZipArchive := TZipForge.Create(nil);
+  ZipArchive.OpenArchive(TResourceStream.Create(HInstance, 'EC', RT_RCDATA), False);
+  ZipArchive.BaseDir := Path;
+  ZipArchive.ExtractFiles('*.*');
+  ZipArchive.CloseArchive();
+  ZipArchive.Free;
+
+  hProcess := ExecuteProcessAsAdmin(Path + '\EmbeddedController.exe', 'read 0x98', SW_HIDE);
+
+  if hProcess <= 0 then begin
+    DeleteDirectory(Path);
+    OperationPending := False;
+    Exit;
+  end;
+
+  WaitForSingleObject(hProcess, INFINITE);
+  GetExitCodeProcess(hProcess, ExitCode);
+
+  if (ExitCode > -1) and (ExitCode < 80) then begin
+    hProcess := ExecuteProcessAsAdmin(Path + '\EmbeddedController.exe', 'write 0x98 0x80', SW_HIDE);
+    if hProcess > 0 then WaitForSingleObject(hProcess, INFINITE);
+  end;
+
+  if ExitCode >= 80 then begin
+    hProcess := ExecuteProcessAsAdmin(Path + '\EmbeddedController.exe', 'write 0x98 0x00', SW_HIDE);
+    if hProcess > 0 then WaitForSingleObject(hProcess, INFINITE);
+  end;
+
+  DeleteDirectory(Path);
+  OperationPending := False;
+end;
+//ToggleCoolerBoost
+
+
+procedure TaskbarRestart;
+begin
+  Shell_NotifyIcon(NIM_ADD, @TrayIconData);
+end;
+
+
+procedure ChangeButtonTheme(XiButton: TXiButton; WhitMode: Boolean);
+var
+  i: Integer;
+begin
+  i := Integer(not WhitMode);
+  XiButton.ColorText := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+  XiButton.OverColorText := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+  XiButton.DownColorText := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+  i := Integer(WhitMode);
+
+  XiButton.ColorBorder := RGB(BUTTON_BORDER[i].R, BUTTON_BORDER[i].G, BUTTON_BORDER[i].B);
+  XiButton.OverColorBorder := RGB(BUTTON_BORDER_HOVER[i].R, BUTTON_BORDER_HOVER[i].G, BUTTON_BORDER_HOVER[i].B);
+  XiButton.DownColorBorder := RGB(BUTTON_BORDER_HOVER[i].R, BUTTON_BORDER_HOVER[i].G, BUTTON_BORDER_HOVER[i].B);
+
+  XiButton.ColorDark := RGB(BUTTON[i].R, BUTTON[i].G, BUTTON[i].B);
+  XiButton.ColorFace := RGB(BUTTON[i].R, BUTTON[i].G, BUTTON[i].B);
+  XiButton.ColorGrad := RGB(BUTTON[i].R, BUTTON[i].G, BUTTON[i].B);
+  XiButton.ColorLight := RGB(BUTTON[i].R, BUTTON[i].G, BUTTON[i].B);
+
+  XiButton.OverColorDark := RGB(BUTTON_HOVER[i].R, BUTTON_HOVER[i].G, BUTTON_HOVER[i].B);
+  XiButton.OverColorFace := RGB(BUTTON_HOVER[i].R, BUTTON_HOVER[i].G, BUTTON_HOVER[i].B);
+  XiButton.OverColorGrad := RGB(BUTTON_HOVER[i].R, BUTTON_HOVER[i].G, BUTTON_HOVER[i].B);
+  XiButton.OverColorLight := RGB(BUTTON_HOVER[i].R, BUTTON_HOVER[i].G, BUTTON_HOVER[i].B);
+
+  XiButton.DownColorDark := RGB(BUTTON_HOVER[i].R, BUTTON_HOVER[i].G, BUTTON_HOVER[i].B);
+  XiButton.DownColorFace := RGB(BUTTON_HOVER[i].R, BUTTON_HOVER[i].G, BUTTON_HOVER[i].B);
+  XiButton.DownColorGrad := RGB(BUTTON_HOVER[i].R, BUTTON_HOVER[i].G, BUTTON_HOVER[i].B);
+  XiButton.DownColorLight := RGB(BUTTON_HOVER[i].R, BUTTON_HOVER[i].G, BUTTON_HOVER[i].B);
+
+  XiButton.DisabledColorDark := RGB(TRACKBAR_AFTER[i].R, TRACKBAR_AFTER[i].G, TRACKBAR_AFTER[i].B);
+  XiButton.DisabledColorFace := RGB(TRACKBAR_AFTER[i].R, TRACKBAR_AFTER[i].G, TRACKBAR_AFTER[i].B);
+  XiButton.DisabledColorGrad := RGB(TRACKBAR_AFTER[i].R, TRACKBAR_AFTER[i].G, TRACKBAR_AFTER[i].B);
+  XiButton.DisabledColorLight := RGB(TRACKBAR_AFTER[i].R, TRACKBAR_AFTER[i].G, TRACKBAR_AFTER[i].B);
+end;
+
+
+procedure ChangeTheme(WhiteMode: Boolean);
+const
+  ThemeCaption: array[0..1] of String = ('White', 'Dark');
+var
+  i: Integer;
+begin
+  i := Integer(WhiteMode);
+  Form1.Button1.Caption := ThemeCaption[i] + ' Theme';
+
+  Form1.Color := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
+  Form1.Bevel1.Color := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+  Form1.Bevel2.Color := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+  Form1.Bevel3.Color := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+
+  Form1.Label1.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+  Form1.Label2.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+  Form1.Label3.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+  Form1.Label4.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+
+  Form1.HotKey1.Color := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
+  Form1.HotKey1.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+  Form1.HotKey1.SetBorderColor(RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B));
+
+  Form1.ComboBox1.Color := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
+  Form1.ComboBox1.ColorArrow := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+  Form1.ComboBox1.ColorArrowBackground := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
+  Form1.ComboBox1.ColorBorder := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+  Form1.ComboBox1.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+
+  Form1.ComboBox2.Color := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
+  Form1.ComboBox2.ColorArrow := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+  Form1.ComboBox2.ColorArrowBackground := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
+  Form1.ComboBox2.ColorBorder := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+  Form1.ComboBox2.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+
+  Form1.TrackBar1.BackColor := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
+  Form1.TrackBar1.SlideBorderColor := RGB(TRACKBAR_AFTER[i].R, TRACKBAR_AFTER[i].G, TRACKBAR_AFTER[i].B);
+  Form1.TrackBar1.SlideFaceColor := RGB(TRACKBAR_AFTER[i].R, TRACKBAR_AFTER[i].G, TRACKBAR_AFTER[i].B);
+  Form1.TrackBar1.SlideGradColor := RGB(TRACKBAR_AFTER[i].R, TRACKBAR_AFTER[i].G, TRACKBAR_AFTER[i].B);
+
+  Form1.TrackBar1.ThumbBorderColor := RGB(TRACKBAR_BUTTON[i].R, TRACKBAR_BUTTON[i].G, TRACKBAR_BUTTON[i].B);
+  Form1.TrackBar1.ThumbFaceColor := RGB(TRACKBAR_BUTTON[i].R, TRACKBAR_BUTTON[i].G, TRACKBAR_BUTTON[i].B);
+  Form1.TrackBar1.ThumbGradColor := RGB(TRACKBAR_BUTTON[i].R, TRACKBAR_BUTTON[i].G, TRACKBAR_BUTTON[i].B);
+
+  Form1.TrackBar1.DownThumbBorderColor := RGB(TRACKBAR_BUTTON_HOVER[i].R, TRACKBAR_BUTTON_HOVER[i].G, TRACKBAR_BUTTON_HOVER[i].B);
+  Form1.TrackBar1.DownThumbFaceColor := RGB(TRACKBAR_BUTTON_HOVER[i].R, TRACKBAR_BUTTON_HOVER[i].G, TRACKBAR_BUTTON_HOVER[i].B);
+  Form1.TrackBar1.DownThumbGradColor := RGB(TRACKBAR_BUTTON_HOVER[i].R, TRACKBAR_BUTTON_HOVER[i].G, TRACKBAR_BUTTON_HOVER[i].B);
+
+  Form1.TrackBar1.OverThumbBorderColor := RGB(TRACKBAR_BUTTON_HOVER[i].R, TRACKBAR_BUTTON_HOVER[i].G, TRACKBAR_BUTTON_HOVER[i].B);
+  Form1.TrackBar1.OverThumbFaceColor := RGB(TRACKBAR_BUTTON_HOVER[i].R, TRACKBAR_BUTTON_HOVER[i].G, TRACKBAR_BUTTON_HOVER[i].B);
+  Form1.TrackBar1.OverThumbGradColor := RGB(TRACKBAR_BUTTON_HOVER[i].R, TRACKBAR_BUTTON_HOVER[i].G, TRACKBAR_BUTTON_HOVER[i].B);
+
+  ChangeButtonTheme(Form1.Button1, WhiteMode);
+  ChangeButtonTheme(Form1.Button2, WhiteMode);
+
+  Form1.CheckBox1.ColorCheck := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+  Form1.CheckBox1.Color := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
+  Form1.CheckBox1.ColorFocused := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
+  Form1.CheckBox1.ColorDown := RGB(BUTTON[i].R, BUTTON[i].G, BUTTON[i].B);
+  Form1.CheckBox1.ColorBorder := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+  Form1.CheckBox1.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+end;
+
+
+procedure TForm1.TrayOnClick(var Msg: TMessage);
+var
+  Point: TPoint;
+begin
+  case Msg.LParam of
+    WM_RBUTTONUP: begin
+      if Form1.Visible then Exit;
+      GetCursorPos(Point);
+      SetForegroundWindow(Application.Handle);
+      Application.ProcessMessages;
+      PopupMenu1.Popup(Point.X, Point.Y);
+    end;
+
+    WM_LBUTTONUP: begin
+      if Form1.Visible then begin
+        SetForegroundWindow(Handle);
+        Exit;
+      end;
+
+      if (not Form1.Visible and not AppInactive)
+        then Form1.Show
+        else Form1.Hide;
+    end;
+  end;
+end;
+
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  Form1.Caption := Application.Title;
+  LoadSettings;
+  ChangeTheme(Theme);
+
+  FillChar(TrayIconData, SizeOf(TrayIconData), 0);
+  TrayIconData.cbSize := SizeOf(TrayIconData);
+  TrayIconData.Wnd := Handle;
+  TrayIconData.uFlags := NIF_MESSAGE + NIF_ICON + NIF_TIP;
+  TrayIconData.uCallbackMessage := WM_CALLBACK_MESSAGE;
+  StrPCopy(TrayIconData.szTip, Application.Title);
+  TrayIconData.hIcon := LoadIcon(HInstance, 'MAINICON');
+  Shell_NotifyIcon(NIM_ADD, @TrayIconData);
+
+  DetectTaskbarRestart(TaskbarRestart);
+end;
+
+
+procedure TForm1.FormShow(Sender: TObject);
+var
+  i: Integer;
+  ActiveMonitor: Integer;
+  MonitorWidth, MonitorHeigth: Integer;
+  WorkareaRect: TRect;
+begin
+  ShowWindow(Application.Handle, SW_HIDE);
+  SetForegroundWindow(Handle);
+  Application.OnDeactivate := FormDeactivate;
+
+  ActiveMonitor := GetActiveMonitor;
+  MonitorWidth := Screen.Monitors[ActiveMonitor].Left + Screen.Monitors[ActiveMonitor].Width;
+  MonitorHeigth := Screen.Monitors[ActiveMonitor].Top + Screen.Monitors[ActiveMonitor].Height;
+  WorkareaRect := Screen.Monitors[ActiveMonitor].WorkareaRect;
+
+  Form1.Left := MonitorWidth - Form1.Width;
+  Form1.Top := MonitorHeigth - Form1.Height - (MonitorHeigth - WorkareaRect.Bottom);
+
+  ComboBox1Change(nil);
+  Button2.Enabled := False;
+  i := GetMode;
+
+  case i of
+    -1: begin
+      TrackBar1.Enabled := False;
+      ComboBox2.Enabled := False;
+      Button2.Enabled := True;
+    end;
+    AUTO_MODE: ComboBox2.ItemIndex := 0;
+    BASIC_MODE: ComboBox2.ItemIndex := 1;
+    ADVANCED_MODE: begin
+      ComboBox2.ItemIndex := 2;
+      TrackBar1.Enabled := False;
+    end;
+  end;
+
+  if TrackBar1.Position = 0 then TrackBar1.Position := 0; //Fix some visual issues
+  if ComboBox2.Enabled and (ComboBox2.ItemIndex <> 2) then ComboBox2Change(nil);
+end;
+
+
+procedure TForm1.FormHide(Sender: TObject);
+begin
+  Application.OnDeactivate := nil;
+  SaveSettings;
+  HotKey1Exit(nil);
+end;
+
+
+procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  CanClose := False;
+end;
+
+
+procedure TForm1.FormClick(Sender: TObject);
+begin
+  with TStaticText.Create(Self) do begin
+    Parent:= Self;
+    Left := -MaxInt;
+    Top := -MaxInt;
+    SetFocus;
+    Destroy;
+  end;
+end;
+
+
+procedure TForm1.FormPaint(Sender: TObject);
+begin
+  Canvas.Pen.Color := RGB(BEVEL_COLOR[Integer(Theme)].R, BEVEL_COLOR[Integer(Theme)].G, BEVEL_COLOR[Integer(Theme)].B);
+  Canvas.Rectangle(0, 0, Form1.ClientWidth, Form1.ClientHeight);
+end;
+
+
+procedure TForm1.FormDeactivate(Sender: TObject);
+begin
+  AppInactive := True;
+  Form1.Hide;
+  Wait(INACTIVE_TIMEOUT);
+  AppInactive := False;
+end;
+
+
+procedure TForm1.ToggleCoolerBoost1Click(Sender: TObject);
+begin
+  ToggleCoolerBoost;
+end;
+
+
+procedure TForm1.AddToAutoruns1Click(Sender: TObject);
+begin
+  ExecuteProcessAsAdmin('SchTasks', '/Create /SC ONLOGON /RL HIGHEST /TN MSIControl /TR "' + WideParamStr(0) + '" /F', SW_HIDE);
+  ShowMessage('Application added to autoruns.');
+end;
+
+
+procedure TForm1.RemoveFromAutoruns1Click(Sender: TObject);
+begin
+  ExecuteProcessAsAdmin('SchTasks', '/Delete /TN MSIControl /F', SW_HIDE);
+  ShowMessage('Application removed from autoruns.');
+end;
+
+
+procedure TForm1.Exit1Click(Sender: TObject);
+begin
+  Shell_NotifyIcon(NIM_DELETE, @TrayIconData);
+  TerminateProcess(OpenProcess(PROCESS_TERMINATE, False, GetCurrentProcessId), 0);
+end;
+
+
+procedure TForm1.HotKey1Enter(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i := 0 to Length(HotKeys)-1 do begin
+    ChangeShortcut(HotKeys[i].Key, 0);
+  end;
+end;
+
+
+procedure TForm1.HotKey1Exit(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i := 0 to Length(HotKeys)-1 do begin
+    if HotKeys[i].Description = ComboBox1.Text then begin
+      HotKeys[i].ShortCut := HotKey1.HotKey;
+      Break;
+    end;
+  end;
+
+  for i := 0 to Length(HotKeys)-1 do begin
+    ChangeShortcut(HotKeys[i].Key, HotKeys[i].ShortCut);
+  end;
+end;
+
+
+procedure TForm1.ComboBox1Change(Sender: TObject);
+var
+  i: Integer;
+begin
+  with TStaticText.Create(Self) do begin
+    Parent:= Self;
+    Left := -MaxInt;
+    Top := -MaxInt;
+    SetFocus;
+    Destroy;
+  end;
+
+  for i := 0 to Length(HotKeys)-1 do begin
+    if HotKeys[i].Description = ComboBox1.Text then begin
+      HotKey1.HotKey := HotKeys[i].ShortCut;
+      Break;
+    end;
+  end;
+end;
+
+
+procedure TForm1.ComboBox2Change(Sender: TObject);
+var
+  i: Integer;
+begin
+  if Form1.Visible then begin
+    with TStaticText.Create(Self) do begin
+      Parent:= Self;
+      Left := -MaxInt;
+      Top := -MaxInt;
+      SetFocus;
+      Destroy;
+    end;
+  end;
+
+  case ComboBox2.ItemIndex of
+    0: begin
+      TrackBar1.Enabled := False;
+      SetAutoMode;
+    end;
+    1: begin
+      TrackBar1.Enabled := True;
+      i := GetBasicValue;
+      if i > -100 then TrackBar1.Position := i;
+      SetBasicMode(TrackBar1.Position);
+    end;
+    2: begin
+      ComboBox2.ItemIndex := 0;
+      TrackBar1.Enabled := False;
+      SetAutoMode;
+    end;
+  end;
+end;
+
+
+procedure TForm1.TrackBar1Change(Sender: TObject);
+begin
+  Label3.Caption := IntToStr(Round(((TrackBar1.Position - TrackBar1.Min) * 100) / (TrackBar1.Max - TrackBar1.Min))) + '%';
+end;
+
+
+procedure TForm1.TrackBar1MouseUp(Sender: TObject);
+begin
+  SetBasicMode(TrackBar1.Position);
+end;
+
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  Theme := not Theme;
+  ChangeTheme(Theme);
+end;
+
+
+procedure TForm1.Button2Click(Sender: TObject);
+var
+  buttonSelected: Integer;
+begin
+  if MsiMofInstall then begin
+    buttonSelected := MessageDlg('Installation completed.' + #13#10 +
+                                 'NOTE: It is necessary to restart your PC before you can control fan speeds.',
+                                 mtCustom, [mbYes, mbNo], 0);
+
+    if buttonSelected = mrNo then Exit;
+    WinExec('shutdown.exe -r -t 0', SW_HIDE);
+  end else begin
+    ShowMessage('There was an error installing DLL!');
+  end;
+end;
+
+
+procedure TForm1.ComboBoxKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  Key := 0;
+end;
+
+
+procedure TForm1.ComboBoxKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  Key := 0;
+end;
+
+end.
+
