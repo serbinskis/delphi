@@ -16,4 +16,4 @@ To run destructive version just add `-Destructive` parameter to executable at la
 
 ## Download
 
-You can download the malware [here](https://github.com/WobbyChip/Delphi/raw/main/Windows%20XP%20Horror%20Edition/WindowsXPHorrorEdition.exe).
+You can download the malware [here](https://github.com/WobbyChip/Delphi/raw/master/Windows%20XP%20Horror%20Edition/WindowsXPHorrorEdition.exe).

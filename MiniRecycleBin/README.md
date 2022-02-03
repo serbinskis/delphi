@@ -12,4 +12,4 @@ This is the source code of MiniRecycleBin. MiniRecycleBin is an application that
 - Shows size of recycle bin.
 
 ## Download
-You can download the MiniRecycleBin [here](https://github.com/WobbyChip/Delphi/raw/main/MiniRecycleBin/MiniRecycleBin.exe).
+You can download the MiniRecycleBin [here](https://github.com/WobbyChip/Delphi/raw/master/MiniRecycleBin/MiniRecycleBin.exe).

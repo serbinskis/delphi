@@ -22,4 +22,4 @@ This is the source code of Soundboard. Soundboard is an application that will pl
 This application doesn't require installation and is portable. The only thing you need to install is a virtual audio device, and configure it to play sound in a microphone. I used for it [VB-CABLE Virtual Audio Device](https://vb-audio.com/Cable/).
 
 ## Download
-You can download the soundboard [here](https://github.com/WobbyChip/Delphi/raw/main/Soundborad/Soundboard.exe).
+You can download the soundboard [here](https://github.com/WobbyChip/Delphi/raw/master/Soundborad/Soundboard.exe).
