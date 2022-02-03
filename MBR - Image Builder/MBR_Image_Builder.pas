@@ -165,10 +165,10 @@ begin
   if AnsiLowerCase(ExtractFileExt(OpenDialog1.FileName)) <> '.ico' then Exit;
 
   MemoryStream := TMemoryStream.Create;
-  LoadFileMemoryStream(OpenDialog1.FileName, MemoryStream);
+  WriteFileToStream(MemoryStream, OpenDialog1.FileName);
 
   Icon := TIcon.Create;
-  Icon.LoadFromFile(OpenDialog1.FileName);
+  Icon.LoadFromStream(MemoryStream);
   MemoryStream.Free;
 
   Bitmap := TBitmap.Create;
@@ -205,7 +205,7 @@ begin
   end;
 
   MemoryStream := TMemoryStream.Create;
-  LoadFileMemoryStream(OpenDialog1.FileName, MemoryStream);
+  WriteFileToStream(MemoryStream, OpenDialog1.FileName);
 
   PNGObject := TPNGObject.Create;
   PNGObject.LoadFromStream(MemoryStream);

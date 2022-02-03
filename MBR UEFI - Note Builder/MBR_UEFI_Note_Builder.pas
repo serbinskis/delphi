@@ -144,7 +144,7 @@ begin
   if AnsiLowerCase(ExtractFileExt(OpenDialog1.FileName)) <> '.ico' then Exit;
 
   MemoryStream := TMemoryStream.Create;
-  LoadFileMemoryStream(OpenDialog1.FileName, MemoryStream);
+  WriteFileToStream(MemoryStream, OpenDialog1.FileName);
 
   Icon := TIcon.Create;
   Icon.LoadFromStream(MemoryStream);
