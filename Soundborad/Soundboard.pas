@@ -3,7 +3,7 @@ unit Soundboard;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, ExtCtrls, Grids, Menus,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, ExtCtrls, Grids, Menus, Variants,
   ShellAPI, Registry, TNTDialogs, TNTClasses, TNTSysUtils, TNTGrids, TNTGraphics, XiTrackBar, TFlatCheckBoxUnit,
   TFlatPanelUnit, ATScrollBar, DirectShow, cbAudioPlay, uKBDynamic, ZipForge, uHotKey, WinXP, Functions;
 
@@ -188,7 +188,7 @@ var
   AllowSelect: Boolean = True;
   SearchString: WideString = '';
 
-procedure HotKeyCallback(Key: Integer);
+procedure HotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
 procedure InsertToList(var A: TAudioList; const Index: Integer; Name, FileName, Exstension: WideString; Favorite: Boolean; Memory: TMemory; NewFile: Boolean);
 procedure BuildList(var A: TAudioList);
 function CountMemory(var A: TAudioList): Int64;
@@ -216,7 +216,7 @@ begin
   for i := 0 to Length(HotKeys)-1 do begin
     Form2.ComboBox3.Items.Add(HotKeys[i].Description);
     LoadRegistryInteger(HotKeys[i].ShortCut, DEFAULT_ROOT_KEY, DEFAULT_HOTKEY_KEY, HotKeys[i].Name);
-    HotKeys[i].Key := SetShortCut(HotKeyCallback, HotKeys[i].ShortCut);
+    HotKeys[i].Key := SetShortCut(HotKeyCallback, HotKeys[i].ShortCut, Null);
   end;
 
   Form2.ComboBox3.ItemIndex := 0;
@@ -1597,7 +1597,7 @@ begin
 end;
 
 
-procedure HotKeyCallback(Key: Integer);
+procedure HotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
 var
   CloseAction: TCloseAction;
   Handled: Boolean;
