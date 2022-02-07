@@ -34,6 +34,7 @@ object Form1: TForm1
     Width = 560
     Height = 463
     Color = clWhite
+    ColCount = 6
     Ctl3D = False
     DefaultColWidth = -1
     DefaultRowHeight = 21
@@ -51,8 +52,10 @@ object Form1: TForm1
     ScrollBars = ssNone
     TabOrder = 0
     OnDrawCell = TNTStringGrid1DrawCell
+    OnExit = TNTStringGrid1Exit
     OnKeyDown = TNTStringGrid1KeyDown
     OnMouseMove = TNTStringGrid1MouseMove
+    OnMouseUp = TNTStringGrid1MouseUp
     OnMouseWheelDown = TNTStringGrid1MouseWheelDown
     OnMouseWheelUp = TNTStringGrid1MouseWheelUp
     OnSelectCell = TNTStringGrid1SelectCell
@@ -168,5 +171,31 @@ object Form1: TForm1
     OnAction = TrayIcon1Action
     Left = 40
     Top = 40
+  end
+  object PopupMenu2: TPopupMenu
+    Left = 8
+    Top = 72
+    object Favorite1: TMenuItem
+      Caption = 'Operation'
+      object Copy1: TMenuItem
+        Caption = 'Copy'
+        OnClick = Copy1Click
+      end
+      object Delete1: TMenuItem
+        Caption = 'Delete'
+        OnClick = Delete1Click
+      end
+      object Favorite2: TMenuItem
+        Caption = 'Favorite'
+        OnClick = Favorite2Click
+      end
+    end
+    object Show1: TMenuItem
+      Caption = 'Show'
+      object ShowFavorites1: TMenuItem
+        Caption = 'Show Favorites'
+        OnClick = ShowFavorites1Click
+      end
+    end
   end
 end

@@ -41,7 +41,7 @@ object Form2: TForm2
     Width = 390
     Height = 2
   end
-  object FlatCheckBox1: TFlatCheckBox
+  object CheckBox1: TFlatCheckBox
     Left = 8
     Top = 106
     Width = 161
@@ -58,7 +58,7 @@ object Form2: TForm2
     TabOrder = 0
     TabStop = True
   end
-  object FlatCheckBox3: TFlatCheckBox
+  object CheckBox3: TFlatCheckBox
     Left = 8
     Top = 170
     Width = 169
@@ -75,7 +75,7 @@ object Form2: TForm2
     TabOrder = 1
     TabStop = True
   end
-  object FlatCheckBox2: TFlatCheckBox
+  object CheckBox2: TFlatCheckBox
     Left = 8
     Top = 138
     Width = 177
@@ -92,7 +92,7 @@ object Form2: TForm2
     TabOrder = 2
     TabStop = True
   end
-  object FlatCheckBox0: TFlatCheckBox
+  object CheckBox0: TFlatCheckBox
     Left = 8
     Top = 32
     Width = 129
@@ -109,7 +109,7 @@ object Form2: TForm2
     TabOrder = 3
     TabStop = True
   end
-  object FlatComboBox1: TFlatComboBox
+  object ComboBox1: TFlatComboBox
     Left = 320
     Top = 104
     Width = 70
@@ -134,9 +134,9 @@ object Form2: TForm2
     TabOrder = 4
     Text = 'Minutes'
     ItemIndex = 0
-    OnChange = FlatComboBox1Change
+    OnChange = ComboBox1Change
   end
-  object FlatComboBox2: TFlatComboBox
+  object ComboBox2: TFlatComboBox
     Left = 320
     Top = 136
     Width = 70
@@ -159,7 +159,7 @@ object Form2: TForm2
     TabOrder = 5
     Text = 'Bytes'
     ItemIndex = 0
-    OnChange = FlatComboBox2Change
+    OnChange = ComboBox2Change
   end
   object SpinEdit1: TFlatSpinEditInteger
     Left = 192
@@ -284,7 +284,7 @@ object Form2: TForm2
     OnClick = Clear1Click
     OnMouseDown = Clear1MouseDown
   end
-  object FlatCheckBox4: TFlatCheckBox
+  object CheckBox4: TFlatCheckBox
     Left = 8
     Top = 242
     Width = 161
@@ -323,7 +323,7 @@ object Form2: TForm2
     OnChange = SpinEdit4Change
     OnExit = SpinEdit4Exit
   end
-  object FlatComboBox3: TFlatComboBox
+  object ComboBox3: TFlatComboBox
     Left = 320
     Top = 240
     Width = 70
@@ -345,12 +345,12 @@ object Form2: TForm2
     TabOrder = 14
     Text = 'Hours'
     ItemIndex = 1
-    OnChange = FlatComboBox3Change
+    OnChange = ComboBox3Change
   end
   object StaticText5: TStaticText
-    Left = 300
+    Left = 256
     Top = 319
-    Width = 89
+    Width = 133
     Height = 22
     Alignment = taRightJustify
     AutoSize = False

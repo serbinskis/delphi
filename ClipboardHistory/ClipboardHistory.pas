@@ -6,34 +6,21 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
   ExtCtrls, MMSystem, Grids, Menus, Registry, DateUtils, ShellAPI, TNTSysUtils, TNTGrids,
   TNTClipBrd, TNTGraphics, TNTStdCtrls, TNTSystem, ATScrollBar, TFlatComboBoxUnit,
-  TFlatCheckBoxUnit, uQueryShutdown, CustoTrayIcon, uKBDynamic, Functions;
+  TFlatCheckBoxUnit, uQueryShutdown, CustoTrayIcon, uDynamicData, Functions;
 
 const
   INACTIVE_TIMEOUT = 350;
   SEARCH_DELAY = 1000;
   DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
   DEFAULT_KEY = '\Software\ClipboardHistory';
+  COLS: array[0..3] of Integer = (60, 422, 49, 24);
   ECLIPSIS_SIZE = 5;
   ROWS_PER_SCROLL = 3;
   APPEND_ITEMS = 100;
   TOTAL_ITEMS = 'Total items: ';
   TOTAL_FOUND = 'Total found: ';
 
-const
-  COL_WIDTH_0 = 60;
-  COL_WIDTH_1 = 422;
-  COL_WIDTH_2 = 49;
-  COL_WIDTH_3 = 24;
-
 type
-  TClipboard = record
-    UID: Int64;
-    DateTime: TDateTime;
-    Content: WideString;
-  end;
-
-  TClipboardList = array of TClipboard;
-
   TSettingsDB = record
     Monitoring: Boolean;
     MaxItems: Integer;
@@ -47,7 +34,7 @@ type
     TimeIndex: Integer;
     SizeIndex: Integer;
     AutoSaveIndex: Integer;
-    ClipboardTable: TClipboardList;
+    ShowFavorites: Boolean;
   end;
 
 type
@@ -72,6 +59,13 @@ type
     Timer4: TTimer;
     TrayIcon1: TTrayIcon;
     Restart1: TMenuItem;
+    PopupMenu2: TPopupMenu;
+    Favorite1: TMenuItem;
+    Show1: TMenuItem;
+    ShowFavorites1: TMenuItem;
+    Favorite2: TMenuItem;
+    Delete1: TMenuItem;
+    Copy1: TMenuItem;
     procedure FormShow(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -84,45 +78,52 @@ type
     procedure About1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure ChangeVertical(Sender: TObject);
+    procedure ScrollChangeVertical(Sender: TObject);
     procedure ApplicationDecativate(Sender: TObject);
-    procedure AddItem(var C: TClipboard; Index, Position: Integer);
-    procedure HideList;
-    procedure PrepareList(Len: Integer);
-    procedure BuildList(var A: TClipboardList; Start, Count: Integer);
-    procedure Search(var A: TClipboardList; S: WideString);
     procedure TNTStringGrid1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure Timer1Timer(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
     procedure Timer3Timer(Sender: TObject);
-    procedure CheckListEnding;
-    procedure DisableClipboard;
-    procedure EnableClipboard;
+    procedure Timer4Timer(Sender: TObject);
     procedure TNTStringGrid1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure TNTStringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
     procedure Shape1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    function CheckEmpty: Boolean;
     procedure TNTEdit1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure Timer4Timer(Sender: TObject);
     procedure TrayIcon1Action(Sender: TObject; Code: Integer);
     procedure Restart1Click(Sender: TObject);
+    procedure TNTStringGrid1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure Copy1Click(Sender: TObject);
+    procedure Delete1Click(Sender: TObject);
+    procedure Favorite2Click(Sender: TObject);
+    procedure ShowFavorites1Click(Sender: TObject);
+    procedure TNTStringGrid1Exit(Sender: TObject);
+    procedure AddItem(ArrayIndex, ListIndex, Position: Integer);
+    procedure HideList;
+    procedure PrepareList(Len: Integer);
+    procedure BuildList(ListIndex, ArrayIndex, Count: Integer);
+    procedure Search(S: WideString);
+    procedure CheckListEnding;
+    procedure DisableClipboard;
+    procedure EnableClipboard;
+    function CheckEmpty: Boolean;
   private
     { Private declarations }
   public
-    procedure ClipBoardChanged(var Msg: TMessage); message WM_DRAWCLIPBOARD;
+    procedure ClipboardChanged(var Msg: TMessage); message WM_DRAWCLIPBOARD;
     { Public declarations }
   end;
 
 var
   Form1: TForm1;
-  RowChanged: Boolean;
-  AppInactive: Boolean;
   SettingsDB: TSettingsDB;
+  DynamicData: TDynamicData;
   ItemsPerPage: Integer;
   Scroll: TATScroll;
-  SearchMode: Boolean = False;
-  AllowClipboard: Boolean = True;
   SaveClipboard: Int64 = 0;
+  AllowClipboard: Boolean = True;
+  SearchMode: Boolean = False;
+  TriggerDelete: Boolean = False;
+  AppInactive: Boolean = False;
 
 implementation
 
@@ -133,9 +134,6 @@ uses Settings, About;
 
 //LoadSettings
 procedure LoadSettings;
-var
-  MemoryStream: TMemoryStream;
-  Registry: TRegistry;
 begin
   LoadRegistryBoolean(SettingsDB.Monitoring, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Monitoring');
   LoadRegistryInteger(SettingsDB.MaxItems, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxItems');
@@ -150,41 +148,14 @@ begin
   LoadRegistryInteger(SettingsDB.SizeIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SizeIndex');
   LoadRegistryInteger(SettingsDB.AutoSaveIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'AutoSaveIndex');
 
-  Registry := TRegistry.Create;
-  Registry.RootKey := DEFAULT_ROOT_KEY;
-  Registry.OpenKey(DEFAULT_KEY, True);
-
-  if Registry.ValueExists('History') then begin
-    MemoryStream := TMemoryStream.Create;
-    MemoryStream.SetSize(Registry.GetDataSize('History'));
-    Registry.ReadBinaryData('History', MemoryStream.Memory^, MemoryStream.Size);
-    DecompressStream(MemoryStream);
-
-    try
-      TKBDynamic.ReadFrom(MemoryStream, SettingsDB.ClipboardTable, TypeInfo(TClipboardList), 1);
-      MemoryStream.Free;
-    except
-      PlaySound('SystemExclamation', 0, SND_ASYNC);
-      ShowMessage('There was an error loading clipboard list.' + #13#10 +
-                  'List data may be corrupted or outdated.' + #13#10 +
-                  'The clipboard list will be reset.');
-      ZeroMemory(@SettingsDB.ClipboardTable, SizeOf(SettingsDB.ClipboardTable));
-      SetLength(SettingsDB.ClipboardTable, 0);
-      Registry.DeleteValue('History');
-    end;
-  end;
-
-  Registry.Free;
+  DynamicData := TDynamicData.Create(['UID', 'DateTime', 'Content', 'Favorite']);
+  DynamicData.Load(DO_COMPRESS, True, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'History', True);
 end;
 //LoadSettings
 
 
 //SaveSettings
 procedure SaveSettings;
-var
-  MemoryStream: TMemoryStream;
-  lOptions: TKBDynamicOptions;
-  Registry: TRegistry;
 begin
   SaveRegistryBoolean(SettingsDB.Monitoring, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Monitoring');
   SaveRegistryInteger(SettingsDB.MaxItems, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxItems');
@@ -199,29 +170,7 @@ begin
   SaveRegistryInteger(SettingsDB.SizeIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SizeIndex');
   SaveRegistryInteger(SettingsDB.AutoSaveIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'AutoSaveIndex');
 
-  lOptions := [
-    kdoAnsiStringCodePage
-
-    {$IFDEF KBDYNAMIC_DEFAULT_UTF8}
-    ,kdoUTF16ToUTF8
-    {$ENDIF}
-
-    {$IFDEF KBDYNAMIC_DEFAULT_CPUARCH}
-    ,kdoCPUArchCompatibility
-    {$ENDIF}
-  ];
-
-  MemoryStream := TMemoryStream.Create;
-  TKBDynamic.WriteTo(MemoryStream, SettingsDB.ClipboardTable, TypeInfo(TClipboardList), 1, lOptions);
-  CompressStream(MemoryStream);
-
-  Registry := TRegistry.Create;
-  Registry.RootKey := DEFAULT_ROOT_KEY;
-  Registry.OpenKey(DEFAULT_KEY, True);
-  Registry.WriteBinaryData('History', MemoryStream.Memory^, MemoryStream.Size);
-  Registry.Free;
-
-  MemoryStream.Free;
+  DynamicData.Save(DO_COMPRESS, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'History');
 end;
 //SaveSettings
 
@@ -244,79 +193,20 @@ end;
 //EnableClipboard
 
 
-//DeleteFromList
-procedure DeleteFromList(var A: TClipboardList; const Index: Integer);
-var
-  i, ArrayLength: Integer;
-begin
-  ArrayLength := Length(A);
-
-  if Index = ArrayLength-1 then begin
-    SetLength(A, ArrayLength-1);
-    Exit;
-  end;
-
-  for i := Index to Length(A)-2  do begin
-    A[i].UID := A[i+1].UID;
-    A[i].DateTime := A[i+1].DateTime;
-    A[i].Content := A[i+1].Content;
-  end;
-
-  SetLength(A, ArrayLength-1);
-end;
-//DeleteFromList
-
-
-//InsertToList
-procedure InsertToList(var A: TClipboardList; const Index: Integer; DateTime: TDateTime; Content: WideString);
-var
-  i: Integer;
-begin
-  if SettingsDB.isItemsLimited and (Length(A) >= SettingsDB.MaxItems) then SetLength(A, SettingsDB.MaxItems-1);
-  SetLength(A, Length(A)+1);
-
-  for i := Length(A)-1 downto Index+1 do begin
-    A[i].UID := A[i-1].UID;
-    A[i].DateTime := A[i-1].DateTime;
-    A[i].Content := A[i-1].Content;
-  end;
-
-  A[Index].UID := MilliSecondsBetween(DateTime, 0);;
-  A[Index].DateTime := DateTime;
-  A[Index].Content := Content;
-end;
-//InsertToList
-
-
 //UpdateList
-procedure UpdateList(var A: TClipboardList);
+procedure UpdateList;
 var
   i: Integer;
   DateNow: TDateTime;
 begin
   DateNow := Now;
 
-  for i := Length(A)-1 downto 0 do begin
-    if SecondsBetween(SettingsDB.ClipboardTable[i].DateTime, DateNow) < SettingsDB.RemoveAfter then Break;
-    SetLength(A, Length(A)-1);
+  for i := DynamicData.GetLength-1 downto 0 do begin
+    if SecondsBetween(DynamicData.GetValue(i, 'DateTime'), DateNow) < SettingsDB.RemoveAfter then Break;
+    if not DynamicData.GetValue(i, 'Favorite') then DynamicData.SetLength(DynamicData.GetLength-1);
   end;
 end;
 //UpdateList
-
-
-function FindUID(var A: TClipboardList; UID: Int64): Integer;
-var
-  i: Integer;
-begin
-  Result := -1;
-
-  for i := 0 to Length(A)-1 do begin
-    if A[i].UID = UID then begin
-      Result := i;
-      Break;
-    end;
-  end;
-end;
 
 
 //QueryShutdown
@@ -341,11 +231,12 @@ end;
 //ClipboardUpdate
 
 
-//ClipBoardChanged
-procedure TForm1.ClipBoardChanged(var Msg: TMessage);
+//ClipboardChanged
+procedure TForm1.ClipboardChanged(var Msg: TMessage);
 var
   Content: WideString;
   ID: LongWord;
+  DateTime: TDateTime;
 begin
   if not AllowClipboard then Exit;
   if not SettingsDB.Monitoring then Exit;
@@ -356,31 +247,48 @@ begin
   end;
 
   if (Length(Content) <= 0) or ((Length(Content) > SettingsDB.MaxSize) and SettingsDB.isSizeLimited) then Exit;
-  if (Length(SettingsDB.ClipboardTable) > 0) and (Content = SettingsDB.ClipboardTable[0].Content) then Exit;
+  if (Content = DynamicData.GetValue(0, 'Content')) then Exit;
   BeginThread(nil, 0, Addr(ClipboardUpdate), nil, 0, ID);
-  InsertToList(SettingsDB.ClipboardTable, 0, Now, Content);
+  DateTime := Now;
+
+  DynamicData.CreateData(0);
+  DynamicData.SetValue(0, 'UID', MilliSecondsBetween(DateTime, 0));
+  DynamicData.SetValue(0, 'DateTime', DateTime);
+  DynamicData.SetValue(0, 'Content', Content);
+  DynamicData.SetValue(0, 'Favorite', False);
 end;
-//ClipBoardChanged
+//ClipboardChanged
 
 
 //FormatSize
 function FormatSize(x: Integer): String;
 begin
   Result := IntToStr(x);
-  if x >= (1024) then Result := Format('%d KB', [Round(x / 1024)]);
-  if x >= (1024 * 1024) then Result := Format('%d MB', [Round(x / (1024 * 1024))]);
+  if x >= (1024) then Result := Format('%d KB', [Round(x/1024)]);
+  if x >= (1024*1024) then Result := Format('%d MB', [Round(x/(1024*1024))]);
 end;
 //FormatSize
 
 
 //AddItem
-procedure TForm1.AddItem(var C: TClipboard; Index, Position: Integer);
+procedure TForm1.AddItem(ArrayIndex, ListIndex, Position: Integer);
+var
+  Content: WideString;
+  DateTime: TDateTime;
+  UID: Int64;
+  isFavorite: Boolean;
 begin
-  TNTStringGrid1.Cells[0, Index] := ' ' + FormatDate(C.DateTime);
-  TNTStringGrid1.Cells[2, Index] := ' ' + FormatSize(Length(C.Content));
-  TNTStringGrid1.Cells[1, Index] := Trim(TNT_WideStringReplace(Copy(C.Content, Position, 100), #10, ' ', [rfReplaceAll]));
-  TNTStringGrid1.Cells[3, Index] := ' ' + WideString(WideChar(10060));
-  TNTStringGrid1.Cells[4, Index] := IntToStr(C.UID);
+  Content := DynamicData.GetValue(ArrayIndex, 'Content');
+  DateTime := DynamicData.GetValue(ArrayIndex, 'DateTime');
+  UID := DynamicData.GetValue(ArrayIndex, 'UID');
+  isFavorite := DynamicData.GetValue(ArrayIndex, 'Favorite');
+
+  TNTStringGrid1.Cells[0, ListIndex] := ' ' + FormatDate(DateTime);
+  TNTStringGrid1.Cells[2, ListIndex] := ' ' + FormatSize(Length(Content));
+  TNTStringGrid1.Cells[1, ListIndex] := Trim(TNT_WideStringReplace(Copy(Content, Position, 100), #10, ' ', [rfReplaceAll]));
+  TNTStringGrid1.Cells[3, ListIndex] := ' ' + WideString(WideChar(10060));
+  TNTStringGrid1.Cells[4, ListIndex] := IntToStr(UID);
+  TNTStringGrid1.Cells[5, ListIndex] := IntToStr(Integer(isFavorite));
 end;
 //AddItem
 
@@ -407,25 +315,30 @@ end;
 //PrepareList
 procedure TForm1.PrepareList(Len: Integer);
 begin
+  if (Len > 0) and (TNTStringGrid1.Cells[4, 0] = '') then begin
+    PrepareList(0);
+    Exit;
+  end;
+
   if Len > 0 then begin
-    TNTStringGrid1.ColWidths[0] := COL_WIDTH_0;
-    TNTStringGrid1.ColWidths[2] := COL_WIDTH_2;
-    TNTStringGrid1.ColWidths[3] := COL_WIDTH_3;
+    TNTStringGrid1.ColWidths[0] := COLS[0];
+    TNTStringGrid1.ColWidths[2] := COLS[2];
+    TNTStringGrid1.ColWidths[3] := COLS[3];
     TNTStringGrid1.GridLineWidth := 1;
     StaticText2.Visible := False;
   end else begin
     HideList;
-    StaticText2.Top := Round((TNTStringGrid1.Height - StaticText2.Height)/2) + TNTStringGrid1.Top;
-    StaticText2.Left := Round((TNTStringGrid1.Width - StaticText2.Width)/2);
+    StaticText2.Top := Round((TNTStringGrid1.Height-StaticText2.Height)/2) + TNTStringGrid1.Top;
+    StaticText2.Left := Round((TNTStringGrid1.Width-StaticText2.Width)/2);
     StaticText2.Visible := True;
   end;
 
   if ItemsPerPage <= Len then begin
-    TNTStringGrid1.ColWidths[1] := COL_WIDTH_1 - Scroll.Width;
+    TNTStringGrid1.ColWidths[1] := COLS[1]-Scroll.Width;
     Scroll.Max := Len;
     Scroll.Visible := True;
   end else begin
-    TNTStringGrid1.ColWidths[1] := COL_WIDTH_1;
+    TNTStringGrid1.ColWidths[1] := COLS[1];
     Scroll.Visible := False;
   end;
 end;
@@ -433,39 +346,56 @@ end;
 
 
 //BuildList
-procedure TForm1.BuildList(var A: TClipboardList; Start, Count: Integer);
-var
-  i: Integer;
+procedure TForm1.BuildList(ListIndex, ArrayIndex, Count: Integer);
+label
+  TryAgain;
 begin
-  StaticText1.Caption := TOTAL_ITEMS + IntToStr(Length(A));
-
-  if (Start + Count) > Length(A) then Count := Length(A)-Start;
-  TNTStringGrid1.RowCount := Start+Count;
-
-  for i := Start to Start+Count-1 do begin
-    AddItem(A[i], i, 1);
+  if DynamicData.GetLength = 0 then begin
+    StaticText1.Caption := TOTAL_ITEMS + '0';
+    PrepareList(0);
+    Exit;
   end;
 
+TryAgain:
+  if (Count > 0) and (ArrayIndex+1 <= DynamicData.GetLength) then begin;
+    if SettingsDB.ShowFavorites and not DynamicData.GetValue(ArrayIndex, 'Favorite') then begin
+      Inc(ArrayIndex);
+      goto TryAgain;
+    end;
+
+    TNTStringGrid1.RowCount := ListIndex+1;
+    AddItem(ArrayIndex, ListIndex, 1);
+
+    Inc(ListIndex);
+    Inc(ArrayIndex);
+    Dec(Count);
+    goto TryAgain;
+  end;
+
+  StaticText1.Caption := TOTAL_ITEMS + IntToStr(DynamicData.GetLength);
   PrepareList(TNTStringGrid1.RowCount);
 end;
 //BuildList
 
 
 //Search
-procedure TForm1.Search(var A: TClipboardList; S: WideString);
+procedure TForm1.Search(S: WideString);
 var
   i, Position, Count: Integer;
+  isFavorite: Boolean;
 begin
   Count := 0;
   S := WideLowerCase(S);
 
-  for i := 0 to Length(A)-1 do begin
-      Position := Pos(S, WideLowerCase(A[i].Content));
+  for i := 0 to DynamicData.GetLength-1 do begin
+      Position := Pos(S, WideLowerCase(DynamicData.GetValue(i, 'Content')));
+      isFavorite := DynamicData.GetValue(i, 'Favorite');
+      if not SettingsDB.ShowFavorites then isFavorite := True;
 
-      if (Position > 0) then begin
+      if (Position > 0) and isFavorite then begin
         if Position > 1 then Position := Position - 35;
         if Position < 1 then Position := 1;
-        AddItem(A[i], Count, Position);
+        AddItem(i, Count, Position);
         Inc(Count);
       end;
   end;
@@ -479,11 +409,14 @@ end;
 
 //CheckListEnding
 procedure TForm1.CheckListEnding;
+var
+  UID: Int64;
 begin
   if SearchMode then Exit;
   if (TNTStringGrid1.RowCount - (TNTStringGrid1.TopRow + ItemsPerPage)) > 2 then Exit;
-  if TNTStringGrid1.RowCount > Length(SettingsDB.ClipboardTable) then Exit;
-  BuildList(SettingsDB.ClipboardTable, TNTStringGrid1.RowCount, APPEND_ITEMS);
+  if TNTStringGrid1.RowCount > DynamicData.GetLength then Exit;
+  UID := StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.RowCount-1]);
+  BuildList(TNTStringGrid1.RowCount-1, DynamicData.FindIndex('UID', UID), APPEND_ITEMS);
 end;
 //CheckListEnding
 
@@ -524,7 +457,7 @@ begin
   Scroll.Parent := Form1;
   Scroll.Align := alNone;
   Scroll.Kind := sbVertical;
-  Scroll.OnChange := ChangeVertical;
+  Scroll.OnChange := ScrollChangeVertical;
   Scroll.DisableMarks := True;
   Scroll.Min := 0;
   Scroll.Width := 16;
@@ -533,7 +466,7 @@ begin
   Scroll.Left := TNTStringGrid1.Width - Scroll.Width-1;
 
   TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
-  TrayIcon1.Title := TOTAL_ITEMS + IntToStr(Length(SettingsDB.ClipboardTable));
+  TrayIcon1.Title := TOTAL_ITEMS + IntToStr(DynamicData.GetLength);
   TrayIcon1.AddToTray;
 
   Timer1.Enabled := True;
@@ -569,7 +502,7 @@ begin
   Scroll.Position := 0;
 
   TNTStringGrid1.TopRow := 0;
-  BuildList(SettingsDB.ClipboardTable, 0, ItemsPerPage*2);
+  BuildList(0, 0, ItemsPerPage*2);
   TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
 
   TNTEdit1.Text := '';
@@ -582,15 +515,18 @@ procedure TForm1.FormHide(Sender: TObject);
 var
   Msg: TMessage;
   Index: Integer;
+  isFavorite: Boolean;
 begin
   Application.OnDeactivate := nil;
   Timer4.Enabled := False;
   EnableClipboard;
 
   if SaveClipboard <> 0 then begin
-    Index := FindUID(SettingsDB.ClipboardTable, SaveClipboard);
-    if Index > 0 then DeleteFromList(SettingsDB.ClipboardTable, Index);
-    ClipBoardChanged(Msg);
+    Index := DynamicData.FindIndex('UID', SaveClipboard);
+    isFavorite := DynamicData.GetValue(Index, 'Favorite');
+    if Index > 0 then DynamicData.DeleteData(Index);
+    ClipboardChanged(Msg);
+    DynamicData.SetValue(0, 'Favorite', isFavorite);
     SaveClipboard := 0;
   end;
 end;
@@ -598,8 +534,10 @@ end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  TrayIcon1.Destroy;
+  PopupMenu1.Destroy;
+  TrayIcon1.OnAction := nil;
   SaveSettings;
+  TrayIcon1.Destroy;
 end;
 
 
@@ -612,8 +550,8 @@ end;
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
   Timer1.Enabled := False;
-  UpdateList(SettingsDB.ClipboardTable);
-  TrayIcon1.Title := TOTAL_ITEMS + IntToStr(Length(SettingsDB.ClipboardTable));
+  UpdateList;
+  TrayIcon1.Title := TOTAL_ITEMS + IntToStr(DynamicData.GetLength);
   Timer1.Enabled := True;
 end;
 
@@ -622,11 +560,10 @@ procedure TForm1.Timer2Timer(Sender: TObject);
 begin
   Timer2.Enabled := False;
   if (TNTEdit1.Text = '') then Exit;
-  HideList;
-  Wait(100);
-
   SearchMode := True;
-  Search(SettingsDB.ClipboardTable, TNTEdit1.Text);
+  HideList;
+  Wait(10);
+  Search(TNTEdit1.Text);
 end;
 
 
@@ -642,19 +579,22 @@ end;
 procedure TForm1.TNTStringGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
 var
   Index: Integer;
+  LastIndex: Integer;
 begin
   CanSelect := False;
-  if not (GetKeyState(VK_LBUTTON) < 0) then Exit; //This used to cancel second event when button gets released
-  Mouse_Event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0); //Release mouse button so event doesn't happen infinite times
+  if (not TriggerDelete) and (not (GetKeyState(VK_LBUTTON) < 0)) then Exit; //This used to cancel second event when button gets released
+  if (not TriggerDelete) then Mouse_Event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0); //Release mouse button so event doesn't happen infinite times
 
   if ACol = 3 then begin
-    Index := FindUID(SettingsDB.ClipboardTable, StrToInt64(TNTStringGrid1.Cells[4, ARow]));
+    Index := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, ARow]));
+    LastIndex := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.RowCount-1]))-1;
     PrepareList(TNTStringGrid1.RowCount-1);
     THackGrid(TNTStringGrid1).DeleteRow(ARow);
-    DeleteFromList(SettingsDB.ClipboardTable, Index);
+    DynamicData.DeleteData(Index);
+    TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
 
     if not SearchMode
-      then BuildList(SettingsDB.ClipboardTable, TNTStringGrid1.RowCount, 1)
+      then BuildList(TNTStringGrid1.RowCount, LastIndex+1, 1)
       else StaticText1.Caption := TOTAL_FOUND + IntToStr(StrToInt(StringReplace(StaticText1.Caption, TOTAL_FOUND, '', [rfReplaceAll, rfIgnoreCase]))-1);
 
     if SearchMode and (Index > TNTStringGrid1.RowCount-ItemsPerPage) then begin
@@ -663,25 +603,124 @@ begin
       Scroll.Position := Scroll.Position - 1;
     end;
 
-    if (not SearchMode) and (Index > Length(SettingsDB.ClipboardTable)-ItemsPerPage) then begin
-      if TNTStringGrid1.TopRow - 1 < 0 then Exit;
-      TNTStringGrid1.TopRow :=  TNTStringGrid1.TopRow - 1;
-      Scroll.Position := Scroll.Position - 1;
+    if (not SearchMode) and (Index > DynamicData.GetLength-ItemsPerPage) then begin
+      if TNTStringGrid1.TopRow-1 < 0 then Exit;
+      TNTStringGrid1.TopRow :=  TNTStringGrid1.TopRow-1;
+      Scroll.Position := Scroll.Position-1;
     end;
   end;
 
   if ACol = 1 then begin
-    SaveClipboard := StrToInt64(TNTStringGrid1.Cells[4, ARow]);
-    Index := FindUID(SettingsDB.ClipboardTable, SaveClipboard);
-    TNTClipboard.AsWideText := SettingsDB.ClipboardTable[Index].Content;
     TNTStringGrid1.Selection := TGridRect(Rect(1,ARow,1,ARow));
-    Wait(200);
-    TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
   end;
 end;
 
 
-procedure TForm1.ChangeVertical(Sender: TObject);
+procedure TForm1.TNTStringGrid1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  Point: TPoint;
+  Index: Integer;
+begin
+  if Button <> mbRight then Exit;
+
+  PopupMenu2.Items[0].Visible := TNTStringGrid1.Selection.Top >= 0;
+  if TNTStringGrid1.Selection.Top >= 0 then begin
+
+    Index := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.Selection.Top]));
+
+    if DynamicData.GetValue(Index, 'Favorite')
+      then PopupMenu2.Items[0].Items[2].Caption := 'Unfavorite'
+      else PopupMenu2.Items[0].Items[2].Caption := 'Favorite';
+  end;
+
+  if SettingsDB.ShowFavorites
+    then PopupMenu2.Items[1].Items[0].Caption := 'Hide Favorites'
+    else PopupMenu2.Items[1].Items[0].Caption := 'Show Favorites';
+
+  GetCursorPos(Point);
+  PopupMenu2.Popup(Point.X, Point.Y);
+end;
+
+
+procedure TForm1.TNTStringGrid1Exit(Sender: TObject);
+begin
+  TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
+end;
+
+
+procedure TForm1.TNTStringGrid1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+var
+  CanSelect: Boolean;
+  Row: Integer;
+begin
+  if (Key = VK_PRIOR) or (Key = VK_NEXT) then Key := 0;
+
+  if (Key = VK_DELETE) and (TNTStringGrid1.Selection.Top >= 0) then begin
+    Row := TNTStringGrid1.Selection.Top;
+    TriggerDelete := True;
+    TNTStringGrid1SelectCell(TNTStringGrid1, 3, TNTStringGrid1.Selection.Top, CanSelect);
+    TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
+    TriggerDelete := False;
+
+    if Row <> 0 then Row := Row-1;
+    if (TNTStringGrid1.RowCount = 1) and (TNTStringGrid1.Cells[4, 0] = '') then Exit;
+    if Row < TNTStringGrid1.TopRow then Scroll.Position := Row;
+    TNTStringGrid1.Selection := TGridRect(Rect(1,Row,1,Row));
+  end;
+end;
+
+
+procedure TForm1.Copy1Click(Sender: TObject);
+var
+  Index: Integer;
+begin
+  SaveClipboard := StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.Selection.Top]);
+  TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
+  Index := DynamicData.FindIndex('UID', SaveClipboard);
+  TNTClipboard.AsWideText := DynamicData.GetValue(Index, 'Content');
+end;
+
+
+procedure TForm1.Delete1Click(Sender: TObject);
+var
+  CanSelect: Boolean;
+begin
+  TriggerDelete := True;
+  TNTStringGrid1SelectCell(TNTStringGrid1, 3, TNTStringGrid1.Selection.Top, CanSelect);
+  TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
+  TriggerDelete := False;
+end;
+
+
+procedure TForm1.Favorite2Click(Sender: TObject);
+var
+  Index, Row: Int64;
+  isFavorite: Boolean;
+begin
+  Row := TNTStringGrid1.Selection.Top;
+  TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
+
+  Index := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, Row]));
+  isFavorite := DynamicData.GetValue(Index, 'Favorite');
+  DynamicData.SetValue(Index, 'Favorite', not isFavorite);
+  TNTStringGrid1.Cells[5, Row] := IntToStr(Integer(not isFavorite));
+  TNTStringGrid1.Repaint;
+end;
+
+
+procedure TForm1.ShowFavorites1Click(Sender: TObject);
+begin
+  TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
+  SettingsDB.ShowFavorites := not SettingsDB.ShowFavorites;
+  Scroll.Position := 0;
+
+  if SearchMode
+    then Search(TNTEdit1.Text)
+    else BuildList(0, 0, ItemsPerPage*2);
+end;
+
+
+procedure TForm1.ScrollChangeVertical(Sender: TObject);
 begin
   TNTStringGrid1.TopRow := Scroll.Position;
   CheckListEnding;
@@ -690,11 +729,7 @@ end;
 
 procedure TForm1.TNTStringGrid1MouseWheelDown(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
 begin
-  if TNTStringGrid1.RowCount = TNTStringGrid1.VisibleRowCount then begin
-    RowChanged := True;
-    Exit;
-  end;
-
+  if TNTStringGrid1.RowCount = TNTStringGrid1.VisibleRowCount then Exit;
   CheckListEnding;
 
   if TNTStringGrid1.TopRow + ROWS_PER_SCROLL > TNTStringGrid1.RowCount - ItemsPerPage
@@ -707,10 +742,7 @@ end;
 
 procedure TForm1.TNTStringGrid1MouseWheelUp(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
 begin
-  if TNTStringGrid1.RowCount = TNTStringGrid1.VisibleRowCount then begin
-    RowChanged := True;
-    Exit;
-  end;
+  if TNTStringGrid1.RowCount = TNTStringGrid1.VisibleRowCount then Exit;
 
   if TNTStringGrid1.TopRow - ROWS_PER_SCROLL < 0
     then TNTStringGrid1.TopRow := 0
@@ -786,7 +818,7 @@ begin
     Timer2.Enabled := False;
     SearchMode := False;
     Wait(100);
-    BuildList(SettingsDB.ClipboardTable, 0, ItemsPerPage*2);
+    BuildList(0, 0, ItemsPerPage*2);
     Result := True;
   end;
 end;
@@ -806,42 +838,44 @@ begin
 end;
 
 
-procedure TForm1.TNTStringGrid1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-begin
-  if (Key = VK_PRIOR) or (Key = VK_NEXT) then Key := 0;
-end;
-
-
 procedure TForm1.TNTStringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
+var
+  isFavorite: Boolean;
 begin
   TNTStringGrid1.Canvas.Font.Name := TNTStringGrid1.Font.Name;
   TNTStringGrid1.Canvas.Font.Size := TNTStringGrid1.Font.Size;
 
+  if TNTStringGrid1.Cells[5, ARow] <> ''
+    then isFavorite := Boolean(StrToInt(TNTStringGrid1.Cells[5, ARow]))
+    else isFavorite := False;
+
   if gdFixed in State then begin
     TNTStringGrid1.Canvas.Brush.Color := FLAT_STYLE_DOWN_COLOR;
     TNTStringGrid1.Canvas.Font.Color := clBlack;
-  end else
-  if gdSelected in State then begin
+  end else if gdSelected in State then begin
     TNTStringGrid1.Canvas.Brush.Color := FLAT_STYLE_BLUE;
     TNTStringGrid1.Canvas.Font.Color := clWhite;
+  end else if isFavorite then begin
+    TNTStringGrid1.Canvas.Brush.Color := $00D7FFFF;
+    TNTStringGrid1.Canvas.Font.Color := clBlack;
   end else begin
     TNTStringGrid1.Canvas.Brush.Color := $00FFFFFF;
     TNTStringGrid1.Canvas.Font.Color := clBlack;
   end;
 
   TNTStringGrid1.Canvas.FillRect(Rect);
-  WideCanvasTextOut(TNTStringGrid1.Canvas, Rect.Left + 3, Rect.Top + 2, TNTStringGrid1.Cells[ACol,ARow]);
+  WideCanvasTextOut(TNTStringGrid1.Canvas, Rect.Left+3, Rect.Top+2, TNTStringGrid1.Cells[ACol, ARow]);
 
   //Remove last pixels in col 1 (simulate eclipsis)
   if ACol = 1 then begin
-    Rect.Left := Rect.Left + ((Rect.Right - Rect.Left) - ECLIPSIS_SIZE);
+    Rect.Left := Rect.Left + ((Rect.Right-Rect.Left) - ECLIPSIS_SIZE);
     TNTStringGrid1.Canvas.FillRect(Rect);
   end;
 
   //Redraw col lines becasue WideCanvasTextOut overdraw them
   if ACol > 0 then begin
     Rect.Left := Rect.Right;
-    Rect.Right := Rect.Right + 1;
+    Rect.Right := Rect.Right+1;
     TNTStringGrid1.Canvas.Brush.Color := FLAT_STYLE_GRAY_COLOR;
     TNTStringGrid1.Canvas.FillRect(Rect);
   end;
@@ -867,4 +901,5 @@ initialization
   SettingsDB.TimeIndex := 4; //Time index in combobox
   SettingsDB.SizeIndex := 2; //Size index in combobox
   SettingsDB.AutoSaveIndex := 1; //AutoSave index in combobox
+  SettingsDB.ShowFavorites := False; //Show only favorites
 end.
