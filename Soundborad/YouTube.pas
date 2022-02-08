@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, SysUtils, WinInet, Variants, Classes, Graphics, Controls, Forms, StdCtrls,
-  TntStdCtrls, TFlatEditUnit, TFlatComboBoxUnit, uYouTubeYtDownload, TNTSystem, DateUtils,
-  Functions;
+  TNTStdCtrls, TNTSystem, TFlatEditUnit, TFlatComboBoxUnit, uYouTubeYtDownload, DateUtils,
+  uDynamicData, Functions;
 
 type
   TForm4 = class(TForm)
@@ -134,10 +134,10 @@ var
   Buffer: array[1..1024*100] of Byte;
   SavedDate: TDateTime;
   Origin: Cardinal;
-  BufferLen: DWORD;
+  BufferLen, i: DWORD;
   YouTubeMedia: PYouTubeMediaYtDownload;
   MemoryStream: TMemoryStream;
-  Memory: TMemory;
+  Memory: TArrayOfByte;
 begin
   ComponenetsEnabled(False);
 
@@ -153,7 +153,7 @@ begin
     EndThread(0);
   end;
 
-  if Length(SettingsDB.AudioTable) >= 999 then begin
+  if DynamicData.GetLength >= 999 then begin
     MessageBeep(MB_ICONEXCLAMATION);
     Windows.MessageBox(0, 'The limit of maximum sounds has been reached.', PChar(Form1.Caption), MB_OK);
     ComponenetsEnabled(True);
@@ -180,7 +180,7 @@ begin
       EndThread(0);
     end;
 
-    if (CountMemory(SettingsDB.AudioTable) + YouTubeMedia.Size) >= MAXIMUM_SIZE then begin
+    if (DynamicData.GetSize + YouTubeMedia.Size) >= MAXIMUM_SIZE then begin
       MemoryStream.Free;
       InternetCloseHandle(hSession);
       MessageBeep(MB_ICONEXCLAMATION);
@@ -205,10 +205,16 @@ begin
   MemoryStream.Read(Memory[0], MemoryStream.Size);
   MemoryStream.Free;
 
-  InsertToList(SettingsDB.AudioTable, Length(SettingsDB.AudioTable), Form4.Edit2.Text, '', YouTubeMedia.Exstension, False, Memory, False);
-  BuildList(SettingsDB.AudioTable);
-  Windows.Beep(700, 150);
+  DynamicData.CreateData(-1);
+  i := DynamicData.GetLength-1;
+  DynamicData.SetValue(i, 'FileName', '');
+  DynamicData.SetValue(i, 'Name', Form4.Edit2.Text);
+  DynamicData.SetValue(i, 'Exstension', YouTubeMedia.Exstension);
+  DynamicData.SetValue(i, 'Favorite', False);
+  DynamicData.SetValueArrayByte(i, 'Memory', Memory);
 
+  BuildList;
+  Windows.Beep(700, 150);
   ComponenetsEnabled(True);
   EndThread(0);
 end;

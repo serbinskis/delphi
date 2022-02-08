@@ -36,7 +36,7 @@ begin
 
   ProgressBar1.Position := 0;
   StaticText1.Caption := '0%';
-  StaticText1.Top := ProgressBar1.Top + 2;
+  StaticText1.Top := ProgressBar1.Top+2;
   StaticText1.Left := ProgressBar1.Left;
   StaticText1.Width := ProgressBar1.ClientWidth;
   StaticText1.Height := ProgressBar1.ClientHeight;

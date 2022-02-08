@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, ExtCtrls, Grids, Menus, Variants,
   ShellAPI, Registry, TNTDialogs, TNTClasses, TNTSysUtils, TNTGrids, TNTGraphics, XiTrackBar, TFlatCheckBoxUnit,
-  TFlatPanelUnit, ATScrollBar, DirectShow, cbAudioPlay, uKBDynamic, ZipForge, uHotKey, WinXP, Functions;
+  TFlatPanelUnit, ATScrollBar, DirectShow, cbAudioPlay, ZipForge, uHotKey, uDynamicData, WinXP, Functions;
 
 type
   TForm1 = class(TForm)
@@ -107,18 +107,6 @@ type
   end;
 
 type
-  TMemory = array of byte;
-
-  TAudio = record
-    FileName: WideString;
-    Name: WideString;
-    Exstension: WideString;
-    Favorite: Boolean;
-    Memory: TMemory;
-  end;
-
-  TAudioList = array of TAudio;
-
   THotKey = record
     Key: Integer;
     ShortCut: Integer;
@@ -133,7 +121,6 @@ type
     AlwaysNumLock: Boolean;
     StayOnTop: Boolean;
     SaveInMemory: Boolean;
-    AudioTable: TAudioList;
   end;
 
 const
@@ -144,7 +131,8 @@ const
   DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
   DEFAULT_KEY = '\Software\Soundboard';
   DEFAULT_HOTKEY_KEY = '\Software\Soundboard\HotKeys';
-  COL_WIDTH: array[0..1] of Integer = (30, 310);
+  SOUNDBOARD_EXTSENSION = '.snb';
+  COLS: array[0..1] of Integer = (30, 310);
   SCROLL_BY = 3;
 
 var
@@ -176,11 +164,12 @@ var
 
 var
   Form1: TForm1;
+  SettingsDB: TSettingsDB;
+  DynamicData: TDynamicData;
   PlayBitmap: TBitmap;
   PauseBitmap: TBitmap;
   StopBitmap: TBitmap;
   MicrophoneBitmap: TBitmap;
-  SettingsDB: TSettingsDB;
   AudioPlay1: TcbAudioPlay;
   AudioPlay2: TcbAudioPlay;
   ItemsPerPage: Integer;
@@ -189,9 +178,7 @@ var
   SearchString: WideString = '';
 
 procedure HotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
-procedure InsertToList(var A: TAudioList; const Index: Integer; Name, FileName, Exstension: WideString; Favorite: Boolean; Memory: TMemory; NewFile: Boolean);
-procedure BuildList(var A: TAudioList);
-function CountMemory(var A: TAudioList): Int64;
+procedure BuildList;
 
 implementation
 
@@ -202,8 +189,6 @@ uses Settings, Archiving, YouTube;
 //LoadSettings
 procedure LoadSettings;
 var
-  MemoryStream: TMemoryStream;
-  Registry: TRegistry;
   i: Integer;
 begin
   LoadRegistryString(SettingsDB.Device1, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Device1');
@@ -220,31 +205,8 @@ begin
   end;
 
   Form2.ComboBox3.ItemIndex := 0;
-  Registry := TRegistry.Create;
-  Registry.RootKey := DEFAULT_ROOT_KEY;
-  Registry.OpenKey(DEFAULT_KEY, True);
-
-  if Registry.ValueExists('Soundboard') then begin
-    MemoryStream := TMemoryStream.Create;
-    MemoryStream.SetSize(Registry.GetDataSize('Soundboard'));
-    Registry.ReadBinaryData('Soundboard', MemoryStream.Memory^, MemoryStream.Size);
-    MemoryStream.Position := 0;
-
-    try
-      TKBDynamic.ReadFrom(MemoryStream, SettingsDB.AudioTable, TypeInfo(TAudioList), 1);
-      MemoryStream.Free;
-    except
-      MessageBeep(MB_ICONEXCLAMATION);
-      ShowMessage('There was an error loading playlist.' + #13#10 +
-                  'Playlist may be corrupted or outdated.' + #13#10 +
-                  'The playlist will be reset.');
-      ZeroMemory(@SettingsDB.AudioTable, SizeOf(SettingsDB.AudioTable));
-      SetLength(SettingsDB.AudioTable, 0);
-      Registry.DeleteValue('Soundboard');
-    end;
-  end;
-
-  Registry.Free;
+  DynamicData := TDynamicData.Create(['FileName', 'Name', 'Exstension', 'Favorite', 'Memory']);
+  DynamicData.Load(False, False, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Soundboard', False);
 end;
 //LoadSettings
 
@@ -252,9 +214,6 @@ end;
 //SaveSettings
 procedure SaveSettings;
 var
-  MemoryStream: TMemoryStream;
-  lOptions: TKBDynamicOptions;
-  Registry: TRegistry;
   i: Integer;
 begin
   SaveRegistryString(SettingsDB.Device1, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Device1');
@@ -264,32 +223,11 @@ begin
   SaveRegistryBoolean(SettingsDB.StayOnTop, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'StayOnTop');
   SaveRegistryBoolean(SettingsDB.SaveInMemory, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SaveInMemory');
 
-  lOptions := [
-    kdoAnsiStringCodePage
-
-    {$IFDEF KBDYNAMIC_DEFAULT_UTF8}
-    ,kdoUTF16ToUTF8
-    {$ENDIF}
-
-    {$IFDEF KBDYNAMIC_DEFAULT_CPUARCH}
-    ,kdoCPUArchCompatibility
-    {$ENDIF}
-  ];
-
-  MemoryStream := TMemoryStream.Create;
-  TKBDynamic.WriteTo(MemoryStream, SettingsDB.AudioTable, TypeInfo(TAudioList), 1, lOptions);
-  MemoryStream.Position := 0;
-
-  Registry := TRegistry.Create;
-  Registry.RootKey := DEFAULT_ROOT_KEY;
-  Registry.OpenKey(DEFAULT_KEY, True);
-  Registry.WriteBinaryData('Soundboard', MemoryStream.Memory^, MemoryStream.Size);
-  Registry.Free;
-  MemoryStream.Free;
-
   for i := 0 to Length(HotKeys)-1 do begin
     SaveRegistryInteger(HotKeys[i].ShortCut, DEFAULT_ROOT_KEY, DEFAULT_HOTKEY_KEY, HotKeys[i].Name);
   end;
+
+  DynamicData.Save(False, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Soundboard');
 end;
 //SaveSettings
 
@@ -301,7 +239,7 @@ var
 begin
   Result := IntToStr(Num);
 
-  for i := Length(IntToStr(Num)) to Length(IntToStr(Length(SettingsDB.AudioTable)))-1 do begin
+  for i := Length(IntToStr(Num)) to Length(IntToStr(DynamicData.GetLength))-1 do begin
       Result := '0' + Result;
   end;
 end;
@@ -315,87 +253,26 @@ begin
 
   if (ComboBox.Items[ComboBox.ItemIndex] <> 'Disabled')
   or (ComboBox.Items[ComboBox.ItemIndex] <> 'Default')
-  then Result := ComboBox.ItemIndex - 2;
+  then Result := ComboBox.ItemIndex-2;
 end;
 //FormatDevice
 
 
-//DeleteFromList
-procedure DeleteFromList(var A: TAudioList; const Index: Integer);
-var
-  i, ArrayLength: Integer;
-begin
-  Form1.StopAudio;
-  ArrayLength := Length(A);
-
-  if Index = ArrayLength-1 then begin
-    SetLength(A, ArrayLength-1);
-  end else begin
-    for i := Index to Length(A)-2  do begin
-      A[i].FileName := A[i+1].FileName;
-      A[i].Name := A[i+1].Name;
-      A[i].Exstension := A[i+1].Exstension;
-      A[i].Favorite := A[i+1].Favorite;
-      A[i].Memory := A[i+1].Memory;
-    end;
-    SetLength(A, ArrayLength-1);
-  end;
-end;
-//DeleteFromList
-
-
-//InsertToList
-procedure InsertToList(var A: TAudioList; const Index: Integer; Name, FileName, Exstension: WideString; Favorite: Boolean; Memory: TMemory; NewFile: Boolean);
-var
-  i, ArrayLength: Integer;
-  MemoryStream: TTNTMemoryStream;
-begin
-  ArrayLength := Length(A);
-  SetLength(A, ArrayLength+1);
-
-  for i := Length(A)-1 downto Index+1 do begin
-    A[i].FileName := A[i-1].FileName;
-    A[i].Name := A[i-1].Name;
-    A[i].Exstension := A[i-1].Exstension;
-    A[i].Favorite := A[i-1].Favorite;
-    A[i].Memory := A[i-1].Memory;
-  end;
-
-  A[Index].FileName := FileName;
-  A[Index].Name := Name;
-  A[Index].Exstension := Exstension;
-  A[Index].Favorite := Favorite;
-  A[Index].Memory := nil;
-
-  if Memory <> nil then begin
-     A[Index].Memory := Memory;
-  end else begin
-    if (NewFile) and (SettingsDB.SaveInMemory) then begin
-      MemoryStream := TTNTMemoryStream.Create;
-      MemoryStream.LoadFromFile(FileName);
-      MemoryStream.Position := 0;
-      SetLength(A[Index].Memory, MemoryStream.Size);
-      MemoryStream.Read(A[Index].Memory[0], MemoryStream.Size);
-      MemoryStream.Free;
-
-      A[Index].FileName := '';
-    end;
-  end;
-end;
-//InsertToList
-
-
 //UpdateList
-procedure UpdateList(var A: TAudioList);
+procedure UpdateList;
 var
-  i: Integer;
+  i, Size: Integer;
+  FileName: WideString;
 begin
   Form1.StopAudio;
-  for i := 0 to Length(A)-1 do begin
-    if (not WideFileExists(A[i].FileName)) and (Length(A[i].Memory) <= 0) then begin
-      WideShowMessage('File is missing and will be deleted from list:' + #13#10 + WideExtractFileName(A[i].FileName));
-      DeleteFromList(SettingsDB.AudioTable, i);
-      UpdateList(SettingsDB.AudioTable);
+  for i := 0 to DynamicData.GetLength-1 do begin
+    Size := Length(DynamicData.GetValueArrayByte(i, 'Memory'));
+    FileName := DynamicData.GetValue(i, 'FileName');
+
+    if (not WideFileExists(FileName)) and (Size <= 0) then begin
+      WideShowMessage('File is missing and will be deleted from list:' + #13#10 + WideExtractFileName(FileName));
+      DynamicData.DeleteData(i);
+      UpdateList;
       Break;
     end;
   end;
@@ -404,15 +281,15 @@ end;
 
 
 //BuildList
-procedure BuildList(var A: TAudioList);
+procedure BuildList;
 var
   i: Integer;
 begin
-  if Length(A) > 0 then begin
-    Form1.TNTStringGrid1.ColWidths[0] := COL_WIDTH[0];
-    Form1.TNTStringGrid1.ColWidths[1] := COL_WIDTH[1];
+  if DynamicData.GetLength > 0 then begin
+    Form1.TNTStringGrid1.ColWidths[0] := COLS[0];
+    Form1.TNTStringGrid1.ColWidths[1] := COLS[1];
     Form1.TNTStringGrid1.GridLineWidth := 1;
-    Scroll.Max := Length(A);
+    Scroll.Max := DynamicData.GetLength
   end else begin
     Form1.TNTStringGrid1.ColWidths[0] := 0;
     Form1.TNTStringGrid1.ColWidths[1] := 0;
@@ -424,17 +301,18 @@ begin
     Exit;
   end;
 
-  if ItemsPerPage < Length(A)
+  if ItemsPerPage < DynamicData.GetLength
     then Scroll.Visible := True
     else Scroll.Visible := False;
 
-  Form1.TNTStringGrid1.RowCount := Length(A);
-  for i := 0 to Length(A)-1 do begin
+  Form1.TNTStringGrid1.RowCount := DynamicData.GetLength;
+  for i := 0 to DynamicData.GetLength-1 do begin
     Form1.TNTStringGrid1.Cells[0, i] := IntToStr(i+1);
-    if A[i].Favorite
-      then Form1.TNTStringGrid1.Cells[1, i] := '* ' + A[i].Name
-      else Form1.TNTStringGrid1.Cells[1, i] := A[i].Name;
-    if Length(A[i].Memory) > 0
+
+    if DynamicData.GetValue(i, 'Favorite')
+      then Form1.TNTStringGrid1.Cells[1, i] := '* ' + DynamicData.GetValue(i, 'Name')
+      else Form1.TNTStringGrid1.Cells[1, i] := DynamicData.GetValue(i, 'Name');
+    if Length(DynamicData.GetValueArrayByte(i, 'Memory')) > 0
       then Form1.TNTStringGrid1.Cells[1, i] := Form1.TNTStringGrid1.Cells[1, i] + ' [MEM]';
   end;
 end;
@@ -442,68 +320,71 @@ end;
 
 
 //CountFavorites
-function CountFavorites(var A: TAudioList): Integer;
+function CountFavorites: Integer;
 var
   i: Integer;
 begin
   Result := 0;
-  for i := 0 to Length(A)-1 do begin
-    if A[i].Favorite then Result := Result + 1;
+  for i := 0 to DynamicData.GetLength-1 do begin
+    if DynamicData.GetValue(i, 'Favorite') then Result := Result+1;
   end;
 end;
 //CountFavorites
-
-
-//CountMemory
-function CountMemory(var A: TAudioList): Int64;
-var
-  i: Integer;
-begin
-  Result := 0;
-  for i := 0 to Length(A)-1 do begin
-    Result := Result + Length(A[i].FileName);
-    Result := Result + Length(A[i].Name);
-    Result := Result + Length(A[i].Exstension);
-    Result := Result + 1; //Favorite -> Boolean -> 1 Byte
-    Result := Result + Length(A[i].Memory);
-  end;
-end;
-//CountMemory
 
 
 //ProcessFile
 function ProcessFile(FileName: WideString): Integer;
 var
   Name, Exstension: WideString;
-  Favorite: Boolean;
-  Size: Int64;
+  Size, i: Int64;
+  Memory: TArrayOfByte;
+  MemoryStream: TMemoryStream;
 begin
-    Result := 0;
+  Result := 0;
 
-    if Length(SettingsDB.AudioTable) >= 999 then begin
-      MessageBeep(MB_ICONEXCLAMATION);
-      ShowMessage('The limit of maximum sounds has been reached.');
-      Result := -1;
-      Exit;
+  if DynamicData.GetLength >= 999 then begin
+    MessageBeep(MB_ICONEXCLAMATION);
+    ShowMessage('The limit of maximum sounds has been reached.');
+    Result := -1;
+    Exit;
+  end;
+
+  Size := DynamicData.GetSize;
+  if SettingsDB.SaveInMemory then Size := Size + GetFileSize(FileName);
+
+  if Size >= MAXIMUM_SIZE then begin
+    MessageBeep(MB_ICONEXCLAMATION);
+    ShowMessage('The maximum size has been reached ' + FormatSize(MAXIMUM_SIZE, 0) + '.');
+    Result := -1;
+    Exit;
+  end;
+
+  if (ExtractFileExt(FileName) = '.mp3') or (ExtractFileExt(FileName) = '.wav') then begin
+    Name := TNT_WideStringReplace(WideExtractFileName(FileName), WideExtractFileExt(FileName), '', [rfReplaceAll, rfIgnoreCase]);
+    Exstension := WideLowerCase(WideExtractFileExt(FileName));
+
+    DynamicData.CreateData(-1);
+    i := DynamicData.GetLength-1;
+    DynamicData.SetValue(i, 'FileName', FileName);
+    DynamicData.SetValue(i, 'Name', Name);
+    DynamicData.SetValue(i, 'Exstension', Exstension);
+    DynamicData.SetValue(i, 'Favorite', False);
+    DynamicData.SetValueArrayByte(i, 'Memory', nil);
+
+    if SettingsDB.SaveInMemory then begin
+      MemoryStream := TMemoryStream.Create;
+      WriteFileToStream(MemoryStream, FileName);
+      MemoryStream.Position := 0;
+      SetLength(Memory, MemoryStream.Size);
+      MemoryStream.Read(Memory[0], MemoryStream.Size);
+      MemoryStream.Free;
+
+      DynamicData.SetValueArrayByte(i, 'Memory', Memory);
+      DynamicData.SetValue(i, 'FileName', '');
     end;
 
-    Size := CountMemory(SettingsDB.AudioTable);
-    if SettingsDB.SaveInMemory then Size := Size + GetFileSize(FileName);
-
-    if Size >= MAXIMUM_SIZE then begin
-      MessageBeep(MB_ICONEXCLAMATION);
-      ShowMessage('The maximum size has been reached ' + FormatSize(MAXIMUM_SIZE, 0) + '.');
-      Result := -1;
-      Exit;
-    end;
-
-    if (ExtractFileExt(FileName) = '.mp3') or (ExtractFileExt(FileName) = '.wav') then begin
-      Name := TNT_WideStringReplace(WideExtractFileName(FileName), WideExtractFileExt(FileName), '', [rfReplaceAll, rfIgnoreCase]);
-      Exstension := WideLowerCase(WideExtractFileExt(FileName));
-      Favorite := False;
-      InsertToList(SettingsDB.AudioTable, Length(SettingsDB.AudioTable), Name, FileName, Exstension, Favorite, nil, True);
-      Result := 1;
-    end;
+    Result := 1;
+  end;
 end;
 //ProcessFile
 
@@ -511,30 +392,34 @@ end;
 //PlayAudio
 procedure TForm1.PlayAudio;
 var
+  Row: Integer;
   FileName: WideString;
+  Memory: TArrayOfByte;
 begin
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
-  FileName := SettingsDB.AudioTable[TNTStringGrid1.Row].FileName;
+  Row := TNTStringGrid1.Row;
+  FileName := DynamicData.GetValue(Row, 'FileName');
+  Memory := DynamicData.GetValueArrayByte(Row, 'Memory');
 
   Image2.Hint := 'Pause';
   StopAudio;
 
-  if (not WideFileExists(FileName)) and (Length(SettingsDB.AudioTable[TNTStringGrid1.Row].Memory) <= 0) then begin
+  if (not WideFileExists(FileName)) and (Length(Memory) <= 0) then begin
     MessageBeep(MB_ICONEXCLAMATION);
-    WideShowMessage('File not found:' + #13#10 + SettingsDB.AudioTable[TNTStringGrid1.Row].Name);
+    WideShowMessage('File not found:' + #13#10 + DynamicData.GetValue(Row, 'Name'));
     Exit;
   end;
 
-  if (Length(SettingsDB.AudioTable[TNTStringGrid1.Row].Memory) > 0) then begin
+  if (Length(Memory) > 0) then begin
     if not DirectoryExists(GetEnvironmentVariable('TEMP')) then CreateDir(GetEnvironmentVariable('TEMP'));
-    FileName := GetEnvironmentVariable('TEMP') + '\' + RandomString(16, False) + SettingsDB.AudioTable[TNTStringGrid1.Row].Exstension;
-    SaveByteArray(SettingsDB.AudioTable[TNTStringGrid1.Row].Memory, FileName);
+    FileName := GetEnvironmentVariable('TEMP') + '\' + RandomString(16, False) + DynamicData.GetValue(Row, 'Exstension');
+    SaveByteArray(Memory, FileName);
   end;
 
   AudioPlay1 := TcbAudioPlay.Create(Self, FileName, FormatDevice(Form2.ComboBox1));
   AudioPlay2 := TcbAudioPlay.Create(Self, FileName, FormatDevice(Form2.ComboBox2));
 
-  if (Length(SettingsDB.AudioTable[TNTStringGrid1.Row].Memory) > 0) then DeleteFileW(PWideChar(FileName));
+  if (Length(Memory) > 0) then DeleteFileW(PWideChar(FileName));
   if Form2.ComboBox1.Items[Form2.ComboBox1.ItemIndex] <> 'Disabled' then AudioPlay1.Play;
   if Form2.ComboBox2.Items[Form2.ComboBox2.ItemIndex] <> 'Disabled' then AudioPlay2.Play;
 
@@ -618,47 +503,26 @@ end;
 procedure TForm1.Export1Click(Sender: TObject);
 var
   TNTSaveDialog: TTNTSaveDialog;
-  MemoryStream: TTNTMemoryStream;
-  lOptions: TKBDynamicOptions;
 begin
-  if Length(SettingsDB.AudioTable) <= 0 then begin
+  if DynamicData.GetLength <= 0 then begin
     ShowMessage('Cannot export empty playlist.');
     Exit;
   end;
 
   TNTSaveDialog := TTNTSaveDialog.Create(nil);
-  TNTSaveDialog.Filter := 'PLAYLIST Files|*.playlist';
+  TNTSaveDialog.Filter := 'Soundboard Files|*' + SOUNDBOARD_EXTSENSION;
   TNTSaveDialog.Options := [ofHideReadOnly, ofEnableSizing];
   TNTSaveDialog.Title := 'Soundboard: Export Playlist';
 
   if TNTSaveDialog.Execute then begin
-    if Pos('.', TNTSaveDialog.FileName) <= 0 then TNTSaveDialog.FileName := WideChangeFileExt(TNTSaveDialog.FileName, '.playlist');
+    if Pos('.', TNTSaveDialog.FileName) <= 0 then TNTSaveDialog.FileName := WideChangeFileExt(TNTSaveDialog.FileName, SOUNDBOARD_EXTSENSION);
 
-    lOptions := [
-      kdoAnsiStringCodePage
-
-      {$IFDEF KBDYNAMIC_DEFAULT_UTF8}
-      ,kdoUTF16ToUTF8
-      {$ENDIF}
-
-      {$IFDEF KBDYNAMIC_DEFAULT_CPUARCH}
-      ,kdoCPUArchCompatibility
-      {$ENDIF}
-    ];
-
-    MemoryStream := TTNTMemoryStream.Create;
-    TKBDynamic.WriteTo(MemoryStream, SettingsDB.AudioTable, TypeInfo(TAudioList), 1, lOptions);
-
-    if MemoryStream.Size > MAXIMUM_SIZE then begin
-      MemoryStream.Free;
+    if DynamicData.GetSize > MAXIMUM_SIZE then begin
       ShowMessage('Cannot export file bigger than ' + FormatSize(MAXIMUM_SIZE, 0) + '.');
       Exit;
     end;
 
-    MemoryStream.Position := 0;
-    MemoryStream.SaveToFile(TNTSaveDialog.FileName);
-    MemoryStream.Free;
-
+    DynamicData.Save(False, TNTSaveDialog.FileName);
     ShowMessage('Playlist exported.');
   end;
 end;
@@ -666,14 +530,12 @@ end;
 
 procedure TForm1.Import1Click(Sender: TObject);
 var
-  AudioList: TAudioList;
   TNTOpenDialog: TTNTOpenDialog;
-  MemoryStream: TTNTMemoryStream;
   srSearch: TWIN32FindDataW;
   FileSize: Int64;
 begin
   TNTOpenDialog := TTNTOpenDialog.Create(nil);
-  TNTOpenDialog.Filter := 'PLAYLIST Files|*.playlist';
+  TNTOpenDialog.Filter := 'Sounboard Files|*' + SOUNDBOARD_EXTSENSION;
   TNTOpenDialog.Options := [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing];
   TNTOpenDialog.Title := 'Soundboard: Import Playlist';
 
@@ -686,22 +548,15 @@ begin
       Exit;
     end;
 
-    MemoryStream := TTNTMemoryStream.Create;
-    MemoryStream.LoadFromFile(TNTOpenDialog.FileName);
-    MemoryStream.Position := 0;
+    DynamicData.Load(False, True, TNTOpenDialog.FileName, False);
 
-    TKBDynamic.ReadFrom(MemoryStream, AudioList, TypeInfo(TAUdioList), 1);
-    MemoryStream.Free;
-
-    if Length(AudioList) <= 0 then begin
+    if DynamicData.GetLength <= 0 then begin
       ShowMessage('There was an error importing playlist.');
       Exit;
     end;
 
-    SetLength(SettingsDB.AudioTable, 0);
-    SettingsDB.AudioTable := AudioList;
-    UpdateList(SettingsDB.AudioTable);
-    BuildList(SettingsDB.AudioTable);
+    UpdateList;
+    BuildList;
     TNTStringGrid1.Row := 0;
     Scroll.Position := 0;
 
@@ -713,12 +568,13 @@ end;
 procedure TForm1.SaveInArchive1Click(Sender: TObject);
 var
   i: Integer;
-  Name, FileName: WideString;
+  Name, FileName, Exstension: WideString;
+  Memory: TArrayOfByte;
   FileStream: TTNTFileStream;
   ZipArchive: TZipForge;
   TNTSaveDialog: TTNTSaveDialog;
 begin
-  if Length(SettingsDB.AudioTable) <= 0 then begin
+  if DynamicData.GetLength <= 0 then begin
     ShowMessage('Cannot save empty playlist.');
     Exit;
   end;
@@ -742,20 +598,24 @@ begin
     Form1.Enabled := False;
     Application.ProcessMessages;
 
-    for i := 0 to Length(SettingsDB.AudioTable)-1  do begin
-      if (Length(SettingsDB.AudioTable[i].Memory) > 0) then begin
-        Name := WideChangeFileExt(SettingsDB.AudioTable[i].Name, SettingsDB.AudioTable[i].Exstension);
-        ZipArchive.AddFromBuffer(FormatNumber(i+1) + ' - ' + Name, SettingsDB.AudioTable[i].Memory[0], Length(SettingsDB.AudioTable[i].Memory));
+    for i := 0 to DynamicData.GetLength-1  do begin
+      Name := DynamicData.GetValue(i, 'Name');
+      FileName := DynamicData.GetValue(i, 'FileName');
+      Exstension := DynamicData.GetValue(i, 'Exstension');
+      Memory := DynamicData.GetValueArrayByte(i, 'Memory');
+
+      if (Length(Memory) > 0) then begin
+        Name := WideChangeFileExt(Name, Exstension);
+        ZipArchive.AddFromBuffer(FormatNumber(i+1) + ' - ' + Name, Memory[0], Length(Memory));
       end else begin
-        FileName := SettingsDB.AudioTable[i].FileName;
         Name := FormatNumber(i+1) + ' - ' + WideExtractFileName(FileName);
         FileStream := TTNTFileStream.Create(FileName, fmOpenRead);
         ZipArchive.AddFromStream(Name, FileStream);
         FileStream.Free;
       end;
 
-      Form3.ProgressBar1.Position := Round((i+1)/Length(SettingsDB.AudioTable)*100);
-      Form3.StaticText1.Caption := IntToStr(Round((i+1)/Length(SettingsDB.AudioTable)*100)) + '%';
+      Form3.ProgressBar1.Position := Round((i+1)/DynamicData.GetLength*100);
+      Form3.StaticText1.Caption := IntToStr(Round((i+1)/DynamicData.GetLength*100)) + '%';
     end;
 
     Form3.ProgressBar1.Position := 100;
@@ -785,7 +645,7 @@ end;
 procedure TForm1.ExitWithoutSave1Click(Sender: TObject);
 begin
   //Heck it I am just too lazy to do it properly
-  TerminateProcess(OpenProcess(PROCESS_TERMINATE, False, GetCurrentProcessId), 0);
+  TerminateProcess(GetCurrentProcess, 0);
 end;
 
 
@@ -809,7 +669,7 @@ begin
   end;
 
   Panel1.Width := Form1.Width;
-  Panel1.Top := Form1.Height - 51;
+  Panel1.Top := Form1.Height-51;
   TNTStringGrid1.Height := Form1.Height - TNTStringGrid1.Top - 55;
   ItemsPerPage := Trunc(TNTStringGrid1.Height/(TNTStringGrid1.DefaultRowHeight + TNTStringGrid1.GridLineWidth));
 
@@ -829,13 +689,13 @@ begin
 
   Scroll.Min := 0;
   Scroll.Width := 16;
-  Scroll.Height := TNTStringGrid1.Height - 2;
-  Scroll.Top := TNTStringGrid1.Top + 1;
-  Scroll.Left := TNTStringGrid1.Width - (Scroll.Width div 2) - 1;
+  Scroll.Height := TNTStringGrid1.Height-2;
+  Scroll.Top := TNTStringGrid1.Top+1;
+  Scroll.Left := TNTStringGrid1.Width - (Scroll.Width div 2)-1;
   Scroll.PageSize := ItemsPerPage;
 
-  UpdateList(SettingsDB.AudioTable);
-  BuildList(SettingsDB.AudioTable);
+  UpdateList;
+  BuildList;
 
   PlayBitmap := TBitmap.Create;
   PlayBitmap.LoadFromResourceName(HInstance, 'Play');
@@ -925,7 +785,7 @@ begin
   FileCount := DragQueryFileW(hDrop, $FFFFFFFF, nil, 0);
 
   for i := 0 to FileCount-1 do begin
-    Len := DragQueryFileW(hDrop, i, nil, 0) + 1;
+    Len := DragQueryFileW(hDrop, i, nil, 0)+1;
     SetLength(FileName, Len);
     DragQueryFileW(hDrop, i, Pointer(FileName), Len);
     FileName := Trim(FileName);
@@ -936,8 +796,8 @@ begin
   end;
 
   if Count > 0 then begin
-    BuildList(SettingsDB.AudioTable);
-    TNTStringGrid1.Row := Length(SettingsDB.AudioTable)-1;
+    BuildList;
+    TNTStringGrid1.Row := DynamicData.GetLength-1;
   end;
 
   DragFinish(hDrop);
@@ -962,8 +822,8 @@ begin
       if ProcessFile(Strings[i]) = -1 then Break;;
     end;
 
-    BuildList(SettingsDB.AudioTable);
-    TNTStringGrid1.Row := Length(SettingsDB.AudioTable)-1;
+    BuildList;
+    TNTStringGrid1.Row := DynamicData.GetLength-1;
   end;
 end;                 
 
@@ -979,12 +839,13 @@ begin
   if (Key = VK_PRIOR) or (Key = VK_NEXT) then Key := 0;
 
   if (Key = VK_DELETE) and (TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] <> '') then begin
+    StopAudio;
     i := TNTStringGrid1.Row;
-    DeleteFromList(SettingsDB.AudioTable, i);
-    BuildList(SettingsDB.AudioTable);
-    if i <= TNTStringGrid1.RowCount - 1 then TNTStringGrid1.Row := i
-    else TNTStringGrid1.Row := TNTStringGrid1.RowCount - 1;
-    Scroll.Position := TNTStringGrid1.TopRow - 1;
+    DynamicData.DeleteData(i);
+    BuildList;
+    if i <= TNTStringGrid1.RowCount-1 then TNTStringGrid1.Row := i
+    else TNTStringGrid1.Row := TNTStringGrid1.RowCount-1;
+    Scroll.Position := TNTStringGrid1.TopRow-1;
     Exit;
   end;
 
@@ -996,15 +857,15 @@ begin
   if (Key <> VK_F3) or (SearchString = '') then Exit;
   Form1.Caption := SearchString;
 
-  for i := TNTStringGrid1.Row+1 to Length(SettingsDB.AudioTable)-1 do begin
-    if WideContainsString(SearchString, SettingsDB.AudioTable[i].Name, False) then begin
+  for i := TNTStringGrid1.Row+1 to DynamicData.GetLength-1 do begin
+    if WideContainsString(SearchString, DynamicData.GetValue(i, 'Name'), False) then begin
       TNTStringGrid1.Row := i;
       Exit;
     end;
   end;
 
   for i := 0 to TNTStringGrid1.Row-1 do begin
-    if WideContainsString(SearchString, SettingsDB.AudioTable[i].Name, False) then begin
+    if WideContainsString(SearchString, DynamicData.GetValue(i, 'Name'), False) then begin
       TNTStringGrid1.Row := i;
       Exit;
     end;
@@ -1027,7 +888,7 @@ begin
 
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
 
-  if Length(SettingsDB.AudioTable[TNTStringGrid1.Row].Memory) <= 0 then begin
+  if Length(DynamicData.GetValueArrayByte(TNTStringGrid1.Row, 'Memory')) <= 0 then begin
     PopupMenu1.Items[4].Items[1].Visible := True;
     PopupMenu1.Items[6].Visible := True;
     PopupMenu1.Items[7].Visible := True;
@@ -1043,48 +904,28 @@ end;
 
 procedure TForm1.MoveUp1Click(Sender: TObject);
 var
-  FileName, Name, Exstension: WideString;
-  Favorite: Boolean;
-  Memory: TMemory;
   i: Integer;
 begin
-  if TNTStringGrid1.Row = CountFavorites(SettingsDB.AudioTable) then Exit;
+  if TNTStringGrid1.Row = CountFavorites then Exit;
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
-
   i := TNTStringGrid1.Row;
-  FileName := SettingsDB.AudioTable[i].FileName;
-  Name := SettingsDB.AudioTable[i].Name;
-  Exstension := SettingsDB.AudioTable[i].Exstension;
-  Favorite := SettingsDB.AudioTable[i].Favorite;
-  Memory := SettingsDB.AudioTable[i].Memory;
 
-  DeleteFromList(SettingsDB.AudioTable, i);
-  InsertToList(SettingsDB.AudioTable, i-1, Name, FileName, Exstension, Favorite, Memory, False);
-  BuildList(SettingsDB.AudioTable);
+  DynamicData.MoveData(i, i-1);
+  BuildList;
   TNTStringGrid1.Row := i-1;
 end;
 
 
 procedure TForm1.MoveDown1Click(Sender: TObject);
 var
-  FileName, Name, Exstension: WideString;
-  Favorite: Boolean;
-  Memory: TMemory;
   i: Integer;
 begin
-  if TNTStringGrid1.Row = CountFavorites(SettingsDB.AudioTable)-1 then Exit;
+  if TNTStringGrid1.Row = CountFavorites-1 then Exit;
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
-
   i := TNTStringGrid1.Row;
-  FileName := SettingsDB.AudioTable[i].FileName;
-  Name := SettingsDB.AudioTable[i].Name;
-  Exstension := SettingsDB.AudioTable[i].Exstension;
-  Favorite := SettingsDB.AudioTable[i].Favorite;
-  Memory := SettingsDB.AudioTable[i].Memory;
 
-  DeleteFromList(SettingsDB.AudioTable, i);
-  InsertToList(SettingsDB.AudioTable, i+1, Name, FileName, Exstension, Favorite, Memory, False);
-  BuildList(SettingsDB.AudioTable);
+  DynamicData.MoveData(i, i+1);
+  BuildList;
   TNTStringGrid1.Row := i+1;
 end;
 
@@ -1092,34 +933,25 @@ end;
 procedure TForm1.MoveTo1Click(Sender: TObject);
 var
   Index: String;
-  FileName, Name, Exstension: WideString;
   Favorite: Boolean;
-  Memory: TMemory;
   i: Integer;
 begin
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
 
-  i := TNTStringGrid1.Row;
-  FileName := SettingsDB.AudioTable[i].FileName;
-  Name := SettingsDB.AudioTable[i].Name;
-  Exstension := SettingsDB.AudioTable[i].Exstension;
-  Favorite := SettingsDB.AudioTable[i].Favorite;
-  Memory := SettingsDB.AudioTable[i].Memory;
-
+  Favorite := DynamicData.GetValue(TNTStringGrid1.Row, 'Favorite');
   Index := Trim(WideInputBox('Move To', 'Position:', IntToStr(TNTStringGrid1.Row+1), Form1.Font));
   if (Index = '') or (Index = IntToStr(TNTStringGrid1.Row+1)) then Exit;
   for i := 1 to Length(Index) do if not (Index[i] in ['0'..'9']) then Exit;
   if (StrToInt(Index) <= 0) or (StrToInt(Index) > TNTStringGrid1.RowCount) then Exit;
 
   if Favorite then begin
-    if StrToInt(Index) > CountFavorites(SettingsDB.AudioTable) then Exit;
+    if StrToInt(Index) > CountFavorites then Exit;
   end else begin
-    if StrToInt(Index) <= CountFavorites(SettingsDB.AudioTable) then Exit;
+    if StrToInt(Index) <= CountFavorites then Exit;
   end;
 
-  DeleteFromList(SettingsDB.AudioTable, TNTStringGrid1.Row);
-  InsertToList(SettingsDB.AudioTable, StrToInt(Index)-1, Name, FileName, Exstension, Favorite, Memory, False);
-  BuildList(SettingsDB.AudioTable);
+  DynamicData.MoveData(TNTStringGrid1.Row, StrToInt(Index)-1);
+  BuildList;
   TNTStringGrid1.Row := StrToInt(Index)-1;
 end;
 
@@ -1132,38 +964,28 @@ begin
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
 
   i := TNTStringGrid1.Row;
-  CurrentName := SettingsDB.AudioTable[i].Name;
+  CurrentName := DynamicData.GetValue(i, 'Name');
   NewName := WideInputBox('Change Name', 'Name:', CurrentName, Form1.Font);
   NewName := Trim(TNT_WideStringReplace(NewName, '*', '', [rfReplaceAll, rfIgnoreCase]));
   if NewName = '' then Exit;
-  SettingsDB.AudioTable[i].Name := NewName;
+  DynamicData.SetValue(i, 'Name', NewName);
   TNTStringGrid1.Cells[TNTStringGrid1.Col, i] := TNT_WideStringReplace(TNTStringGrid1.Cells[TNTStringGrid1.Col, i], CurrentName, NewName, [rfReplaceAll, rfIgnoreCase]);
 end;
 
 
 procedure TForm1.Favorite1Click(Sender: TObject);
 var
-  FileName, Name, Exstension: WideString;
+  i: Integer;
   Favorite: Boolean;
-  Memory: TMemory;
 begin
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
+  Favorite := DynamicData.GetValue(TNTStringGrid1.Row, 'Favorite');
+  i := CountFavorites - Integer(Favorite);
 
-  FileName := SettingsDB.AudioTable[TNTStringGrid1.Row].FileName;
-  Name := SettingsDB.AudioTable[TNTStringGrid1.Row].Name;
-  Exstension := SettingsDB.AudioTable[TNTStringGrid1.Row].Exstension;
-  Favorite := not SettingsDB.AudioTable[TNTStringGrid1.Row].Favorite;
-  Memory := SettingsDB.AudioTable[TNTStringGrid1.Row].Memory;
-
-  DeleteFromList(SettingsDB.AudioTable, TNTStringGrid1.Row);
-  InsertToList(SettingsDB.AudioTable, CountFavorites(SettingsDB.AudioTable), Name, FileName, Exstension, Favorite, Memory, False);
-  BuildList(SettingsDB.AudioTable);
-
-  if Favorite then begin
-    TNTStringGrid1.Row := CountFavorites(SettingsDB.AudioTable)-1;
-  end else begin
-    TNTStringGrid1.Row := CountFavorites(SettingsDB.AudioTable);
-  end;
+  DynamicData.MoveData(TNTStringGrid1.Row, i);
+  DynamicData.SetValue(i, 'Favorite', not Favorite);
+  BuildList;
+  TNTStringGrid1.Row := i;
 end;
 
 
@@ -1187,7 +1009,7 @@ begin
 
   if buttonSelected = mrYes then begin
     Key := VK_DELETE;
-    FileName := SettingsDB.AudioTable[TNTStringGrid1.Row].FileName;
+    FileName := DynamicData.GetValue(TNTStringGrid1.Row, 'FileName');
     TNTStringGrid1KeyDown(nil, Key, []);
     DeleteFileW(PWideChar(FileName));
   end;
@@ -1199,7 +1021,7 @@ var
   Location: WideString;
 begin
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
-  Location := WideExtractFileDir(SettingsDB.AudioTable[TNTStringGrid1.Row].FileName);
+  Location := WideExtractFileDir(DynamicData.GetValue(TNTStringGrid1.Row, 'FileName'));
   ShellExecuteW(Handle, 'open', PWideChar(Location), nil, nil, SW_SHOW);
 end;
 
@@ -1208,14 +1030,14 @@ procedure TForm1.ConvertToMemory1Click(Sender: TObject);
 var
   FileName, Name: WideString;
   MemoryStream: TTNTMemoryStream;
-  Memory: TMemory;
+  Memory: TArrayOfByte;
 begin
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
   StopAudio;
 
-  FileName := SettingsDB.AudioTable[TNTStringGrid1.Row].FileName;
+  FileName := DynamicData.GetValue(TNTStringGrid1.Row, 'FileName');
 
-  if CountMemory(SettingsDB.AudioTable)+GetFileSize(FileName) >= MAXIMUM_SIZE then begin
+  if DynamicData.GetSize+GetFileSize(FileName) >= MAXIMUM_SIZE then begin
     MessageBeep(MB_ICONEXCLAMATION);
     ShowMessage('The maximum size has been reached ' + FormatSize(MAXIMUM_SIZE, 0) + '.');
     Exit;
@@ -1228,9 +1050,9 @@ begin
   MemoryStream.Read(Memory[0], MemoryStream.Size);
   MemoryStream.Free;
 
-  SettingsDB.AudioTable[TNTStringGrid1.Row].Memory := Memory;
-  SettingsDB.AudioTable[TNTStringGrid1.Row].FileName := '';
-  SettingsDB.AudioTable[TNTStringGrid1.Row].Exstension := WideLowerCase(WideExtractFileExt(FileName));
+  DynamicData.SetValueArrayByte(TNTStringGrid1.Row, 'Memory', Memory);
+  DynamicData.SetValue(TNTStringGrid1.Row, 'FileName', '');
+  DynamicData.SetValue(TNTStringGrid1.Row, 'Exstension', WideLowerCase(WideExtractFileExt(FileName)));
 
   Name := TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row];
   TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] := Name + ' [MEM]';
@@ -1239,16 +1061,18 @@ end;
 
 procedure TForm1.ConvertToFile1Click(Sender: TObject);
 var
+  i: Integer;
   Name, Exstension: WideString;
-  Memory: TMemory;
+  Memory: TArrayOfByte;
   TNTSaveDialog: TTNTSaveDialog;
 begin
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
   StopAudio;
 
-  Name := SettingsDB.AudioTable[TNTStringGrid1.Row].Name;
-  Exstension := SettingsDB.AudioTable[TNTStringGrid1.Row].Exstension;
-  Memory := SettingsDB.AudioTable[TNTStringGrid1.Row].Memory;
+  i := TNTStringGrid1.Row;
+  Name := DynamicData.GetValue(i, 'Name');
+  Exstension := DynamicData.GetValue(i, 'Exstension');
+  Memory := DynamicData.GetValueArrayByte(i, 'Memory');
 
   TNTSaveDialog := TTNTSaveDialog.Create(nil);
   TNTSaveDialog.FileName := Name;
@@ -1260,9 +1084,9 @@ begin
     if Pos('.', TNTSaveDialog.FileName) <= 0 then TNTSaveDialog.FileName := WideChangeFileExt(TNTSaveDialog.FileName, Exstension);
     SaveByteArray(Memory, TNTSaveDialog.FileName);
 
-    SettingsDB.AudioTable[TNTStringGrid1.Row].FileName := TNTSaveDialog.FileName;
-    SettingsDB.AudioTable[TNTStringGrid1.Row].Exstension := WideLowerCase(WideExtractFileExt(TNTSaveDialog.FileName));
-    SetLength(SettingsDB.AudioTable[TNTStringGrid1.Row].Memory, 0);
+    DynamicData.SetValue(i, 'FileName', TNTSaveDialog.FileName);
+    DynamicData.SetValue(i, 'Exstension', WideLowerCase(WideExtractFileExt(TNTSaveDialog.FileName)));
+    DynamicData.SetValueArrayByte(i, 'Memory', nil);
 
     Name := TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row];
     Name := TNT_WideStringReplace(Name, ' [MEM]', '', [rfReplaceAll, rfIgnoreCase]);
@@ -1273,17 +1097,19 @@ end;
 
 procedure TForm1.MakeaCopyToFile1Click(Sender: TObject);
 var
+  i: Integer;
   FileName: WideString;
   Name, Exstension: WideString;
-  Memory: TMemory;
+  Memory: TArrayOfByte;
   TNTSaveDialog: TTNTSaveDialog;
 begin
   if TNTStringGrid1.Cells[TNTStringGrid1.Col, TNTStringGrid1.Row] = '' then Exit;
 
-  FileName := SettingsDB.AudioTable[TNTStringGrid1.Row].FileName;
-  Name := SettingsDB.AudioTable[TNTStringGrid1.Row].Name;
-  Exstension := SettingsDB.AudioTable[TNTStringGrid1.Row].Exstension;
-  Memory := SettingsDB.AudioTable[TNTStringGrid1.Row].Memory;
+  i := TNTStringGrid1.Row;
+  FileName := DynamicData.GetValue(i, 'FileName');
+  Name := DynamicData.GetValue(i, 'Name');
+  Exstension := DynamicData.GetValue(i, 'Exstension');
+  Memory := DynamicData.GetValueArrayByte(i, 'Memory');
 
   TNTSaveDialog := TTNTSaveDialog.Create(nil);
   TNTSaveDialog.FileName := Name;
@@ -1365,7 +1191,7 @@ begin
       else AudioPlay1.Volume := TrackBar1.Position;
   end;
 
-  Percent :=  100 - (Round(TrackBar1.Position / DECREASE_MINIMUM_PERCENT) * -1);
+  Percent :=  100 - (Round(TrackBar1.Position/DECREASE_MINIMUM_PERCENT)*-1);
   TrackBar1.Hint := 'Volume: ' + IntToStr(Percent);
 
   if Percent > 70 then begin
@@ -1404,7 +1230,7 @@ begin
       else AudioPlay2.Volume := TrackBar2.Position;
   end;
 
-  Percent :=  100 - (Round(TrackBar2.Position / DECREASE_MINIMUM_PERCENT) * -1);
+  Percent :=  100 - (Round(TrackBar2.Position/DECREASE_MINIMUM_PERCENT)*-1);
   TrackBar2.Hint := 'Volume: ' + IntToStr(Percent);
 
   if Percent > 70 then begin
@@ -1463,20 +1289,20 @@ begin
   if FormHeight < MINIMUM_FORM_HEIGHT then Exit;
 
   Form1.Height := FormHeight;
-  Panel1.Top := Form1.Height - 51;
+  Panel1.Top := Form1.Height-51;
   TNTStringGrid1.Height := Form1.Height - TNTStringGrid1.Top - 55;
   ItemsPerPage := Trunc(TNTStringGrid1.Height/(TNTStringGrid1.DefaultRowHeight + TNTStringGrid1.GridLineWidth));
   Scroll.Height := TNTStringGrid1.Height-2;
   Scroll.PageSize := ItemsPerPage;
 
-  if TNTStringGrid1.TopRow + ItemsPerPage > Length(SettingsDB.AudioTable) then begin
-    NewTop := Length(SettingsDB.AudioTable) - ItemsPerPage;
+  if TNTStringGrid1.TopRow + ItemsPerPage > DynamicData.GetLength then begin
+    NewTop := DynamicData.GetLength-ItemsPerPage;
     if NewTop < 0 then NewTop := 0;
     TNTStringGrid1.TopRow := NewTop;
     Scroll.Position := TNTStringGrid1.TopRow;
   end;
 
-  if ItemsPerPage < Length(SettingsDB.AudioTable)
+  if ItemsPerPage < DynamicData.GetLength
     then Scroll.Visible := True
     else Scroll.Visible := False;
 end;
@@ -1497,7 +1323,7 @@ var
 begin
   for i := 1 to SCROLL_BY do begin
     if (TNTStringGrid1.RowCount - TNTStringGrid1.TopRow) > ItemsPerPage then begin
-      TNTStringGrid1.TopRow := TNTStringGrid1.TopRow + 1;
+      TNTStringGrid1.TopRow := TNTStringGrid1.TopRow+1;
       Scroll.Position := TNTStringGrid1.TopRow;
     end;
   end;
@@ -1512,7 +1338,7 @@ var
 begin
   for i := 1 to SCROLL_BY do begin
     if TNTStringGrid1.TopRow <> 0 then begin
-      TNTStringGrid1.TopRow := TNTStringGrid1.TopRow - 1;
+      TNTStringGrid1.TopRow := TNTStringGrid1.TopRow-1;
       Scroll.Position := TNTStringGrid1.TopRow;
     end;
   end;
@@ -1565,7 +1391,7 @@ begin
 
   if StaticText1.Caption <> '' then begin
     if (StrToInt(StaticText1.Caption) > 0) and (StrToInt(StaticText1.Caption) <= TNTStringGrid1.RowCount) then begin
-      TNTStringGrid1.Row := StrToInt(StaticText1.Caption) - 1;
+      TNTStringGrid1.Row := StrToInt(StaticText1.Caption)-1;
       StaticText1.Caption := '';
     end else begin
       StaticText1.Caption := '';
@@ -1593,7 +1419,7 @@ begin
   end;
 
   TNTStringGrid1.Canvas.FillRect(Rect);
-  WideCanvasTextOut(TNTStringGrid1.Canvas, Rect.Left + 3, Rect.Top + 2, TNTStringGrid1.Cells[ACol,ARow]);
+  WideCanvasTextOut(TNTStringGrid1.Canvas, Rect.Left+3, Rect.Top+2, TNTStringGrid1.Cells[ACol,ARow]);
 end;
 
 
