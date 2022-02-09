@@ -203,7 +203,7 @@ begin
 
   for i := DynamicData.GetLength-1 downto 0 do begin
     if SecondsBetween(DynamicData.GetValue(i, 'DateTime'), DateNow) < SettingsDB.RemoveAfter then Break;
-    if not DynamicData.GetValue(i, 'Favorite') then DynamicData.SetLength(DynamicData.GetLength-1);
+    if not DynamicData.GetValue(i, 'Favorite') then DynamicData.DeleteData(i);
   end;
 end;
 //UpdateList
