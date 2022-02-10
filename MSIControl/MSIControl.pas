@@ -250,10 +250,11 @@ procedure QueryShutdown(BS: TBlockShutdown);
 var
   CloseAction: TCloseAction;
 begin
-  BS.CreateReason('Saving settings...');
+  BS.CreateReason('Disabling drivers...');
   CloseAction := caNone;
   Form1.FormClose(nil, CloseAction);
   BS.DestroyReason;
+  TerminateProcess(GetCurrentProcess, 0);
 end;
 
 
