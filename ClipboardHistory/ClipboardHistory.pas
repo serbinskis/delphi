@@ -92,6 +92,7 @@ type
     procedure TrayIcon1Action(Sender: TObject; Code: Integer);
     procedure Restart1Click(Sender: TObject);
     procedure TNTStringGrid1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure TNTStringGrid1DblClick(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
     procedure Delete1Click(Sender: TObject);
     procedure Favorite2Click(Sender: TObject);
@@ -106,6 +107,7 @@ type
     procedure DisableClipboard;
     procedure EnableClipboard;
     function CheckEmpty: Boolean;
+    procedure DeleteRow(ARow: Integer);
   private
     { Private declarations }
   public
@@ -122,7 +124,6 @@ var
   SaveClipboard: Int64 = 0;
   AllowClipboard: Boolean = True;
   SearchMode: Boolean = False;
-  TriggerDelete: Boolean = False;
   AppInactive: Boolean = False;
 
 implementation
@@ -347,6 +348,8 @@ end;
 
 //BuildList
 procedure TForm1.BuildList(ListIndex, ArrayIndex, Count: Integer);
+var
+  isFavorite: Boolean;
 label
   TryAgain;
 begin
@@ -372,8 +375,12 @@ TryAgain:
     goto TryAgain;
   end;
 
+  if TNTStringGrid1.Cells[5, 0] <> ''
+    then isFavorite := Boolean(StrToInt(TNTStringGrid1.Cells[5, 0]))
+    else isFavorite := False;
+
   StaticText1.Caption := TOTAL_ITEMS + IntToStr(DynamicData.GetLength);
-  PrepareList(TNTStringGrid1.RowCount);
+  PrepareList(TNTStringGrid1.RowCount*Integer(not (SettingsDB.ShowFavorites and not isFavorite)))
 end;
 //BuildList
 
@@ -523,7 +530,8 @@ begin
 
   if SaveClipboard <> 0 then begin
     Index := DynamicData.FindIndex('UID', SaveClipboard);
-    isFavorite := DynamicData.GetValue(Index, 'Favorite');
+    isFavorite := False;
+    if Index > 0 then isFavorite := DynamicData.GetValue(Index, 'Favorite');
     if Index > 0 then DynamicData.DeleteData(Index);
     ClipboardChanged(Msg);
     DynamicData.SetValue(0, 'Favorite', isFavorite);
@@ -576,69 +584,99 @@ begin
 end;
 
 
-procedure TForm1.TNTStringGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
+procedure TForm1.DeleteRow(ARow: Integer);
 var
   Index: Integer;
   LastIndex: Integer;
 begin
+  Index := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, ARow]));
+  LastIndex := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.RowCount-1]))-1;
+  PrepareList(TNTStringGrid1.RowCount-1);
+  THackGrid(TNTStringGrid1).DeleteRow(ARow);
+  DynamicData.DeleteData(Index);
+  TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
+
+  if not SearchMode
+    then BuildList(TNTStringGrid1.RowCount, LastIndex+1, 1)
+    else StaticText1.Caption := TOTAL_FOUND + IntToStr(StrToInt(StringReplace(StaticText1.Caption, TOTAL_FOUND, '', [rfReplaceAll, rfIgnoreCase]))-1);
+
+  if SearchMode and (Index > TNTStringGrid1.RowCount-ItemsPerPage) then begin
+    if TNTStringGrid1.TopRow - 1 < 0 then Exit;
+    TNTStringGrid1.TopRow :=  TNTStringGrid1.TopRow - 1;
+    Scroll.Position := Scroll.Position - 1;
+  end;
+
+  if (not SearchMode) and (Index > DynamicData.GetLength-ItemsPerPage) then begin
+    if TNTStringGrid1.TopRow-1 < 0 then Exit;
+    TNTStringGrid1.TopRow :=  TNTStringGrid1.TopRow-1;
+    Scroll.Position := Scroll.Position-1;
+  end;
+end;
+
+
+procedure TForm1.TNTStringGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
+begin
   CanSelect := False;
-  if (not TriggerDelete) and (not (GetKeyState(VK_LBUTTON) < 0)) then Exit; //This used to cancel second event when button gets released
-  if (not TriggerDelete) then Mouse_Event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0); //Release mouse button so event doesn't happen infinite times
+  if ACol = 3 then Exit;
+  if not (GetKeyState(VK_LBUTTON) < 0) then Exit; //This used to cancel second event when button gets released
+  Mouse_Event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0); //Release mouse button so event doesn't happen infinite times
 
-  if ACol = 3 then begin
-    Index := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, ARow]));
-    LastIndex := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.RowCount-1]))-1;
-    PrepareList(TNTStringGrid1.RowCount-1);
-    THackGrid(TNTStringGrid1).DeleteRow(ARow);
-    DynamicData.DeleteData(Index);
-    TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
+  if ACol = 1 then TNTStringGrid1.Selection := TGridRect(Rect(1,ARow,1,ARow));
+end;
 
-    if not SearchMode
-      then BuildList(TNTStringGrid1.RowCount, LastIndex+1, 1)
-      else StaticText1.Caption := TOTAL_FOUND + IntToStr(StrToInt(StringReplace(StaticText1.Caption, TOTAL_FOUND, '', [rfReplaceAll, rfIgnoreCase]))-1);
 
-    if SearchMode and (Index > TNTStringGrid1.RowCount-ItemsPerPage) then begin
-      if TNTStringGrid1.TopRow - 1 < 0 then Exit;
-      TNTStringGrid1.TopRow :=  TNTStringGrid1.TopRow - 1;
-      Scroll.Position := Scroll.Position - 1;
-    end;
+procedure TForm1.TNTStringGrid1DblClick(Sender: TObject);
+var
+  Point: TPoint;
+  ACol, ARow: Integer;
+begin
+  if TNTStringGrid1.Selection.Top < 0 then Exit;
+  if TNTStringGrid1.Selection.Left <> 1 then Exit;
+  if TNTStringGrid1.Selection.Right <> 1 then Exit;
 
-    if (not SearchMode) and (Index > DynamicData.GetLength-ItemsPerPage) then begin
-      if TNTStringGrid1.TopRow-1 < 0 then Exit;
-      TNTStringGrid1.TopRow :=  TNTStringGrid1.TopRow-1;
-      Scroll.Position := Scroll.Position-1;
-    end;
-  end;
+  ACol := TNTStringGrid1.Selection.Left;
+  ARow := TNTStringGrid1.Selection.Top;
+  Point := TNTStringGrid1.ScreenToClient(Mouse.CursorPos);
 
-  if ACol = 1 then begin
-    TNTStringGrid1.Selection := TGridRect(Rect(1,ARow,1,ARow));
-  end;
+  if PtInRect(TNTStringGrid1.CellRect(ACol, ARow), Point) then Copy1Click(nil);
 end;
 
 
 procedure TForm1.TNTStringGrid1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   Point: TPoint;
-  Index: Integer;
+  i, Index: Integer;
 begin
-  if Button <> mbRight then Exit;
+  if Button = mbLeft then begin
+    Point := TNTStringGrid1.ScreenToClient(Mouse.CursorPos);
 
-  PopupMenu2.Items[0].Visible := TNTStringGrid1.Selection.Top >= 0;
-  if TNTStringGrid1.Selection.Top >= 0 then begin
-
-    Index := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.Selection.Top]));
-
-    if DynamicData.GetValue(Index, 'Favorite')
-      then PopupMenu2.Items[0].Items[2].Caption := 'Unfavorite'
-      else PopupMenu2.Items[0].Items[2].Caption := 'Favorite';
+    for i := TNTStringGrid1.TopRow to TNTStringGrid1.TopRow+TNTStringGrid1.VisibleRowCount+1 do begin
+      if PtInRect(TNTStringGrid1.CellRect(3, i), Point) then begin
+        DeleteRow(i);
+        Break;
+      end;
+    end;
   end;
 
-  if SettingsDB.ShowFavorites
-    then PopupMenu2.Items[1].Items[0].Caption := 'Hide Favorites'
-    else PopupMenu2.Items[1].Items[0].Caption := 'Show Favorites';
 
-  GetCursorPos(Point);
-  PopupMenu2.Popup(Point.X, Point.Y);
+  if Button = mbRight then begin
+    PopupMenu2.Items[0].Visible := TNTStringGrid1.Selection.Top >= 0;
+
+    if TNTStringGrid1.Selection.Top >= 0 then begin
+      Index := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.Selection.Top]));
+
+      if DynamicData.GetValue(Index, 'Favorite')
+        then PopupMenu2.Items[0].Items[2].Caption := 'Unfavorite'
+        else PopupMenu2.Items[0].Items[2].Caption := 'Favorite';
+    end;
+
+    if SettingsDB.ShowFavorites
+      then PopupMenu2.Items[1].Items[0].Caption := 'Hide Favorites'
+      else PopupMenu2.Items[1].Items[0].Caption := 'Show Favorites';
+
+    GetCursorPos(Point);
+    PopupMenu2.Popup(Point.X, Point.Y);
+  end;
 end;
 
 
@@ -650,22 +688,49 @@ end;
 
 procedure TForm1.TNTStringGrid1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
-  CanSelect: Boolean;
   Row: Integer;
+  isScrolledDown: Boolean;
 begin
   if (Key = VK_PRIOR) or (Key = VK_NEXT) then Key := 0;
 
   if (Key = VK_DELETE) and (TNTStringGrid1.Selection.Top >= 0) then begin
     Row := TNTStringGrid1.Selection.Top;
-    TriggerDelete := True;
-    TNTStringGrid1SelectCell(TNTStringGrid1, 3, TNTStringGrid1.Selection.Top, CanSelect);
+    DeleteRow(Row);
     TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
-    TriggerDelete := False;
 
-    if Row <> 0 then Row := Row-1;
+    if Row >= TNTStringGrid1.RowCount then Row := Row-1;
     if (TNTStringGrid1.RowCount = 1) and (TNTStringGrid1.Cells[4, 0] = '') then Exit;
     if Row < TNTStringGrid1.TopRow then Scroll.Position := Row;
     TNTStringGrid1.Selection := TGridRect(Rect(1,Row,1,Row));
+
+    isScrolledDown := (Row < TNTStringGrid1.TopRow);
+    if isScrolledDown or (Row+1 > (TNTStringGrid1.TopRow + ItemsPerPage-1)) then begin
+      Scroll.Position := Row - (ItemsPerPage-1);
+      TNTStringGrid1.Repaint;
+    end;
+  end;
+
+  if (Key = VK_DOWN) then begin
+    Row := TNTStringGrid1.Selection.Top;
+    if Row < 0 then Exit;
+    if Row+1 >= TNTStringGrid1.RowCount then Exit;
+    TNTStringGrid1.Selection := TGridRect(Rect(1,Row+1,1,Row+1));
+
+    isScrolledDown := (Row-1 < TNTStringGrid1.TopRow);
+    if isScrolledDown or (Row+1 > (TNTStringGrid1.TopRow + ItemsPerPage-1)) then begin
+      Scroll.Position := Row - (ItemsPerPage-2);
+      TNTStringGrid1.Repaint;
+    end;
+  end;
+
+  if (Key = VK_UP) then begin
+    Row := TNTStringGrid1.Selection.Top;
+    if Row <= 0 then Exit;
+    TNTStringGrid1.Selection := TGridRect(Rect(1,Row-1,1,Row-1));
+
+    if Row-1 < TNTStringGrid1.TopRow then begin
+      Scroll.Position := Row-1;
+    end;
   end;
 end;
 
@@ -682,13 +747,9 @@ end;
 
 
 procedure TForm1.Delete1Click(Sender: TObject);
-var
-  CanSelect: Boolean;
 begin
-  TriggerDelete := True;
-  TNTStringGrid1SelectCell(TNTStringGrid1, 3, TNTStringGrid1.Selection.Top, CanSelect);
+  DeleteRow(TNTStringGrid1.Selection.Top);
   TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
-  TriggerDelete := False;
 end;
 
 

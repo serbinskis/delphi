@@ -51,6 +51,7 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssNone
     TabOrder = 0
+    OnDblClick = TNTStringGrid1DblClick
     OnDrawCell = TNTStringGrid1DrawCell
     OnExit = TNTStringGrid1Exit
     OnKeyDown = TNTStringGrid1KeyDown
