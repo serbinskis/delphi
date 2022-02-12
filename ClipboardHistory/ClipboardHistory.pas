@@ -531,7 +531,7 @@ begin
   if SaveClipboard <> 0 then begin
     Index := DynamicData.FindIndex('UID', SaveClipboard);
     isFavorite := False;
-    if Index > 0 then isFavorite := DynamicData.GetValue(Index, 'Favorite');
+    if Index > -1 then isFavorite := DynamicData.GetValue(Index, 'Favorite');
     if Index > 0 then DynamicData.DeleteData(Index);
     ClipboardChanged(Msg);
     DynamicData.SetValue(0, 'Favorite', isFavorite);
