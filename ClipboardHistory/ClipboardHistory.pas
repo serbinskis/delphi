@@ -689,7 +689,7 @@ end;
 procedure TForm1.TNTStringGrid1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
   Row: Integer;
-  isScrolledDown: Boolean;
+  isScrolledOut: Boolean;
 begin
   if (Key = VK_PRIOR) or (Key = VK_NEXT) then Key := 0;
 
@@ -703,8 +703,8 @@ begin
     if Row < TNTStringGrid1.TopRow then Scroll.Position := Row;
     TNTStringGrid1.Selection := TGridRect(Rect(1,Row,1,Row));
 
-    isScrolledDown := (Row < TNTStringGrid1.TopRow);
-    if isScrolledDown or (Row+1 > (TNTStringGrid1.TopRow + ItemsPerPage-1)) then begin
+    isScrolledOut := (Row < TNTStringGrid1.TopRow);
+    if isScrolledOut or (Row+1 > (TNTStringGrid1.TopRow + ItemsPerPage-1)) then begin
       Scroll.Position := Row - (ItemsPerPage-1);
       TNTStringGrid1.Repaint;
     end;
@@ -716,8 +716,8 @@ begin
     if Row+1 >= TNTStringGrid1.RowCount then Exit;
     TNTStringGrid1.Selection := TGridRect(Rect(1,Row+1,1,Row+1));
 
-    isScrolledDown := (Row-1 < TNTStringGrid1.TopRow);
-    if isScrolledDown or (Row+1 > (TNTStringGrid1.TopRow + ItemsPerPage-1)) then begin
+    isScrolledOut := (Row < TNTStringGrid1.TopRow);
+    if isScrolledOut or (Row+1 > (TNTStringGrid1.TopRow + ItemsPerPage-1)) then begin
       Scroll.Position := Row - (ItemsPerPage-2);
       TNTStringGrid1.Repaint;
     end;
@@ -728,8 +728,10 @@ begin
     if Row <= 0 then Exit;
     TNTStringGrid1.Selection := TGridRect(Rect(1,Row-1,1,Row-1));
 
-    if Row-1 < TNTStringGrid1.TopRow then begin
+    isScrolledOut := (Row > (TNTStringGrid1.TopRow + ItemsPerPage-1));
+    if isScrolledOut or (Row-1 < TNTStringGrid1.TopRow) then begin
       Scroll.Position := Row-1;
+      TNTStringGrid1.Repaint;
     end;
   end;
 end;
