@@ -125,6 +125,7 @@ var
   AllowClipboard: Boolean = True;
   SearchMode: Boolean = False;
   AppInactive: Boolean = False;
+  SavedSearch: WideString;
 
 implementation
 
@@ -881,9 +882,12 @@ begin
     Timer2.Enabled := False;
     SearchMode := False;
     Wait(100);
-    BuildList(0, 0, ItemsPerPage*2);
+    if (SavedSearch <> '') then BuildList(0, 0, ItemsPerPage*2);
+    if (SavedSearch <> '') then Scroll.Position := 0;
     Result := True;
   end;
+
+  SavedSearch := TNTEdit1.Text;
 end;
 
 
