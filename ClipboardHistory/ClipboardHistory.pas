@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
   ExtCtrls, MMSystem, Grids, Menus, Registry, DateUtils, ShellAPI, TNTSysUtils, TNTGrids,
-  TNTClipBrd, TNTGraphics, TNTStdCtrls, TNTSystem, ATScrollBar, TFlatComboBoxUnit,
+  TNTClipBrd, TNTGraphics, TNTStdCtrls, TNTSystem, TNTDialogs, ATScrollBar, TFlatComboBoxUnit,
   TFlatCheckBoxUnit, uQueryShutdown, CustoTrayIcon, uDynamicData, Functions;
 
 const
@@ -35,6 +35,8 @@ type
     SizeIndex: Integer;
     AutoSaveIndex: Integer;
     ShowFavorites: Boolean;
+    ShowBySize: Int64;
+    ShowEquality: Integer;
   end;
 
 type
@@ -66,6 +68,8 @@ type
     Favorite2: TMenuItem;
     Delete1: TMenuItem;
     Copy1: TMenuItem;
+    ShowBySize1: TMenuItem;
+    StaticText3: TStaticText;
     procedure FormShow(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -108,6 +112,8 @@ type
     procedure EnableClipboard;
     function CheckEmpty: Boolean;
     procedure DeleteRow(ARow: Integer);
+    procedure ShowBySize1Click(Sender: TObject);
+    procedure StaticText3Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -126,6 +132,7 @@ var
   SearchMode: Boolean = False;
   AppInactive: Boolean = False;
   SavedSearch: WideString;
+  doSelect: Boolean = True;
 
 implementation
 
@@ -159,6 +166,7 @@ end;
 //SaveSettings
 procedure SaveSettings;
 begin
+  Form1.TrayIcon1.Icon := LoadIcon(HInstance, 'SAVING');
   SaveRegistryBoolean(SettingsDB.Monitoring, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Monitoring');
   SaveRegistryInteger(SettingsDB.MaxItems, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxItems');
   SaveRegistryInteger(SettingsDB.MaxSize, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxSize');
@@ -173,6 +181,7 @@ begin
   SaveRegistryInteger(SettingsDB.AutoSaveIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'AutoSaveIndex');
 
   DynamicData.Save(DO_COMPRESS, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'History');
+  Form1.TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
 end;
 //SaveSettings
 
@@ -225,7 +234,7 @@ end;
 //ClipboardUpdate
 procedure ClipboardUpdate;
 begin
-  Form1.TrayIcon1.Icon := LoadIcon(HInstance, 'RED');
+  Form1.TrayIcon1.Icon := LoadIcon(HInstance, 'NEW_TEXT');
   Wait(1000);
   Form1.TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
   EndThread(0);
@@ -270,6 +279,68 @@ begin
   if x >= (1024*1024) then Result := Format('%d MB', [Round(x/(1024*1024))]);
 end;
 //FormatSize
+
+
+//GetFormatBySize
+function GetFormatBySize: String;
+begin
+  Result := '';
+
+  if SettingsDB.ShowBySize <> 0 then begin
+    Result := IntToStr(SettingsDB.ShowBySize) + 'B';
+    if (SettingsDB.ShowBySize mod 1024) = 0 then Result := IntToStr(Round(SettingsDB.ShowBySize/1024)) + 'K';
+    if (SettingsDB.ShowBySize mod (1024*1024)) = 0 then Result := IntToStr(Round(SettingsDB.ShowBySize/(1024*1024))) + 'M';
+
+    case SettingsDB.ShowEquality of
+      0: Result := '=' + Result;
+      1: Result := '>' + Result;
+      2: Result := '<' + Result;
+    end;
+  end;
+end;
+//GetFormatBySize
+
+
+//SetFormatBySize
+function SetFormatBySize(S: String): Boolean;
+var
+  i, Multiplier: Integer;
+  ShowEquality: Integer;
+begin
+  Result := False;
+
+  if S = '' then begin
+    SettingsDB.ShowBySize := 0;
+    Result := True;
+    Exit;
+  end;
+
+  case Ord(S[1]) of
+    Ord('='): ShowEquality := 0;
+    Ord('>'): ShowEquality := 1;
+    Ord('<'): ShowEquality := 2;
+  else Exit;
+  end;
+
+  case Ord(S[Length(S)]) of
+    Ord('B'): Multiplier := 1;
+    Ord('K'): Multiplier := 1024;
+    Ord('M'): Multiplier := 1024*1024;
+  else Exit;
+  end;
+
+  try
+    i := StrToInt(Copy(S, 2, Length(S)-2));
+  except
+    Exit;
+  end;
+
+  if (i > 1024) or (i < 0) then Exit;
+  SettingsDB.ShowBySize := i*Multiplier;
+  SettingsDB.ShowEquality := ShowEquality;
+  Result := True;
+end;
+//SetFormatBySize
 
 
 //AddItem
@@ -351,6 +422,8 @@ end;
 procedure TForm1.BuildList(ListIndex, ArrayIndex, Count: Integer);
 var
   isFavorite: Boolean;
+  isMatchingSize: Boolean;
+  Content: WideString;
 label
   TryAgain;
 begin
@@ -360,9 +433,22 @@ begin
     Exit;
   end;
 
+  if ListIndex = 0 then TNTStringGrid1.Rows[0].Clear;
+
 TryAgain:
   if (Count > 0) and (ArrayIndex+1 <= DynamicData.GetLength) then begin;
-    if SettingsDB.ShowFavorites and not DynamicData.GetValue(ArrayIndex, 'Favorite') then begin
+    isMatchingSize := (SettingsDB.ShowBySize = 0);
+
+    if not isMatchingSize then begin
+      Content := DynamicData.GetValue(ArrayIndex, 'Content');
+      case SettingsDB.ShowEquality of
+        0: isMatchingSize := (Length(Content) = SettingsDB.ShowBySize);
+        1: isMatchingSize := (Length(Content) > SettingsDB.ShowBySize);
+        2: isMatchingSize := (Length(Content) < SettingsDB.ShowBySize);
+      end;
+    end;
+
+    if not isMatchingSize or (SettingsDB.ShowFavorites and not DynamicData.GetValue(ArrayIndex, 'Favorite')) then begin
       Inc(ArrayIndex);
       goto TryAgain;
     end;
@@ -390,17 +476,29 @@ end;
 procedure TForm1.Search(S: WideString);
 var
   i, Position, Count: Integer;
+  Content: WideString;
   isFavorite: Boolean;
+  isMatchingSize: Boolean;
 begin
   Count := 0;
   S := WideLowerCase(S);
 
   for i := 0 to DynamicData.GetLength-1 do begin
-      Position := Pos(S, WideLowerCase(DynamicData.GetValue(i, 'Content')));
+      Content := DynamicData.GetValue(i, 'Content');
+      Position := Pos(S, WideLowerCase(Content));
       isFavorite := DynamicData.GetValue(i, 'Favorite');
       if not SettingsDB.ShowFavorites then isFavorite := True;
+      isMatchingSize := (SettingsDB.ShowBySize = 0);
 
-      if (Position > 0) and isFavorite then begin
+      if not isMatchingSize then begin
+        case SettingsDB.ShowEquality of
+          0: isMatchingSize := (Length(Content) = SettingsDB.ShowBySize);
+          1: isMatchingSize := (Length(Content) > SettingsDB.ShowBySize);
+          2: isMatchingSize := (Length(Content) < SettingsDB.ShowBySize);
+        end;
+      end;
+
+      if (Position > 0) and isFavorite and isMatchingSize then begin
         if Position > 1 then Position := Position - 35;
         if Position < 1 then Position := 1;
         AddItem(i, Count, Position);
@@ -420,7 +518,7 @@ procedure TForm1.CheckListEnding;
 var
   UID: Int64;
 begin
-  if SearchMode then Exit;
+  if SearchMode or (not Scroll.Visible) then Exit;
   if (TNTStringGrid1.RowCount - (TNTStringGrid1.TopRow + ItemsPerPage)) > 2 then Exit;
   if TNTStringGrid1.RowCount > DynamicData.GetLength then Exit;
   UID := StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.RowCount-1]);
@@ -578,6 +676,7 @@ end;
 
 procedure TForm1.Timer3Timer(Sender: TObject);
 begin
+  if Form1.Visible then Exit;
   Timer1Timer(nil);
   Timer1.Enabled := False;
   SaveSettings;
@@ -602,9 +701,9 @@ begin
     else StaticText1.Caption := TOTAL_FOUND + IntToStr(StrToInt(StringReplace(StaticText1.Caption, TOTAL_FOUND, '', [rfReplaceAll, rfIgnoreCase]))-1);
 
   if SearchMode and (Index > TNTStringGrid1.RowCount-ItemsPerPage) then begin
-    if TNTStringGrid1.TopRow - 1 < 0 then Exit;
-    TNTStringGrid1.TopRow :=  TNTStringGrid1.TopRow - 1;
-    Scroll.Position := Scroll.Position - 1;
+    if TNTStringGrid1.TopRow-1 < 0 then Exit;
+    TNTStringGrid1.TopRow :=  TNTStringGrid1.TopRow-1;
+    Scroll.Position := Scroll.Position-1;
   end;
 
   if (not SearchMode) and (Index > DynamicData.GetLength-ItemsPerPage) then begin
@@ -653,7 +752,10 @@ begin
 
     for i := TNTStringGrid1.TopRow to TNTStringGrid1.TopRow+TNTStringGrid1.VisibleRowCount+1 do begin
       if PtInRect(TNTStringGrid1.CellRect(3, i), Point) then begin
-        DeleteRow(i);
+        TNTStringGrid1.Selection := TGridRect(Rect(1,i,1,i));
+        doSelect := False;
+        keybd_event(VK_DELETE, 0, 0, 0);
+        keybd_event(VK_DELETE, 0, $80, 0);
         Break;
       end;
     end;
@@ -697,7 +799,11 @@ begin
   if (Key = VK_DELETE) and (TNTStringGrid1.Selection.Top >= 0) then begin
     Row := TNTStringGrid1.Selection.Top;
     DeleteRow(Row);
-    TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
+
+    if not doSelect then begin
+      doSelect := True;
+      Exit;
+    end;
 
     if Row >= TNTStringGrid1.RowCount then Row := Row-1;
     if (TNTStringGrid1.RowCount = 1) and (TNTStringGrid1.Cells[4, 0] = '') then Exit;
@@ -781,6 +887,35 @@ begin
   if SearchMode
     then Search(TNTEdit1.Text)
     else BuildList(0, 0, ItemsPerPage*2);
+end;
+
+
+procedure TForm1.ShowBySize1Click(Sender: TObject);
+var
+  SizeFormat: WideString;
+  i1, i2: Int64;
+begin
+  i1 := SettingsDB.ShowBySize;
+  i2 := SettingsDB.ShowEquality;
+
+  SizeFormat := WideInputBox('Show By Size', 'Format: (=|>|<)1024(B|K|M)', GetFormatBySize, Form1.Font);
+  if not SetFormatBySize(SizeFormat) then ShowMessage('Incorrect size format!');
+  StaticText3.Caption := GetFormatBySize;
+
+  if (i1 <> SettingsDB.ShowBySize) or (i2 <> SettingsDB.ShowEquality) then begin
+    TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
+    Scroll.Position := 0;
+
+    if SearchMode
+      then Search(TNTEdit1.Text)
+      else BuildList(0, 0, ItemsPerPage*2);
+  end;
+end;
+
+
+procedure TForm1.StaticText3Click(Sender: TObject);
+begin
+  ShowBySize1Click(nil);
 end;
 
 
@@ -969,4 +1104,6 @@ initialization
   SettingsDB.SizeIndex := 2; //Size index in combobox
   SettingsDB.AutoSaveIndex := 1; //AutoSave index in combobox
   SettingsDB.ShowFavorites := False; //Show only favorites
+  SettingsDB.ShowBySize := 0; //Size in bytes
+  SettingsDB.ShowEquality := 0; //0 - Equals, 1 - Bigger, 2 - Smaller
 end.

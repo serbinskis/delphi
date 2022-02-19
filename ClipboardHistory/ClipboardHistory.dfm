@@ -7,10 +7,10 @@ object Form1: TForm1
   ClientHeight = 495
   ClientWidth = 560
   Color = clWhite
-  Font.Charset = DEFAULT_CHARSET
+  Font.Charset = RUSSIAN_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Height = -13
+  Font.Name = 'Calibri'
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
@@ -20,7 +20,7 @@ object Form1: TForm1
   OnHide = FormHide
   OnShow = FormShow
   PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 15
   object Shape1: TShape
     Left = 0
     Top = 0
@@ -117,6 +117,22 @@ object Form1: TForm1
     TabOrder = 4
     Visible = False
   end
+  object StaticText3: TStaticText
+    Left = 340
+    Top = 8
+    Width = 78
+    Height = 19
+    Alignment = taRightJustify
+    AutoSize = False
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 5
+    OnClick = StaticText3Click
+  end
   object PopupMenu1: TPopupMenu
     Left = 8
     Top = 40
@@ -196,6 +212,10 @@ object Form1: TForm1
       object ShowFavorites1: TMenuItem
         Caption = 'Show Favorites'
         OnClick = ShowFavorites1Click
+      end
+      object ShowBySize1: TMenuItem
+        Caption = 'Show By Size'
+        OnClick = ShowBySize1Click
       end
     end
   end
