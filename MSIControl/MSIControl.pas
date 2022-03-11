@@ -4,16 +4,16 @@ interface
 
 uses
   Windows, Messages, SysUtils, Dialogs, Classes, Forms, Menus, MMSystem, Graphics, ShellAPI,
-  ComCtrls, Controls, StdCtrls, ExtCtrls, TFlatComboBoxUnit, TFlatCheckBoxUnit, XiTrackBar,
-  XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, EmbeddedController, uHotKey,
-  uQueryShutdown, uAudioMixer, uThemes, uSettings, uMicrophones, uLanguages, WinXP, Functions;
+  ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
+  XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, EmbeddedController,
+  uHotKey, uQueryShutdown, uAudioMixer, uThemes, uSettings, uMicrophones, uLanguages, uReadConsole,
+  WinXP, Functions;
 
 type
   TForm1 = class(TForm)
     PopupMenu1: TPopupMenu;
     ToggleCoolerBoost1: TMenuItem;
-    AddToAutoruns1: TMenuItem;
-    RemoveFromAutoruns1: TMenuItem;
+    ToggleAutoruns1: TMenuItem;
     Exit1: TMenuItem;
     Bevel1: TCustoBevel;
     Bevel2: TCustoBevel;
@@ -43,9 +43,9 @@ type
     TrayIcon1: TTrayIcon;
     Timer1: TTimer;
     Restart1: TMenuItem;
+    ToggleEthernet1: TMenuItem;
     procedure ToggleCoolerBoost1Click(Sender: TObject);
-    procedure AddToAutoruns1Click(Sender: TObject);
-    procedure RemoveFromAutoruns1Click(Sender: TObject);
+    procedure ToggleAutoruns1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -79,6 +79,7 @@ type
     procedure HotKey3Change(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Restart1Click(Sender: TObject);
+    procedure ToggleEthernet1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -442,17 +443,32 @@ begin
 end;
 
 
-procedure TForm1.AddToAutoruns1Click(Sender: TObject);
+procedure TForm1.ToggleEthernet1Click(Sender: TObject);
+var
+  b: Boolean;
 begin
-  ExecuteProcessAsAdmin('SchTasks', '/Create /SC ONLOGON /RL HIGHEST /TN MSIControl /TR "' + WideParamStr(0) + '" /F', SW_HIDE);
-  ShowMessage('Application added to autoruns.');
+  b := not GetEthernetEnabled;
+
+  while GetEthernetEnabled <> b do begin
+    SetEthernetEnabled(b);
+    Wait(1000);
+  end;
 end;
 
 
-procedure TForm1.RemoveFromAutoruns1Click(Sender: TObject);
+procedure TForm1.ToggleAutoruns1Click(Sender: TObject);
+var
+  S: WideString;
 begin
-  ExecuteProcessAsAdmin('SchTasks', '/Delete /TN MSIControl /F', SW_HIDE);
-  ShowMessage('Application removed from autoruns.');
+  S := ReadOutput('schtasks.exe /QUERY /TN MSIControl');
+
+  if AnsiContainsText(S, 'ERROR') then begin
+    ExecuteProcessAsAdmin('SchTasks', '/Create /SC ONLOGON /RL HIGHEST /TN MSIControl /TR "' + WideParamStr(0) + '" /F', SW_HIDE);
+    ShowMessage('Application added to autoruns.');
+  end else begin
+    ExecuteProcessAsAdmin('SchTasks', '/Delete /TN MSIControl /F', SW_HIDE);
+    ShowMessage('Application removed from autoruns.');
+  end;
 end;
 
 
@@ -657,11 +673,6 @@ begin
     Exit;
   end;
 
-  if Name = 'ETHERNET' then begin
-    CheckBox1.Checked := GetEthernetEnabled;
-    Exit;
-  end;
-
   CheckBox1.Checked := GetSettingByDescription(ComboBox3.Text);
 end;
 
@@ -669,7 +680,6 @@ end;
 procedure TForm1.CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   Name: WideString;
-  b: Boolean;
 begin
   RemoveFocus;
   Name := GetNameFromDescription(ComboBox3.Text);
@@ -682,16 +692,6 @@ begin
   if Name = 'COOLER_BOOST' then begin
     ToggleCoolerBoost;
     CheckBox1.Checked := GetCoolerBoostStatus;
-    Exit;
-  end;
-
-  if Name = 'ETHERNET' then begin
-    b := not GetEthernetEnabled;
-    while GetEthernetEnabled <> b do begin
-      SetEthernetEnabled(b);
-      Wait(1000);
-    end;
-    CheckBox1.Checked := GetEthernetEnabled;
     Exit;
   end;
 

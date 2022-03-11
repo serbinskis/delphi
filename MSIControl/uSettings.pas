@@ -31,14 +31,13 @@ var
   );
 
 var
-  Settings: array[0..6] of TSetting = (
+  Settings: array[0..5] of TSetting = (
     (Name: 'HOTKEY_SOUNDS'; Description: 'HotKey Sounds'),
     (Name: 'MICROPHONES_HOTKEY_SOUNDS'; Description: 'Microphones HotKey Sounds'),
     (Name: 'LANGUAGES_HOTKEY_SOUNDS'; Description: 'Languages HotKey Sounds'),
     (Name: 'WEBCAM'; Description: 'MSI Webcam'),
     (Name: 'COOLER_BOOST'; Description: 'Cooler Boost'),
-    (Name: 'TRAY_UPDATE'; Description: 'Fan Mode Tray Update'),
-    (Name: 'ETHERNET'; Description: 'Ethernet')
+    (Name: 'TRAY_UPDATE'; Description: 'Fan Mode Tray Update')
   );
 
 const

@@ -496,13 +496,13 @@ object Form1: TForm1
       Caption = 'Toggle Cooler Boost'
       OnClick = ToggleCoolerBoost1Click
     end
-    object AddToAutoruns1: TMenuItem
-      Caption = 'Add To Autoruns'
-      OnClick = AddToAutoruns1Click
+    object ToggleEthernet1: TMenuItem
+      Caption = 'Toggle Ethernet'
+      OnClick = ToggleEthernet1Click
     end
-    object RemoveFromAutoruns1: TMenuItem
-      Caption = 'Remove From Autoruns'
-      OnClick = RemoveFromAutoruns1Click
+    object ToggleAutoruns1: TMenuItem
+      Caption = 'Toggle Autoruns'
+      OnClick = ToggleAutoruns1Click
     end
     object Restart1: TMenuItem
       Caption = 'Restart'
