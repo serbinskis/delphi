@@ -3,13 +3,12 @@ unit image2bin;
 interface
 
 uses
-  SysUtils, Windows, Classes, Graphics, Functions;
+  SysUtils, Windows, Classes, Graphics, uDynamicData, Functions;
 
 type
   TColorRGB = array [0..2] of byte;
-  TDimensionalArray = array of array of Integer;
 
-function ConvertBmp2Bin(Bitmap: TBitmap; Stream: TStream): Boolean;
+procedure ConvertBmp2Bin(Bitmap: TBitmap; Stream: TStream);
 function CompressBin(Stream: TStream): Boolean;
 
 implementation
@@ -24,72 +23,6 @@ end;
 //ColorToRGB
 
 
-//Delete2DArray
-procedure Delete2DArray(var Arr: TDimensionalArray; Index: Integer);
-var
-  i: Integer;
-begin
-  for i := Index to High(Arr)-1 do begin
-    Arr[i][0] := Arr[i+1][0];
-    Arr[i][1] := Arr[i+1][1];
-  end;
-
-  SetLength(Arr, High(Arr));
-end;
-//Delete2DArray
-
-
-//Insert2DArray
-procedure Insert2DArray(var Arr: TDimensionalArray; Index, Count, Color: Integer);
-var
-  i: Integer;
-begin
-  SetLength(Arr, High(Arr)+2, 2);
-
-  for i := High(Arr) downto Index+1 do begin
-    Arr[i][0] := Arr[i-1][0];
-    Arr[i][1] := Arr[i-1][1];
-  end;
-
-  Arr[Index][0] := Count;
-  Arr[Index][1] := Color;
-end;
-//Insert2DArray
-
-
-//Sort2DArray
-procedure Sort2DArray(var Arr: TDimensionalArray);
-var
-  i, Index, Pos: Integer;
-  Count, Color: Integer;
-begin
-  Pos := 0;
-  Index := 0;
-
-  while Pos <= High(Arr) do begin
-    Count := Arr[Pos][0];
-    for i := Pos to High(Arr) do begin
-      if Arr[i][0] <= Count then begin
-        Count := Arr[i][0];
-        Index := i;
-      end;
-    end;
-
-    If Index <> 0 then begin
-      Count := Arr[Index][0];
-      Color := Arr[Index][1];
-
-      Delete2DArray(Arr, Index);
-      Insert2DArray(Arr, 0, Count, Color);
-    end;
-
-    Inc(Pos);
-    Index := 0;
-  end;
-end;
-//Sort2DArray
-
-
 //ColorDistance
 function ColorDistance(a, b: Integer): Extended;
 var
@@ -99,102 +32,96 @@ begin
   bRGB := ColorToRGB(b);
   Result := Sqrt(((aRGB[0]-bRGB[0]) * (aRGB[0]-bRGB[0])) +
                  ((aRGB[1]-bRGB[1]) * (aRGB[1]-bRGB[1])) +
-                 ((aRGB[2]-bRGB[2]) * (aRGB[2]-bRGB[2])) );
+                 ((aRGB[2]-bRGB[2]) * (aRGB[2]-bRGB[2])));
 end;
 //ColorDistance
 
 
 //NearestColor
-function NearestColor(color: Integer; var ArrayOfColors: array of TColor): Integer;
+function NearestColor(color: Integer; var colors: array of Integer): Integer;
 var
   i: Integer;
 begin
   Result := 0;
 
-  for i := 0 to Length(ArrayOfColors)-1 do begin
-    if ColorDistance(color, ArrayOfColors[i]) < ColorDistance(color, ArrayOfColors[Result])
+  for i := 0 to Length(colors)-1 do begin
+    if ColorDistance(color, colors[i]) < ColorDistance(color, colors[Result])
       then Result := i;
   end;
 end;
 //NearestColor
 
 
-//ConvertBmp2Bin
-function ConvertBmp2Bin(Bitmap: TBitmap; Stream: TStream): Boolean;
-var
-  i, y, x: Integer;
-  Found: Boolean;
-  Color: TColor;
-  ColorRGB: TColorRGB;
-  Colors: TDimensionalArray; //0 - Count; 1 - TColor
-  ArrayOfColors: array of TColor;
-  a, R, G, B: Char;
+//Sort colors by amount
+function SortCallback(v1, v2: Variant; Progress: Extended; Changed: Boolean): Boolean;
 begin
-  Result := False;
+  Result := v1 > v2;
+end;
 
-  //Epmty stream to write to it later
+
+//ConvertBmp2Bin
+procedure ConvertBmp2Bin(Bitmap: TBitmap; Stream: TStream);
+var
+  DynamicData: TDynamicData;
+  i, y, x, c: Integer;
+  a, r, g, b: Char;
+  color: TColor;
+  colorRGB: TColorRGB;
+  colorArray: array of Integer;
+begin
+  DynamicData := TDynamicData.Create([]);
   Stream.Position := 0;
   Stream.Size := 0;
 
   //Generate the color table
   for y := 0 to Bitmap.Height-1 do begin
     for x := 0 to Bitmap.Width-1 do begin
-      Color := Bitmap.Canvas.Pixels[x,y];
+      color := Bitmap.Canvas.Pixels[x, y];
+      i := DynamicData.FindIndex('color', color);
 
-      Found := False;
-      for i := Low(Colors) to High(Colors) do begin
-        if Color = Colors[i][1] then begin
-          Colors[i][0] := Colors[i][0] + 1;
-          Found := True;
-          Break;
-        end;
-      end;
-
-      if not Found then begin
-        SetLength(Colors, High(Colors)+2, 2);
-        Colors[High(Colors)][1] := Color;
-        Colors[High(Colors)][0] := 1;
+      if i > -1 then begin
+        c := DynamicData.GetValue(i, 'amount');
+        DynamicData.SetValue(i, 'amount', c+1);
+      end else begin
+        DynamicData.CreateData(-1);
+        DynamicData.SetValue(DynamicData.GetLength-1, 'color', color);
+        DynamicData.SetValue(DynamicData.GetLength-1, 'amount', 1);
       end;
     end;
   end;
 
-  //Sort 2DArray by count
-  Sort2DArray(Colors);
-
-  //Convert 2DArray to just array
-  for i := Low(Colors) to High(Colors) do begin
-    SetLength(ArrayOfColors, Length(ArrayOfColors)+1);
-    ArrayOfColors[Length(ArrayOfColors)-1] := Colors[i][1];
-    ColorRGB := ColorToRGB(ArrayOfColors[Length(ArrayOfColors)-1]);
-  end;
-
-  //Get the most used colors (at most 256)
-  If Length(ArrayOfColors) > 256 then SetLength(ArrayOfColors, 256);
+  //Sort and set size
+  DynamicData.Sort('amount', SortCallback, stInsertion);
+  if DynamicData.GetLength > 256 then DynamicData.SetLength(256);
+  SetLength(colorArray, DynamicData.GetLength);
 
   //Write the color table information
-  a := Chr(Length(ArrayOfColors));
+  a := Chr(DynamicData.GetLength);
   Stream.Write(a, 1);
-  for i := 0 to Length(ArrayOfColors)-1 do begin
-    ColorRGB := ColorToRGB(ArrayOfColors[i]);
-    R := Chr(ColorRGB[0] div 4);
-    G := Chr(ColorRGB[1] div 4);
-    B := Chr(ColorRGB[2] div 4);
-    Stream.Write(R, 1);
-    Stream.Write(G, 1);
-    Stream.Write(B, 1);
+
+  //Write color table data, and store colors in array for faster access
+  for i := 0 to DynamicData.GetLength-1 do begin
+    colorArray[i] := DynamicData.GetValue(i, 'color');
+    colorRGB := ColorToRGB(colorArray[i]);
+    r := Chr(colorRGB[0] div 4);
+    g := Chr(colorRGB[1] div 4);
+    b := Chr(colorRGB[2] div 4);
+    Stream.Write(r, 1);
+    Stream.Write(g, 1);
+    Stream.Write(b, 1);
   end;
 
   //Write the pixel data
   for y := 0 to Bitmap.Height-1 do begin
     for x := 0 to Bitmap.Width-1 do begin
       Color := Bitmap.Canvas.Pixels[x,y];
-      a := Chr(NearestColor(Color, ArrayOfColors));
+      a := Chr(NearestColor(Color, colorArray));
       Stream.Write(a, 1);
     end;
   end;
 
+  DynamicData.Destroy;
   Stream.Position := 0;
-  Result := True;
 end;
 //ConvertBmp2Bin
 
