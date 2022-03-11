@@ -1954,9 +1954,10 @@ object Form1: TForm1
   end
   object Edit1: TTntEdit
     Left = 80
-    Top = 48
+    Top = 49
     Width = 137
     Height = 19
+    AutoSize = False
     Color = clWhite
     Enabled = False
     TabOrder = 0

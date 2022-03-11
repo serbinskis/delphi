@@ -79,7 +79,8 @@ const
 	  $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $55, $AA);
 
 const
-  MAXIMUM_IMAGE_SIZE = 20*1024;
+  MAXIMUM_IMAGE_SIZE = 100*1024;
+  MAXIMUM_MBR_SIZE = 20*1024;
   DEFAULT_IMAGE_WIDTH = 320;
   DEFAULT_IMAGE_HEIGHT = 200;
   MBR_ADDRESS = $7AB04;
@@ -277,15 +278,15 @@ begin
   ConvertBmp2Bin(CustomImage, MemoryStream);
 
   //Compress image
-  if not CompressBin(MemoryStream) then begin
-    ShowMessage('Could not compress the image.');
+  if not CompressBin(MemoryStream) or (MemoryStream.Size > MAXIMUM_MBR_SIZE-Length(MBRCode)) then begin
+    ShowMessage('Failed to compress the image.');
     Form1.Enabled := True;
     Form2.ShowModal;
     Exit;
   end;
 
   //Save MBR and image to array of byte
-  SetLength(ArrayOfByte, MAXIMUM_IMAGE_SIZE);
+  SetLength(ArrayOfByte, MAXIMUM_MBR_SIZE);
   Move(MBRCode[0], ArrayOfByte[0], Length(MBRCode));
   MemoryStream.Read(ArrayOfByte[Length(MBRCode)], MemoryStream.Size);
 
@@ -350,7 +351,7 @@ begin
 
   //Add icon to executable
   if Edit1.Text <> '' then begin
-    if not AddIconResource(SaveDialog1.FileName, Edit1.Text, '1') then ShowMessage('Could not add icon!');
+    if not AddIconResource(SaveDialog1.FileName, Edit1.Text, '1') then ShowMessage('Failed to add icon!');
   end;
 
   WideShowMessage('File Created -> ' + SaveDialog1.FileName);

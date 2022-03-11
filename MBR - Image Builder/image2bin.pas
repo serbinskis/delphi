@@ -92,7 +92,7 @@ begin
 
   //Sort and set size
   DynamicData.Sort('amount', SortCallback, stInsertion);
-  if DynamicData.GetLength > 256 then DynamicData.SetLength(256);
+  if DynamicData.GetLength > 255 then DynamicData.SetLength(255);
   SetLength(colorArray, DynamicData.GetLength);
 
   //Write the color table information
