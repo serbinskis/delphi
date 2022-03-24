@@ -138,8 +138,8 @@ var
   l, ml, mp2, ml3: WORD; //unsigned short
   fsize, bi, pos: Integer;
   p, mp, bs, bx: Integer;
-  b: UCHAR; //unsigned char
-  ml2: Char; //char
+  b: UCHAR;
+  ml2: Char;
 begin
   Result := False;
 
