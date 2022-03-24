@@ -114,8 +114,8 @@ begin
   //Write the pixel data
   for y := 0 to Bitmap.Height-1 do begin
     for x := 0 to Bitmap.Width-1 do begin
-      Color := Bitmap.Canvas.Pixels[x,y];
-      a := Chr(NearestColor(Color, colorArray));
+      color := Bitmap.Canvas.Pixels[x,y];
+      a := Chr(NearestColor(color, colorArray));
       Stream.Write(a, 1);
     end;
   end;
