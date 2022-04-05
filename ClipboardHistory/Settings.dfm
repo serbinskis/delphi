@@ -3,7 +3,7 @@ object Form2: TForm2
   Top = 276
   BorderStyle = bsDialog
   Caption = 'Settings'
-  ClientHeight = 350
+  ClientHeight = 380
   ClientWidth = 405
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -227,7 +227,7 @@ object Form2: TForm2
     OnChange = SpinEdit3Change
     OnExit = SpinEdit3Exit
   end
-  object Import1: TFlatPanel
+  object Panel2: TFlatPanel
     Left = 88
     Top = 316
     Width = 75
@@ -243,10 +243,10 @@ object Form2: TForm2
     ColorHighLight = clBlack
     ColorShadow = clBlack
     TabOrder = 9
-    OnClick = Import1Click
-    OnMouseDown = Import1MouseDown
+    OnClick = Panel2Click
+    OnMouseDown = PanelMouseDown
   end
-  object Export1: TFlatPanel
+  object Panel1: TFlatPanel
     Left = 8
     Top = 316
     Width = 75
@@ -262,10 +262,10 @@ object Form2: TForm2
     ColorHighLight = clBlack
     ColorShadow = clBlack
     TabOrder = 10
-    OnClick = Export1Click
-    OnMouseDown = Export1MouseDown
+    OnClick = Panel1Click
+    OnMouseDown = PanelMouseDown
   end
-  object Clear1: TFlatPanel
+  object Panel3: TFlatPanel
     Left = 168
     Top = 316
     Width = 75
@@ -281,8 +281,8 @@ object Form2: TForm2
     ColorHighLight = clBlack
     ColorShadow = clBlack
     TabOrder = 11
-    OnClick = Clear1Click
-    OnMouseDown = Clear1MouseDown
+    OnClick = Panel3Click
+    OnMouseDown = PanelMouseDown
   end
   object CheckBox4: TFlatCheckBox
     Left = 8
@@ -422,5 +422,24 @@ object Form2: TForm2
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 19
+  end
+  object Panel4: TFlatPanel
+    Left = 8
+    Top = 346
+    Width = 105
+    Height = 25
+    Hint = 'Clear duplicated items'
+    Caption = 'Clear duplicates'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentColor = True
+    ColorHighLight = clBlack
+    ColorShadow = clBlack
+    TabOrder = 20
+    OnClick = Panel4Click
+    OnMouseDown = PanelMouseDown
   end
 end

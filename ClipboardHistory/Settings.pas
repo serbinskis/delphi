@@ -22,9 +22,10 @@ type
     SpinEdit1: TFlatSpinEditInteger;
     SpinEdit2: TFlatSpinEditInteger;
     SpinEdit3: TFlatSpinEditInteger;
-    Export1: TFlatPanel;
-    Import1: TFlatPanel;
-    Clear1: TFlatPanel;
+    Panel1: TFlatPanel;
+    Panel2: TFlatPanel;
+    Panel3: TFlatPanel;
+    Panel4: TFlatPanel;
     Bevel4: TBevel;
     CheckBox4: TFlatCheckBox;
     SpinEdit4: TFlatSpinEditInteger;
@@ -41,18 +42,17 @@ type
     procedure SpinEdit1Change(Sender: TObject);
     procedure SpinEdit2Change(Sender: TObject);
     procedure SpinEdit3Change(Sender: TObject);
-    procedure Import1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure Export1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure Clear1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure Export1Click(Sender: TObject);
-    procedure Import1Click(Sender: TObject);
-    procedure Clear1Click(Sender: TObject);
+    procedure Panel1Click(Sender: TObject);
+    procedure Panel2Click(Sender: TObject);
+    procedure Panel3Click(Sender: TObject);
+    procedure Panel4Click(Sender: TObject);
     procedure SpinEdit1Exit(Sender: TObject);
     procedure SpinEdit2Exit(Sender: TObject);
     procedure SpinEdit3Exit(Sender: TObject);
     procedure SpinEdit4Exit(Sender: TObject);
     procedure SpinEdit4Change(Sender: TObject);
     procedure ComboBox3Change(Sender: TObject);
+    procedure PanelMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
   public
@@ -67,9 +67,11 @@ const
 var
   Form2: TForm2;
 
+procedure SimulatePress(Button: TFlatPanel);
+
 implementation
 
-uses ClipboardHistory;
+uses ClipboardHistory, Duplicates;
 
 {$R *.dfm}
 
@@ -224,26 +226,14 @@ begin
 end;
 
 
-procedure TForm2.Export1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm2.PanelMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   StaticText1.SetFocus;
-  SimulatePress(Export1);
+  SimulatePress(TFlatPanel(Sender));
 end;
 
 
-procedure TForm2.Import1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  SimulatePress(Import1);
-end;
-
-
-procedure TForm2.Clear1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  SimulatePress(Clear1);
-end;
-
-
-procedure TForm2.Export1Click(Sender: TObject);
+procedure TForm2.Panel1Click(Sender: TObject);
 var
   TNTSaveDialog: TTNTSaveDialog;
 begin
@@ -271,7 +261,7 @@ begin
 end;
 
 
-procedure TForm2.Import1Click(Sender: TObject);
+procedure TForm2.Panel2Click(Sender: TObject);
 var
   TNTOpenDialog: TTNTOpenDialog;
   srSearch: TWIN32FindDataW;
@@ -318,7 +308,7 @@ begin
 end;
 
 
-procedure TForm2.Clear1Click(Sender: TObject);
+procedure TForm2.Panel3Click(Sender: TObject);
 var
   buttonSelected: Integer;
 begin
@@ -350,6 +340,11 @@ end;
 procedure TForm2.SpinEdit4Exit(Sender: TObject);
 begin
   if SpinEdit4.Text = '' then SpinEdit4.Text := '1';
+end;
+
+procedure TForm2.Panel4Click(Sender: TObject);
+begin
+  Form4.ShowModal;
 end;
 
 end.
