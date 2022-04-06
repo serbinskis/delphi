@@ -40,17 +40,14 @@ uses ClipboardHistory, Settings;
 
 procedure CompareCallback(v1, v2: Variant; idx1, idx2: Integer; var d1, d2: Boolean; Progress: Extended; Changed: Boolean; var Cancelled: Boolean);
 var
-  exclFavorite: Boolean;
   isSame, f1, f2: Boolean;
 begin
   Cancelled := (CompareState = -1);
   if Cancelled then Exit;
   while CompareState = 2 do Wait(100);
-
-  exclFavorite := Form4.CheckBox1.Checked;
   isSame := (v1 = v2);
 
-  if exclFavorite and isSame then begin
+  if Form4.CheckBox1.Checked and isSame then begin
     f2 := DynamicData.GetValue(idx2, 'Favorite');
     if (idx1 > -1) then f1 := DynamicData.GetValue(idx1, 'Favorite') else f1 := False;
     if (idx1 > -1) and (not f1) and (f2) then d1 := True; //if 2nd favorite and 1st not, delete original
