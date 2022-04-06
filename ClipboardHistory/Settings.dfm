@@ -3,7 +3,7 @@ object Form2: TForm2
   Top = 276
   BorderStyle = bsDialog
   Caption = 'Settings'
-  ClientHeight = 380
+  ClientHeight = 420
   ClientWidth = 405
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -38,6 +38,12 @@ object Form2: TForm2
   object Bevel4: TBevel
     Left = 5
     Top = 232
+    Width = 390
+    Height = 2
+  end
+  object Bevel5: TBevel
+    Left = 5
+    Top = 376
     Width = 390
     Height = 2
   end
@@ -425,7 +431,7 @@ object Form2: TForm2
   end
   object Panel4: TFlatPanel
     Left = 8
-    Top = 346
+    Top = 386
     Width = 105
     Height = 25
     Hint = 'Clear duplicated items'
@@ -441,5 +447,20 @@ object Form2: TForm2
     TabOrder = 20
     OnClick = Panel4Click
     OnMouseDown = PanelMouseDown
+  end
+  object StaticText6: TStaticText
+    Left = 8
+    Top = 356
+    Width = 65
+    Height = 18
+    AutoSize = False
+    Caption = 'FEATURES'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Segoe UI Semibold'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 21
   end
 end

@@ -35,6 +35,8 @@ type
     StaticText1: TStaticText;
     StaticText3: TStaticText;
     StaticText4: TStaticText;
+    Bevel5: TBevel;
+    StaticText6: TStaticText;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure ComboBox1Change(Sender: TObject);
