@@ -711,7 +711,11 @@ end;
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   Theme := not Theme;
-  ChangeTheme(Theme, Form1);
+
+  try
+    ChangeTheme(Theme, Form1);
+  except
+  end;
 end;
 
 
