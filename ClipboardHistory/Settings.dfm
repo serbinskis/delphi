@@ -3,7 +3,7 @@ object Form2: TForm2
   Top = 276
   BorderStyle = bsDialog
   Caption = 'Settings'
-  ClientHeight = 420
+  ClientHeight = 370
   ClientWidth = 405
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -25,31 +25,25 @@ object Form2: TForm2
   end
   object Bevel2: TBevel
     Left = 5
-    Top = 96
+    Top = 112
     Width = 390
     Height = 2
   end
   object Bevel3: TBevel
     Left = 5
-    Top = 304
+    Top = 320
     Width = 390
     Height = 2
   end
   object Bevel4: TBevel
     Left = 5
-    Top = 232
-    Width = 390
-    Height = 2
-  end
-  object Bevel5: TBevel
-    Left = 5
-    Top = 376
+    Top = 248
     Width = 390
     Height = 2
   end
   object CheckBox1: TFlatCheckBox
     Left = 8
-    Top = 106
+    Top = 122
     Width = 161
     Height = 17
     Caption = 'Remove items older than'
@@ -66,7 +60,7 @@ object Form2: TForm2
   end
   object CheckBox3: TFlatCheckBox
     Left = 8
-    Top = 170
+    Top = 186
     Width = 169
     Height = 17
     Caption = 'Maximum number of items'
@@ -83,7 +77,7 @@ object Form2: TForm2
   end
   object CheckBox2: TFlatCheckBox
     Left = 8
-    Top = 138
+    Top = 154
     Width = 177
     Height = 17
     Caption = 'Do not save text bigger than'
@@ -117,7 +111,7 @@ object Form2: TForm2
   end
   object ComboBox1: TFlatComboBox
     Left = 320
-    Top = 104
+    Top = 120
     Width = 70
     Height = 22
     Style = csDropDownList
@@ -144,7 +138,7 @@ object Form2: TForm2
   end
   object ComboBox2: TFlatComboBox
     Left = 320
-    Top = 136
+    Top = 152
     Width = 70
     Height = 22
     Style = csDropDownList
@@ -169,7 +163,7 @@ object Form2: TForm2
   end
   object SpinEdit1: TFlatSpinEditInteger
     Left = 192
-    Top = 104
+    Top = 120
     Width = 121
     Height = 22
     ColorBorder = clBlack
@@ -191,7 +185,7 @@ object Form2: TForm2
   end
   object SpinEdit2: TFlatSpinEditInteger
     Left = 192
-    Top = 136
+    Top = 152
     Width = 121
     Height = 22
     ColorBorder = clBlack
@@ -213,7 +207,7 @@ object Form2: TForm2
   end
   object SpinEdit3: TFlatSpinEditInteger
     Left = 192
-    Top = 168
+    Top = 184
     Width = 121
     Height = 22
     ColorBorder = clBlack
@@ -235,7 +229,7 @@ object Form2: TForm2
   end
   object Panel2: TFlatPanel
     Left = 88
-    Top = 316
+    Top = 332
     Width = 75
     Height = 25
     Hint = 'Import clipboard list'
@@ -254,7 +248,7 @@ object Form2: TForm2
   end
   object Panel1: TFlatPanel
     Left = 8
-    Top = 316
+    Top = 332
     Width = 75
     Height = 25
     Hint = 'Export clipboard list'
@@ -273,7 +267,7 @@ object Form2: TForm2
   end
   object Panel3: TFlatPanel
     Left = 168
-    Top = 316
+    Top = 332
     Width = 75
     Height = 25
     Hint = 'Clear clipboard list'
@@ -292,7 +286,7 @@ object Form2: TForm2
   end
   object CheckBox4: TFlatCheckBox
     Left = 8
-    Top = 242
+    Top = 258
     Width = 161
     Height = 17
     Caption = 'Auto save every'
@@ -309,7 +303,7 @@ object Form2: TForm2
   end
   object SpinEdit4: TFlatSpinEditInteger
     Left = 192
-    Top = 240
+    Top = 256
     Width = 121
     Height = 22
     ColorBorder = clBlack
@@ -331,7 +325,7 @@ object Form2: TForm2
   end
   object ComboBox3: TFlatComboBox
     Left = 320
-    Top = 240
+    Top = 256
     Width = 70
     Height = 22
     Style = csDropDownList
@@ -355,7 +349,7 @@ object Form2: TForm2
   end
   object StaticText5: TStaticText
     Left = 256
-    Top = 319
+    Top = 335
     Width = 133
     Height = 22
     Alignment = taRightJustify
@@ -375,7 +369,7 @@ object Form2: TForm2
     Width = 88
     Height = 17
     AutoSize = False
-    Caption = 'MONITORING'
+    Caption = 'FEATURES'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -386,7 +380,7 @@ object Form2: TForm2
   end
   object StaticText1: TStaticText
     Left = 8
-    Top = 76
+    Top = 92
     Width = 149
     Height = 18
     AutoSize = False
@@ -401,7 +395,7 @@ object Form2: TForm2
   end
   object StaticText3: TStaticText
     Left = 8
-    Top = 212
+    Top = 228
     Width = 73
     Height = 18
     AutoSize = False
@@ -416,7 +410,7 @@ object Form2: TForm2
   end
   object StaticText4: TStaticText
     Left = 8
-    Top = 284
+    Top = 300
     Width = 177
     Height = 18
     AutoSize = False
@@ -430,8 +424,8 @@ object Form2: TForm2
     TabOrder = 19
   end
   object Panel4: TFlatPanel
-    Left = 8
-    Top = 386
+    Left = 288
+    Top = 34
     Width = 105
     Height = 25
     Hint = 'Clear duplicated items'
@@ -448,19 +442,23 @@ object Form2: TForm2
     OnClick = Panel4Click
     OnMouseDown = PanelMouseDown
   end
-  object StaticText6: TStaticText
+  object CheckBox5: TFlatCheckBox
     Left = 8
-    Top = 356
-    Width = 65
-    Height = 18
-    AutoSize = False
-    Caption = 'FEATURES'
+    Top = 56
+    Width = 129
+    Height = 17
+    Hint = 'Ignores favorites'
+    Caption = 'Prevent duplicates'
+    ColorDown = 15790320
+    ColorBorder = clBlack
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
-    Font.Name = 'Segoe UI Semibold'
-    Font.Style = [fsBold]
+    Font.Name = 'Calibri'
+    Font.Style = []
     ParentFont = False
+    ShowHint = True
     TabOrder = 21
+    TabStop = True
   end
 end

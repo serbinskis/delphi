@@ -35,8 +35,7 @@ type
     StaticText1: TStaticText;
     StaticText3: TStaticText;
     StaticText4: TStaticText;
-    Bevel5: TBevel;
-    StaticText6: TStaticText;
+    CheckBox5: TFlatCheckBox;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure ComboBox1Change(Sender: TObject);
@@ -96,6 +95,7 @@ begin
   Form1.Timer3.Enabled := False;
 
   CheckBox0.Checked := SettingsDB.Monitoring;
+  CheckBox5.Checked := SettingsDB.PreventDuplicates;
   CheckBox1.Checked := SettingsDB.isTimeLimited;
   CheckBox2.Checked := SettingsDB.isSizeLimited;
   CheckBox3.Checked := SettingsDB.isItemsLimited;
@@ -132,6 +132,7 @@ end;
 procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   SettingsDB.Monitoring := CheckBox0.Checked;
+  SettingsDB.PreventDuplicates := CheckBox5.Checked;
   SettingsDB.isTimeLimited := CheckBox1.Checked;
   SettingsDB.isSizeLimited := CheckBox2.Checked;
   SettingsDB.isItemsLimited := CheckBox3.Checked;

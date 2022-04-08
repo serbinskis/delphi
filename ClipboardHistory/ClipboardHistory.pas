@@ -23,6 +23,7 @@ const
 type
   TSettingsDB = record
     Monitoring: Boolean;
+    PreventDuplicates: Boolean;
     MaxItems: Integer;
     MaxSize: Integer;
     RemoveAfter: Integer;
@@ -145,6 +146,7 @@ uses Settings, About;
 procedure LoadSettings;
 begin
   LoadRegistryBoolean(SettingsDB.Monitoring, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Monitoring');
+  LoadRegistryBoolean(SettingsDB.PreventDuplicates, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'PreventDuplicates');
   LoadRegistryInteger(SettingsDB.MaxItems, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxItems');
   LoadRegistryInteger(SettingsDB.MaxSize, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxSize');
   LoadRegistryInteger(SettingsDB.RemoveAfter, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'RemoveAfter');
@@ -168,6 +170,7 @@ procedure SaveSettings;
 begin
   Form1.TrayIcon1.Icon := LoadIcon(HInstance, 'SAVING');
   SaveRegistryBoolean(SettingsDB.Monitoring, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Monitoring');
+  SaveRegistryBoolean(SettingsDB.PreventDuplicates, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'PreventDuplicates');
   SaveRegistryInteger(SettingsDB.MaxItems, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxItems');
   SaveRegistryInteger(SettingsDB.MaxSize, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxSize');
   SaveRegistryInteger(SettingsDB.RemoveAfter, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'RemoveAfter');
@@ -246,8 +249,9 @@ end;
 procedure TForm1.ClipboardChanged(var Msg: TMessage);
 var
   Content: WideString;
-  ID: LongWord;
+  ID, i: LongWord;
   DateTime: TDateTime;
+  isSame, isFavorite: Boolean;
 begin
   if not AllowClipboard then Exit;
   if not SettingsDB.Monitoring then Exit;
@@ -259,6 +263,16 @@ begin
 
   if (Length(Content) <= 0) or ((Length(Content) > SettingsDB.MaxSize) and SettingsDB.isSizeLimited) then Exit;
   if (Content = DynamicData.GetValue(0, 'Content')) then Exit;
+
+  //Remove duplicates
+  if SettingsDB.PreventDuplicates then begin
+    for i := DynamicData.GetLength-1 downto 0 do begin
+      isSame := (Content = DynamicData.GetValue(i, 'Content'));
+      isFavorite := DynamicData.GetValue(i, 'Favorite');
+      if isSame and (not isFavorite) then DynamicData.DeleteData(i);
+    end;
+  end;
+
   BeginThread(nil, 0, Addr(ClipboardUpdate), nil, 0, ID);
   DateTime := Now;
 
@@ -1092,6 +1106,7 @@ end;
 
 initialization
   SettingsDB.Monitoring := True; //Enable clipboard saving
+  SettingsDB.PreventDuplicates := True;
   SettingsDB.MaxItems := 2000; //Max items
   SettingsDB.MaxSize := 1024*1024*10; //Max size
   SettingsDB.RemoveAfter := 60*60*24*30; //Seconds (1 month)
