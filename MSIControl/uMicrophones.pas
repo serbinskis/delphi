@@ -52,12 +52,13 @@ begin
   if mIndex < 0 then Exit;
 
   case mOption of
-    0: begin
+    0: begin //Set volume
       if mValue < 0 then mValue := 0;
       if mValue > 20 then mValue := 20;
+      SetMicrophoneVolume(mIndex, 100-(mValue*5), -1);
       SetMicrophoneVolume(mIndex, mValue*5, -1);
     end;
-    1: begin
+    1: begin //Mute or Unmute
       if mValue < 0 then mValue := 0;
       if mValue > 1 then mValue := 1;
       SetMicrophoneVolume(mIndex, -1, Integer(not Boolean(mValue)));
