@@ -18,25 +18,18 @@ type
     Bevel1: TCustoBevel;
     Bevel2: TCustoBevel;
     Bevel3: TCustoBevel;
-    Bevel4: TCustoBevel;
     Bevel5: TCustoBevel;
     CheckBox1: TFlatCheckBox;
-    CheckBox2: TFlatCheckBox;
     ComboBox1: TFlatComboBox;
     ComboBox2: TFlatComboBox;
     ComboBox3: TFlatComboBox;
-    ComboBox4: TFlatComboBox;
-    ComboBox5: TFlatComboBox;
-    ComboBox6: TFlatComboBox;
     ComboBox7: TFlatComboBox;
     HotKey1: TCustoHotKey;
     HotKey3: TCustoHotKey;
-    HotKey2: TCustoHotKey;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
-    Label5: TLabel;
     Label6: TLabel;
     TrackBar1: TXiTrackBar;
     Button1: TXiButton;
@@ -44,6 +37,9 @@ type
     Timer1: TTimer;
     Restart1: TMenuItem;
     ToggleEthernet1: TMenuItem;
+    CustoBevel1: TCustoBevel;
+    Label5: TLabel;
+    Button2: TXiButton;
     procedure ToggleCoolerBoost1Click(Sender: TObject);
     procedure ToggleAutoruns1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
@@ -66,13 +62,6 @@ type
     procedure TrayIcon1Action(Sender: TObject; Code: Integer);
     procedure Timer1Timer(Sender: TObject);
     procedure ComboBox3Change(Sender: TObject);
-    procedure ComboBox4Change(Sender: TObject);
-    procedure ComboBox5Change(Sender: TObject);
-    procedure ComboBox6Change(Sender: TObject);
-    procedure HotKey2Enter(Sender: TObject);
-    procedure HotKey2Exit(Sender: TObject);
-    procedure HotKey2Change(Sender: TObject);
-    procedure CheckBox2MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ComboBox7Change(Sender: TObject);
     procedure HotKey3Enter(Sender: TObject);
     procedure HotKey3Exit(Sender: TObject);
@@ -80,6 +69,7 @@ type
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Restart1Click(Sender: TObject);
     procedure ToggleEthernet1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -94,9 +84,11 @@ var
 
 procedure HotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
 procedure ToggleCoolerBoost;
-procedure RemoveFocus;
+procedure RemoveFocus(Form: TForm);
 
 implementation
+
+uses Microphones;
 
 {$R *.dfm}
 
@@ -195,11 +187,11 @@ end;
 
 
 //RemoveFocus
-procedure RemoveFocus;
+procedure RemoveFocus(Form: TForm);
 begin
-  if Form1.Visible then begin
-    with TStaticText.Create(Form1) do begin
-      Parent := Form1;
+  if Form.Visible then begin
+    with TStaticText.Create(Form) do begin
+      Parent := Form;
       Left := -MaxInt;
       Top := -MaxInt;
       SetFocus;
@@ -335,6 +327,7 @@ begin
 
   LoadSettings;
   ChangeTheme(Theme, Form1);
+  ChangeTheme(Theme, Form2);
   TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
   TrayIcon1.Title := Application.Title;
   TrayIcon1.AddToTray;
@@ -404,6 +397,7 @@ end;
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Timer1.Enabled := False;
+  MicDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Microphones');
   TrayIcon1.Destroy;
   EC.Close;
 end;
@@ -525,7 +519,7 @@ procedure TForm1.ComboBox1Change(Sender: TObject);
 var
   i: Integer;
 begin
-  RemoveFocus;
+  RemoveFocus(Form1);
 
   for i := 0 to Length(HotKeys)-1 do begin
     if HotKeys[i].Description = ComboBox1.Text then begin
@@ -538,7 +532,7 @@ end;
 
 procedure TForm1.ComboBox2Change(Sender: TObject);
 begin
-  RemoveFocus;
+  RemoveFocus(Form1);
 
   case ComboBox2.ItemIndex of
     0: begin
@@ -568,59 +562,6 @@ end;
 procedure TForm1.TrackBar1MouseUp(Sender: TObject);
 begin
   SetBasicMode(TrackBar1.Position);
-end;
-
-
-procedure TForm1.HotKey2Change(Sender: TObject);
-begin
-  mNewHotKey := HotKey2.HotKey;
-end;
-
-
-procedure TForm1.HotKey2Enter(Sender: TObject);
-begin
-  mOldHotKey := HotKey2.HotKey;
-  mNewHotKey := HotKey2.HotKey;
-  DisableHotKey(ShortCutToHotKey(mOldHotKey));
-end;
-
-procedure TForm1.HotKey2Exit(Sender: TObject);
-begin
-  SetSetting(ComboBox4.Text, ComboBox5.ItemIndex, ComboBox6.ItemIndex, mOldHotKey, mNewHotKey);
-end;
-
-
-procedure TForm1.ComboBox4Change(Sender: TObject);
-begin
-  RemoveFocus;
-  ComboBox5.ItemIndex := 0;
-  ComboBox5Change(nil);
-end;
-
-
-procedure TForm1.ComboBox5Change(Sender: TObject);
-begin
-  RemoveFocus;
-  GenerateOptionList(ComboBox5.ItemIndex, ComboBox6.Items);
-  ComboBox6.ItemIndex := 0;
-  ComboBox6Change(nil);
-  CheckBox2.Visible := (ComboBox5.ItemIndex = 0);
-end;
-
-
-procedure TForm1.ComboBox6Change(Sender: TObject);
-begin
-  RemoveFocus;
-  HotKey2.HotKey := GetSettingHotKey(ComboBox4.Text, ComboBox5.ItemIndex, ComboBox6.ItemIndex);
-  CheckBox2.Checked := (GetFixedVolume(ComboBox4.Text) = (ComboBox6.ItemIndex*5));
-end;
-
-
-procedure TForm1.CheckBox2MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  if CheckBox2.Checked
-    then SetFixedVolume(ComboBox4.Text, ComboBox6.ItemIndex*5)
-    else SetFixedVolume(ComboBox4.Text, -1);
 end;
 
 
@@ -660,7 +601,7 @@ procedure TForm1.ComboBox3Change(Sender: TObject);
 var
   Name: WideString;
 begin
-  RemoveFocus;
+  RemoveFocus(Form1);
   Name := GetNameFromDescription(ComboBox3.Text);
 
   if Name = 'WEBCAM' then begin
@@ -681,7 +622,7 @@ procedure TForm1.CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: 
 var
   Name: WideString;
 begin
-  RemoveFocus;
+  RemoveFocus(Form1);
   Name := GetNameFromDescription(ComboBox3.Text);
 
   if Name = 'WEBCAM' then begin
@@ -708,12 +649,21 @@ begin
 end;
 
 
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+  Application.OnDeactivate := nil;
+  Form2.ShowModal;
+  Application.OnDeactivate := FormDeactivate;
+end;
+
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   Theme := not Theme;
 
   try
     ChangeTheme(Theme, Form1);
+    ChangeTheme(Theme, Form2);
   except
   end;
 end;

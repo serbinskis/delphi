@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 192
   Top = 125
   BorderStyle = bsNone
-  ClientHeight = 360
+  ClientHeight = 341
   ClientWidth = 320
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -39,7 +39,7 @@ object Form1: TForm1
   end
   object Bevel3: TCustoBevel
     Left = 3
-    Top = 319
+    Top = 295
     Width = 309
     Height = 1
     Shape = bsFrame
@@ -88,7 +88,7 @@ object Form1: TForm1
   end
   object Label4: TLabel
     Left = 8
-    Top = 296
+    Top = 272
     Width = 59
     Height = 18
     Caption = 'SETTINGS'
@@ -99,9 +99,30 @@ object Form1: TForm1
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Bevel4: TCustoBevel
+  object Bevel5: TCustoBevel
     Left = 3
-    Top = 159
+    Top = 230
+    Width = 309
+    Height = 1
+    Shape = bsFrame
+    Color = clBlack
+  end
+  object Label6: TLabel
+    Left = 8
+    Top = 208
+    Width = 78
+    Height = 18
+    Caption = 'LANGUAGES'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object CustoBevel1: TCustoBevel
+    Left = 3
+    Top = 158
     Width = 309
     Height = 1
     Shape = bsFrame
@@ -113,27 +134,6 @@ object Form1: TForm1
     Width = 94
     Height = 18
     Caption = 'MICROPHONES'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -15
-    Font.Name = 'Calibri'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Bevel5: TCustoBevel
-    Left = 3
-    Top = 254
-    Width = 309
-    Height = 1
-    Shape = bsFrame
-    Color = clBlack
-  end
-  object Label6: TLabel
-    Left = 8
-    Top = 232
-    Width = 78
-    Height = 18
-    Caption = 'LANGUAGES'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -15
@@ -224,7 +224,7 @@ object Form1: TForm1
   end
   object Button1: TXiButton
     Left = 8
-    Top = 327
+    Top = 303
     Width = 75
     Height = 25
     HelpKeyword = 'Theme'
@@ -292,7 +292,7 @@ object Form1: TForm1
   end
   object ComboBox3: TFlatComboBox
     Left = 95
-    Top = 329
+    Top = 305
     Width = 186
     Height = 22
     Style = csDropDownList
@@ -314,8 +314,8 @@ object Form1: TForm1
   end
   object CheckBox1: TFlatCheckBox
     Left = 293
-    Top = 331
-    Width = 13
+    Top = 307
+    Width = 12
     Height = 17
     Checked = True
     Color = clLime
@@ -334,122 +334,9 @@ object Form1: TForm1
     TabStop = True
     OnMouseUp = CheckBox1MouseUp
   end
-  object HotKey2: TCustoHotKey
-    Left = 8
-    Top = 167
-    Width = 129
-    Height = 23
-    HotKey = 0
-    InvalidKeys = []
-    Modifiers = []
-    TabOrder = 7
-    OnChange = HotKey2Change
-    OnEnter = HotKey2Enter
-    OnExit = HotKey2Exit
-    Color = clWhite
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-  end
-  object ComboBox4: TFlatComboBox
-    Left = 143
-    Top = 167
-    Width = 170
-    Height = 22
-    Style = csDropDownList
-    Color = clWhite
-    ColorArrowBackground = clWhite
-    ColorBorder = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ItemHeight = 14
-    ParentFont = False
-    TabOrder = 8
-    ItemIndex = -1
-    OnChange = ComboBox4Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
-  end
-  object ComboBox5: TFlatComboBox
-    Left = 7
-    Top = 194
-    Width = 130
-    Height = 22
-    Style = csDropDownList
-    Color = clWhite
-    ColorArrowBackground = clWhite
-    ColorBorder = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ItemHeight = 14
-    Items.Strings = (
-      'Set Volume'
-      'Mute')
-    ParentFont = False
-    TabOrder = 9
-    ItemIndex = -1
-    OnChange = ComboBox5Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
-  end
-  object ComboBox6: TFlatComboBox
-    Left = 143
-    Top = 194
-    Width = 170
-    Height = 22
-    Style = csDropDownList
-    Color = clWhite
-    ColorArrowBackground = clWhite
-    ColorBorder = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ItemHeight = 14
-    ParentFont = False
-    TabOrder = 10
-    ItemIndex = -1
-    OnChange = ComboBox6Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
-  end
-  object CheckBox2: TFlatCheckBox
-    Left = 223
-    Top = 219
-    Width = 91
-    Height = 17
-    Hint = 'Automatically will set value back on change.'
-    Caption = 'Fixed Volume'
-    Checked = True
-    Color = clLime
-    ColorFocused = clBlue
-    ColorDown = clAqua
-    ColorCheck = clYellow
-    ColorBorder = clFuchsia
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clRed
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
-    ShowHint = True
-    TabOrder = 11
-    TabStop = True
-    OnMouseUp = CheckBox2MouseUp
-  end
   object ComboBox7: TFlatComboBox
     Left = 143
-    Top = 263
+    Top = 239
     Width = 169
     Height = 22
     Style = csDropDownList
@@ -463,7 +350,7 @@ object Form1: TForm1
     Font.Style = []
     ItemHeight = 14
     ParentFont = False
-    TabOrder = 12
+    TabOrder = 7
     ItemIndex = -1
     OnChange = ComboBox7Change
     OnKeyDown = ComboBoxKey
@@ -471,13 +358,13 @@ object Form1: TForm1
   end
   object HotKey3: TCustoHotKey
     Left = 8
-    Top = 263
+    Top = 239
     Width = 129
     Height = 23
     HotKey = 0
     InvalidKeys = []
     Modifiers = []
-    TabOrder = 13
+    TabOrder = 8
     OnChange = HotKey3Change
     OnEnter = HotKey3Enter
     OnExit = HotKey3Exit
@@ -487,6 +374,48 @@ object Form1: TForm1
     Font.Height = -12
     Font.Name = 'Calibri'
     Font.Style = []
+  end
+  object Button2: TXiButton
+    Left = 8
+    Top = 167
+    Width = 73
+    Height = 25
+    HelpType = htKeyword
+    ColorFace = clBlue
+    ColorGrad = clRed
+    ColorDark = clLime
+    ColorLight = clYellow
+    ColorBorder = clBlack
+    ColorText = clBlack
+    OverColorFace = clWhite
+    OverColorGrad = clWhite
+    OverColorDark = clWhite
+    OverColorLight = clWhite
+    OverColorBorder = 14120960
+    OverColorText = clBlack
+    DownColorFace = 15790320
+    DownColorGrad = 15790320
+    DownColorDark = 15790320
+    DownColorLight = 15790320
+    DownColorBorder = 10048512
+    DownColorText = clBlack
+    DisabledColorFace = clSilver
+    DisabledColorGrad = clSilver
+    DisabledColorDark = clSilver
+    DisabledColorLight = clSilver
+    DisabledColorBorder = clBlack
+    DisabledColorText = clBlack
+    ColorFocusRect = clNone
+    ColorScheme = csCustom
+    Ctl3D = True
+    Layout = blGlyphLeft
+    Spacing = 4
+    TransparentGlyph = True
+    Gradient = False
+    HotTrack = True
+    Caption = 'Settings'
+    TabOrder = 9
+    OnClick = Button2Click
   end
   object PopupMenu1: TPopupMenu
     AutoHotkeys = maManual

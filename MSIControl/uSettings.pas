@@ -75,7 +75,7 @@ function GetDescriptionFromName(Name: WideString): WideString;
 implementation
 
 uses
-  MSIControl, uMicrophones, uLanguages;
+  MSIControl, Microphones, uLanguages;
 
 procedure LoadSettings;
 var
