@@ -54,6 +54,7 @@ type
     procedure SpinEdit4Change(Sender: TObject);
     procedure ComboBox3Change(Sender: TObject);
     procedure PanelMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure FormClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -84,6 +85,12 @@ begin
   Button.Color := RGB(255, 255, 255);
 end;
 //SimulatePress
+
+
+procedure TForm2.FormClick(Sender: TObject);
+begin
+  StaticText1.SetFocus;
+end;
 
 
 procedure TForm2.FormShow(Sender: TObject);
@@ -167,6 +174,9 @@ begin
 
   Form1.Timer3.Interval := SettingsDB.SaveAfter*1000;
   Form1.Timer3.Enabled := True;
+
+  Form1.TrayIcon1.Icon := LoadIcon(HInstance, PChar(String(Functions.Q(SettingsDB.Monitoring, 'MAINICON', '_DISABLED'))));
+  Form1.PopupMenu1.Items[0].Caption := Functions.Q(SettingsDB.Monitoring, 'Disable', 'Enable') + ' Clipboard';
 
   SettingsDB.MaxItems := SpinEdit3.Value;
   Form1.EnableClipboard;

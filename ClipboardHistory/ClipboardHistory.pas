@@ -52,7 +52,6 @@ type
     StaticText2: TStaticText;
     TNTEdit1: TTNTEdit;
     PopupMenu1: TPopupMenu;
-    Open1: TMenuItem;
     Settings1: TMenuItem;
     Exit1: TMenuItem;
     About1: TMenuItem;
@@ -71,6 +70,7 @@ type
     Copy1: TMenuItem;
     ShowBySize1: TMenuItem;
     StaticText3: TStaticText;
+    DisableClipboard1: TMenuItem;
     procedure FormShow(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -78,7 +78,6 @@ type
     procedure TNTStringGrid1MouseWheelDown(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure TNTStringGrid1MouseWheelUp(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure FormCreate(Sender: TObject);
-    procedure Open1Click(Sender: TObject);
     procedure Settings1Click(Sender: TObject);
     procedure About1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
@@ -115,6 +114,7 @@ type
     procedure DeleteRow(ARow: Integer);
     procedure ShowBySize1Click(Sender: TObject);
     procedure StaticText3Click(Sender: TObject);
+    procedure DisableClipboard1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -159,6 +159,9 @@ begin
   LoadRegistryInteger(SettingsDB.SizeIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SizeIndex');
   LoadRegistryInteger(SettingsDB.AutoSaveIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'AutoSaveIndex');
 
+  Form1.PopupMenu1.Items[0].Caption := Functions.Q(SettingsDB.Monitoring, 'Disable', 'Enable') + ' Clipboard';
+  Form1.TrayIcon1.Icon := LoadIcon(HInstance, PChar(String(Functions.Q(SettingsDB.Monitoring, 'MAINICON', '_DISABLED'))));
+
   DynamicData := TDynamicData.Create(['UID', 'DateTime', 'Content', 'Favorite']);
   DynamicData.Load(DO_COMPRESS, True, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'History', True);
 end;
@@ -168,7 +171,7 @@ end;
 //SaveSettings
 procedure SaveSettings;
 begin
-  Form1.TrayIcon1.Icon := LoadIcon(HInstance, 'SAVING');
+  Form1.TrayIcon1.Icon := LoadIcon(HInstance, '_SAVING');
   SaveRegistryBoolean(SettingsDB.Monitoring, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Monitoring');
   SaveRegistryBoolean(SettingsDB.PreventDuplicates, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'PreventDuplicates');
   SaveRegistryInteger(SettingsDB.MaxItems, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxItems');
@@ -184,7 +187,7 @@ begin
   SaveRegistryInteger(SettingsDB.AutoSaveIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'AutoSaveIndex');
 
   DynamicData.Save(DO_COMPRESS, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'History');
-  Form1.TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
+  Form1.TrayIcon1.Icon := LoadIcon(HInstance, PChar(String(Functions.Q(SettingsDB.Monitoring, 'MAINICON', '_DISABLED'))));
 end;
 //SaveSettings
 
@@ -237,7 +240,7 @@ end;
 //ClipboardUpdate
 procedure ClipboardUpdate;
 begin
-  Form1.TrayIcon1.Icon := LoadIcon(HInstance, 'NEW_TEXT');
+  Form1.TrayIcon1.Icon := LoadIcon(HInstance, '_NEW_TEXT');
   Wait(1000);
   Form1.TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
   EndThread(0);
@@ -585,7 +588,6 @@ begin
   Scroll.Top := TNTStringGrid1.Top+1;
   Scroll.Left := TNTStringGrid1.Width - Scroll.Width-1;
 
-  TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
   TrayIcon1.Title := TOTAL_ITEMS + IntToStr(DynamicData.GetLength);
   TrayIcon1.AddToTray;
 
@@ -641,15 +643,16 @@ begin
   Timer4.Enabled := False;
   EnableClipboard;
 
-  if SaveClipboard <> 0 then begin
+  if (SaveClipboard <> 0) and SettingsDB.Monitoring then begin
     Index := DynamicData.FindIndex('UID', SaveClipboard);
     isFavorite := False;
     if Index > -1 then isFavorite := DynamicData.GetValue(Index, 'Favorite');
     if Index > 0 then DynamicData.DeleteData(Index);
     ClipboardChanged(Msg);
     DynamicData.SetValue(0, 'Favorite', isFavorite);
-    SaveClipboard := 0;
   end;
+
+  SaveClipboard := 0;
 end;
 
 
@@ -971,12 +974,13 @@ begin
 end;
 
 
-procedure TForm1.Open1Click(Sender: TObject);
+procedure TForm1.DisableClipboard1Click(Sender: TObject);
 begin
-  if Form1.Visible
-    then Form1.Hide
-    else Form1.Show;
+  SettingsDB.Monitoring := not SettingsDB.Monitoring;
+  PopupMenu1.Items[0].Caption := Functions.Q(SettingsDB.Monitoring, 'Disable', 'Enable') + ' Clipboard';
+  TrayIcon1.Icon := LoadIcon(HInstance, PChar(String(Functions.Q(SettingsDB.Monitoring, 'MAINICON', '_DISABLED'))));
 end;
+
 
 
 procedure TForm1.Settings1Click(Sender: TObject);
@@ -1106,7 +1110,7 @@ end;
 
 initialization
   SettingsDB.Monitoring := True; //Enable clipboard saving
-  SettingsDB.PreventDuplicates := True;
+  SettingsDB.PreventDuplicates := True; //Prevent duplicated saved
   SettingsDB.MaxItems := 2000; //Max items
   SettingsDB.MaxSize := 1024*1024*10; //Max size
   SettingsDB.RemoveAfter := 60*60*24*30; //Seconds (1 month)

@@ -136,9 +136,9 @@ object Form1: TForm1
   object PopupMenu1: TPopupMenu
     Left = 8
     Top = 40
-    object Open1: TMenuItem
-      Caption = 'Open'
-      OnClick = Open1Click
+    object DisableClipboard1: TMenuItem
+      Caption = 'Disable Clipboard'
+      OnClick = DisableClipboard1Click
     end
     object Settings1: TMenuItem
       Caption = 'Settings'

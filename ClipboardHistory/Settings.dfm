@@ -13,6 +13,7 @@ object Form2: TForm2
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClick = FormClick
   OnClose = FormClose
   OnShow = FormShow
   PixelsPerInch = 96
