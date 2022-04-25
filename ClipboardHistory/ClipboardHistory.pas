@@ -27,7 +27,7 @@ type
     MaxItems: Integer;
     MaxSize: Integer;
     RemoveAfter: Integer;
-    SaveAfter: Integer;
+    AutoSaveAfter: Integer;
     isItemsLimited: Boolean;
     isSizeLimited: Boolean;
     isTimeLimited: Boolean;
@@ -150,7 +150,7 @@ begin
   LoadRegistryInteger(SettingsDB.MaxItems, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxItems');
   LoadRegistryInteger(SettingsDB.MaxSize, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxSize');
   LoadRegistryInteger(SettingsDB.RemoveAfter, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'RemoveAfter');
-  LoadRegistryInteger(SettingsDB.SaveAfter, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SaveAfter');
+  LoadRegistryInteger(SettingsDB.AutoSaveAfter, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'AutoSaveAfter');
   LoadRegistryBoolean(SettingsDB.isItemsLimited, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'isItemsLimited');
   LoadRegistryBoolean(SettingsDB.isSizeLimited, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'isSizeLimited');
   LoadRegistryBoolean(SettingsDB.isTimeLimited, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'isTimeLimited');
@@ -177,7 +177,7 @@ begin
   SaveRegistryInteger(SettingsDB.MaxItems, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxItems');
   SaveRegistryInteger(SettingsDB.MaxSize, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'MaxSize');
   SaveRegistryInteger(SettingsDB.RemoveAfter, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'RemoveAfter');
-  SaveRegistryInteger(SettingsDB.SaveAfter, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SaveAfter');
+  SaveRegistryInteger(SettingsDB.AutoSaveAfter, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'AutoSaveAfter');
   SaveRegistryBoolean(SettingsDB.isItemsLimited, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'isItemsLimited');
   SaveRegistryBoolean(SettingsDB.isSizeLimited, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'isSizeLimited');
   SaveRegistryBoolean(SettingsDB.isTimeLimited, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'isTimeLimited');
@@ -593,7 +593,7 @@ begin
 
   Timer1.Enabled := True;
   Timer2.Interval := SEARCH_DELAY;
-  Timer3.Interval := SettingsDB.SaveAfter*1000;
+  Timer3.Interval := SettingsDB.AutoSaveAfter*1000;
   Timer3.Enabled := True;
 end;
 
@@ -1114,7 +1114,7 @@ initialization
   SettingsDB.MaxItems := 2000; //Max items
   SettingsDB.MaxSize := 1024*1024*10; //Max size
   SettingsDB.RemoveAfter := 60*60*24*30; //Seconds (1 month)
-  SettingsDB.SaveAfter := 60*60*2; //Seconds (2 hours)
+  SettingsDB.AutoSaveAfter := 60*60*2; //Seconds (2 hours)
   SettingsDB.isItemsLimited := True; //Item limitation
   SettingsDB.isSizeLimited := True; //Size limitation
   SettingsDB.isTimeLimited := True; //Time limitation

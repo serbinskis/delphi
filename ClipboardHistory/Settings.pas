@@ -127,8 +127,8 @@ begin
   end;
 
   case SettingsDB.AutoSaveIndex of
-    0: SpinEdit4.Value := Round(SettingsDB.SaveAfter/60);
-    1: SpinEdit4.Value := Round(SettingsDB.SaveAfter/60/60);
+    0: SpinEdit4.Value := Round(SettingsDB.AutoSaveAfter/60);
+    1: SpinEdit4.Value := Round(SettingsDB.AutoSaveAfter/60/60);
   end;
 
   SpinEdit3.Value := SettingsDB.MaxItems;
@@ -168,17 +168,16 @@ begin
   end;
 
   case ComboBox3.ItemIndex of
-    0: SettingsDB.SaveAfter := SpinEdit2.Value*60;
-    1: SettingsDB.SaveAfter := SpinEdit2.Value*60*60;
+    0: SettingsDB.AutoSaveAfter := SpinEdit4.Value*60;
+    1: SettingsDB.AutoSaveAfter := SpinEdit4.Value*60*60;
   end;
 
-  Form1.Timer3.Interval := SettingsDB.SaveAfter*1000;
+  SettingsDB.MaxItems := SpinEdit3.Value;
+  Form1.Timer3.Interval := SettingsDB.AutoSaveAfter*1000;
   Form1.Timer3.Enabled := True;
 
   Form1.TrayIcon1.Icon := LoadIcon(HInstance, PChar(String(Functions.Q(SettingsDB.Monitoring, 'MAINICON', '_DISABLED'))));
   Form1.PopupMenu1.Items[0].Caption := Functions.Q(SettingsDB.Monitoring, 'Disable', 'Enable') + ' Clipboard';
-
-  SettingsDB.MaxItems := SpinEdit3.Value;
   Form1.EnableClipboard;
 end;
 
