@@ -1,9 +1,9 @@
-unit uSettings;
+unit MSISettings;
 
 interface
 
 uses
-  Windows, uThemes, uHotKey, Functions;
+  Windows, uHotKey, MSIThemes, Functions;
 
 type
   THotKey = record
@@ -75,7 +75,7 @@ function GetDescriptionFromName(Name: WideString): WideString;
 implementation
 
 uses
-  MSIControl, Microphones, uLanguages;
+  MSIControl, MSIMicrophones, MSIShadowPlay, MSILanguages;
 
 procedure LoadSettings;
 var
@@ -95,9 +95,9 @@ begin
 
   Form1.ComboBox1.ItemIndex := 0;
   Form1.ComboBox3.ItemIndex := 0;
-  LoadMicrophoneSettings;
   LoadLanguageSetting;
 end;
+
 
 procedure UpdateSettingByDescription(Description: WideString; Value, Registry: Boolean);
 var
@@ -112,6 +112,7 @@ begin
   if Form1.ComboBox3.Text = Description then Form1.CheckBox1.Checked := Value;
 end;
 
+
 procedure UpdateSettingByName(Name: WideString; Value, Registry: Boolean);
 var
   i: Integer;
@@ -125,6 +126,7 @@ begin
   if GetNameFromDescription(Form1.ComboBox3.Text) = Name then Form1.CheckBox1.Checked := Value;
 end;
 
+
 function GetSettingByDescription(Description: WideString): Boolean;
 var
   i: Integer;
@@ -136,6 +138,7 @@ begin
       then LoadRegistryBoolean(Result, DEFAULT_ROOT_KEY, DEFAULT_KEY, Settings[i].Name);
   end;
 end;
+
 
 function GetSettingByName(Name: WideString): Boolean;
 var
@@ -159,6 +162,7 @@ begin
     if Settings[i].Description = Description then Result := Settings[i].Name;
   end;
 end;
+
 
 function GetDescriptionFromName(Name: WideString): WideString;
 var

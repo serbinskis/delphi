@@ -1,51 +1,83 @@
-object Form1: TForm1
-  Left = 192
-  Top = 125
-  BorderStyle = bsNone
-  ClientHeight = 300
-  ClientWidth = 320
+object Form3: TForm3
+  Left = 472
+  Top = 505
+  BorderStyle = bsDialog
+  Caption = 'Shadow Play'
+  ClientHeight = 390
+  ClientWidth = 270
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
-  Font.Color = clBlack
+  Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Calibri'
   Font.Style = []
-  FormStyle = fsStayOnTop
   OldCreateOrder = False
+  Position = poScreenCenter
   OnClick = FormClick
   OnClose = FormClose
-  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  OnHide = FormHide
-  OnPaint = FormPaint
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TCustoBevel
-    Left = 6
-    Top = 30
-    Width = 309
-    Height = 1
-    Shape = bsFrame
-    Color = clBlack
-  end
-  object Bevel2: TCustoBevel
-    Left = 6
-    Top = 95
-    Width = 309
-    Height = 1
-    Shape = bsFrame
-    Color = clBlack
-  end
-  object Bevel3: TCustoBevel
     Left = 3
-    Top = 223
-    Width = 309
+    Top = 103
+    Width = 263
     Height = 1
     Shape = bsFrame
     Color = clBlack
   end
   object Label1: TLabel
+    Left = 8
+    Top = 80
+    Width = 91
+    Height = 18
+    Caption = 'SHADOW PLAY'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Bevel2: TCustoBevel
+    Left = 7
+    Top = 145
+    Width = 162
+    Height = 22
+    Shape = bsFrame
+    Color = clBlack
+  end
+  object Bevel4: TCustoBevel
+    Left = -2
+    Top = 327
+    Width = 263
+    Height = 1
+    Shape = bsFrame
+    Color = clBlack
+  end
+  object Label2: TLabel
+    Left = 8
+    Top = 304
+    Width = 59
+    Height = 18
+    Caption = 'SETTINGS'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Bevel3: TCustoBevel
+    Left = 7
+    Top = 233
+    Width = 162
+    Height = 22
+    Shape = bsFrame
+    Color = clBlack
+  end
+  object Label3: TLabel
     Left = 8
     Top = 8
     Width = 56
@@ -58,245 +90,36 @@ object Form1: TForm1
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label2: TLabel
-    Left = 8
-    Top = 72
-    Width = 66
-    Height = 18
-    Caption = 'FAN SPEED'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -15
-    Font.Name = 'Calibri'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label3: TLabel
-    Left = 8
-    Top = 105
-    Width = 33
-    Height = 18
-    Alignment = taCenter
-    AutoSize = False
-    Caption = '50%'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -15
-    Font.Name = 'Calibri'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
   object Label4: TLabel
     Left = 8
-    Top = 200
-    Width = 59
-    Height = 18
-    Caption = 'SETTINGS'
+    Top = 43
+    Width = 109
+    Height = 14
+    Caption = 'Toggle Shadow Play:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -15
+    Font.Height = -12
     Font.Name = 'Calibri'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
   end
-  object Bevel5: TCustoBevel
+  object CustoBevel1: TCustoBevel
     Left = 3
-    Top = 158
-    Width = 309
+    Top = 31
+    Width = 263
     Height = 1
     Shape = bsFrame
     Color = clBlack
   end
-  object Label6: TLabel
-    Left = 8
-    Top = 136
-    Width = 78
-    Height = 18
-    Caption = 'LANGUAGES'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -15
-    Font.Name = 'Calibri'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object ComboBox1: TFlatComboBox
-    Left = 144
-    Top = 39
-    Width = 169
-    Height = 22
-    Style = csDropDownList
-    Color = clWhite
-    ColorArrowBackground = clWhite
-    ColorBorder = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ItemHeight = 14
-    ParentFont = False
-    TabOrder = 0
-    ItemIndex = -1
-    OnChange = ComboBox1Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
-  end
-  object HotKey1: TCustoHotKey
-    Left = 8
-    Top = 39
-    Width = 129
-    Height = 23
-    HotKey = 0
-    InvalidKeys = []
-    Modifiers = []
-    TabOrder = 1
-    OnEnter = HotKey1Enter
-    OnExit = HotKey1Exit
-    Color = clWhite
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-  end
-  object TrackBar1: TXiTrackBar
-    Left = 48
-    Top = 98
-    Width = 177
-    Height = 33
-    BackColor = clWhite
-    TickColor = clBlack
-    DisabledTickColor = clSilver
-    SlideBorderColor = clBlack
-    SlideFaceColor = clWhite
-    SlideGradColor = clWhite
-    DisabledSlideBorderColor = 12500670
-    DisabledSlideFaceColor = 14211288
-    DisabledSlideGradColor = 15263976
-    DisabledThumbBorderColor = 11908533
-    DisabledThumbFaceColor = 15395562
-    DisabledThumbGradColor = 13619151
-    ThumbBorderColor = clBlack
-    ThumbFaceColor = 14120960
-    ThumbGradColor = 14120960
-    OverThumbBorderColor = clBlack
-    OverThumbFaceColor = 14120960
-    OverThumbGradColor = 14120960
-    DownThumbBorderColor = clBlack
-    DownThumbFaceColor = 14120960
-    DownThumbGradColor = 14120960
-    SmoothCorners = False
-    ColorScheme = csCustom
-    Position = 0
-    Min = -15
-    Max = 15
-    Frequency = 1
-    TickStyle = tsNone
-    TickMarks = tmBottomRight
-    Orientation = trHorizontal
-    BorderWidth = 5
-    ParentShowHint = False
-    ShowHint = True
-    OnChange = TrackBar1Change
-    OnMouseUp = TrackBar1MouseUp
-  end
-  object Button1: TXiButton
-    Left = 8
-    Top = 231
-    Width = 75
-    Height = 25
-    HelpKeyword = 'Theme'
-    ColorFace = clBlue
-    ColorGrad = clRed
-    ColorDark = clLime
-    ColorLight = clYellow
-    ColorBorder = clBlack
-    ColorText = clBlack
-    OverColorFace = clWhite
-    OverColorGrad = clWhite
-    OverColorDark = clWhite
-    OverColorLight = clWhite
-    OverColorBorder = 14120960
-    OverColorText = clBlack
-    DownColorFace = 15790320
-    DownColorGrad = 15790320
-    DownColorDark = 15790320
-    DownColorLight = 15790320
-    DownColorBorder = 10048512
-    DownColorText = clBlack
-    DisabledColorFace = clSilver
-    DisabledColorGrad = clSilver
-    DisabledColorDark = clSilver
-    DisabledColorLight = clSilver
-    DisabledColorBorder = clBlack
-    DisabledColorText = clBlack
-    ColorFocusRect = clNone
-    ColorScheme = csCustom
-    Ctl3D = True
-    Layout = blGlyphLeft
-    Spacing = 4
-    TransparentGlyph = True
-    Gradient = False
-    HotTrack = True
-    TabOrder = 3
-    OnClick = Button1Click
-  end
-  object ComboBox2: TFlatComboBox
-    Left = 232
-    Top = 103
-    Width = 80
-    Height = 22
-    Style = csDropDownList
-    Color = clWhite
-    ColorArrowBackground = clWhite
-    ColorBorder = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ItemHeight = 14
-    Items.Strings = (
-      'Auto'
-      'Basic'
-      'Advanced')
-    ParentFont = False
-    TabOrder = 4
-    Text = 'Auto'
-    ItemIndex = 0
-    OnChange = ComboBox2Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
-  end
-  object ComboBox3: TFlatComboBox
-    Left = 7
-    Top = 265
-    Width = 274
-    Height = 22
-    Style = csDropDownList
-    Color = clWhite
-    ColorArrowBackground = clWhite
-    ColorBorder = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ItemHeight = 14
-    ParentFont = False
-    TabOrder = 5
-    ItemIndex = -1
-    OnChange = ComboBox3Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
-  end
   object CheckBox1: TFlatCheckBox
-    Left = 293
-    Top = 267
-    Width = 12
+    Left = 8
+    Top = 115
+    Width = 193
     Height = 17
-    Checked = True
+    Hint = 
+      'Disable instant replay when active window process is from the li' +
+      'st'
+    Caption = 'Disable IT When Active Process'
     Color = clLime
     ColorFocused = clBlue
     ColorDown = clAqua
@@ -309,14 +132,41 @@ object Form1: TForm1
     Font.Style = []
     ParentColor = False
     ParentFont = False
-    TabOrder = 6
+    ShowHint = True
+    TabOrder = 0
     TabStop = True
     OnMouseUp = CheckBox1MouseUp
   end
-  object ComboBox7: TFlatComboBox
-    Left = 143
-    Top = 167
-    Width = 169
+  object CheckBox2: TFlatCheckBox
+    Left = 8
+    Top = 211
+    Width = 185
+    Height = 17
+    Hint = 
+      'Enable instant replay when active window process is from the lis' +
+      't'
+    Caption = 'Enable IT When Active Process'
+    Color = clLime
+    ColorFocused = clBlue
+    ColorDown = clAqua
+    ColorCheck = clYellow
+    ColorBorder = clFuchsia
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clRed
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+    ShowHint = True
+    TabOrder = 1
+    TabStop = True
+    OnMouseUp = CheckBox2MouseUp
+  end
+  object ComboBox1: TFlatComboBox
+    Left = 7
+    Top = 177
+    Width = 162
     Height = 22
     Style = csDropDownList
     Color = clWhite
@@ -329,24 +179,295 @@ object Form1: TForm1
     Font.Style = []
     ItemHeight = 14
     ParentFont = False
-    TabOrder = 7
+    TabOrder = 2
     ItemIndex = -1
-    OnChange = ComboBox7Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
   end
-  object HotKey3: TCustoHotKey
+  object Button1: TXiButton
+    Left = 176
+    Top = 143
+    Width = 81
+    Height = 25
+    HelpType = htKeyword
+    ColorFace = clBlue
+    ColorGrad = clRed
+    ColorDark = clLime
+    ColorLight = clYellow
+    ColorBorder = clBlack
+    ColorText = clBlack
+    OverColorFace = clWhite
+    OverColorGrad = clWhite
+    OverColorDark = clWhite
+    OverColorLight = clWhite
+    OverColorBorder = 14120960
+    OverColorText = clBlack
+    DownColorFace = 15790320
+    DownColorGrad = 15790320
+    DownColorDark = 15790320
+    DownColorLight = 15790320
+    DownColorBorder = 10048512
+    DownColorText = clBlack
+    DisabledColorFace = clSilver
+    DisabledColorGrad = clSilver
+    DisabledColorDark = clSilver
+    DisabledColorLight = clSilver
+    DisabledColorBorder = clBlack
+    DisabledColorText = clBlack
+    ColorFocusRect = clNone
+    ColorScheme = csCustom
+    Ctl3D = True
+    Layout = blGlyphLeft
+    Spacing = 4
+    TransparentGlyph = True
+    Gradient = False
+    HotTrack = True
+    Caption = 'Add'
+    TabOrder = 3
+    OnClick = Button1Click
+  end
+  object Button2: TXiButton
+    Left = 176
+    Top = 175
+    Width = 81
+    Height = 25
+    HelpType = htKeyword
+    ColorFace = clBlue
+    ColorGrad = clRed
+    ColorDark = clLime
+    ColorLight = clYellow
+    ColorBorder = clBlack
+    ColorText = clBlack
+    OverColorFace = clWhite
+    OverColorGrad = clWhite
+    OverColorDark = clWhite
+    OverColorLight = clWhite
+    OverColorBorder = 14120960
+    OverColorText = clBlack
+    DownColorFace = 15790320
+    DownColorGrad = 15790320
+    DownColorDark = 15790320
+    DownColorLight = 15790320
+    DownColorBorder = 10048512
+    DownColorText = clBlack
+    DisabledColorFace = clSilver
+    DisabledColorGrad = clSilver
+    DisabledColorDark = clSilver
+    DisabledColorLight = clSilver
+    DisabledColorBorder = clBlack
+    DisabledColorText = clBlack
+    ColorFocusRect = clNone
+    ColorScheme = csCustom
+    Ctl3D = True
+    Layout = blGlyphLeft
+    Spacing = 4
+    TransparentGlyph = True
+    Gradient = False
+    HotTrack = True
+    Caption = 'Delete'
+    TabOrder = 4
+    OnClick = Button2Click
+  end
+  object Edit1: TTntEdit
     Left = 8
-    Top = 167
+    Top = 145
+    Width = 161
+    Height = 22
+    AutoSize = False
+    Color = clWhite
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    MaxLength = 256
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 5
+    Text = 'explorer.exe'
+  end
+  object CheckBox3: TFlatCheckBox
+    Left = 8
+    Top = 338
+    Width = 145
+    Height = 17
+    Caption = 'Auto Enable IT On Start'
+    Color = clLime
+    ColorFocused = clBlue
+    ColorDown = clAqua
+    ColorCheck = clYellow
+    ColorBorder = clFuchsia
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clRed
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+    ShowHint = True
+    TabOrder = 6
+    TabStop = True
+    OnMouseUp = CheckBox3MouseUp
+  end
+  object CheckBox4: TFlatCheckBox
+    Left = 8
+    Top = 362
+    Width = 129
+    Height = 17
+    Hint = 
+      'Enable instant replay when active window process is one in the l' +
+      'ist'
+    Caption = 'Enable Shadow Play'
+    Color = clLime
+    ColorFocused = clBlue
+    ColorDown = clAqua
+    ColorCheck = clYellow
+    ColorBorder = clFuchsia
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clRed
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+    ShowHint = True
+    TabOrder = 7
+    TabStop = True
+    OnMouseUp = CheckBox4MouseUp
+  end
+  object Edit2: TTntEdit
+    Left = 8
+    Top = 233
+    Width = 161
+    Height = 22
+    AutoSize = False
+    Color = clWhite
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    MaxLength = 256
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 8
+    Text = 'explorer.exe'
+  end
+  object ComboBox2: TFlatComboBox
+    Left = 7
+    Top = 265
+    Width = 162
+    Height = 22
+    Style = csDropDownList
+    Color = clWhite
+    ColorArrowBackground = clWhite
+    ColorBorder = clBlack
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ItemHeight = 14
+    ParentFont = False
+    TabOrder = 9
+    ItemIndex = -1
+  end
+  object Button3: TXiButton
+    Left = 176
+    Top = 231
+    Width = 81
+    Height = 25
+    HelpType = htKeyword
+    ColorFace = clBlue
+    ColorGrad = clRed
+    ColorDark = clLime
+    ColorLight = clYellow
+    ColorBorder = clBlack
+    ColorText = clBlack
+    OverColorFace = clWhite
+    OverColorGrad = clWhite
+    OverColorDark = clWhite
+    OverColorLight = clWhite
+    OverColorBorder = 14120960
+    OverColorText = clBlack
+    DownColorFace = 15790320
+    DownColorGrad = 15790320
+    DownColorDark = 15790320
+    DownColorLight = 15790320
+    DownColorBorder = 10048512
+    DownColorText = clBlack
+    DisabledColorFace = clSilver
+    DisabledColorGrad = clSilver
+    DisabledColorDark = clSilver
+    DisabledColorLight = clSilver
+    DisabledColorBorder = clBlack
+    DisabledColorText = clBlack
+    ColorFocusRect = clNone
+    ColorScheme = csCustom
+    Ctl3D = True
+    Layout = blGlyphLeft
+    Spacing = 4
+    TransparentGlyph = True
+    Gradient = False
+    HotTrack = True
+    Caption = 'Add'
+    TabOrder = 10
+    OnClick = Button3Click
+  end
+  object Button4: TXiButton
+    Left = 176
+    Top = 263
+    Width = 81
+    Height = 25
+    HelpType = htKeyword
+    ColorFace = clBlue
+    ColorGrad = clRed
+    ColorDark = clLime
+    ColorLight = clYellow
+    ColorBorder = clBlack
+    ColorText = clBlack
+    OverColorFace = clWhite
+    OverColorGrad = clWhite
+    OverColorDark = clWhite
+    OverColorLight = clWhite
+    OverColorBorder = 14120960
+    OverColorText = clBlack
+    DownColorFace = 15790320
+    DownColorGrad = 15790320
+    DownColorDark = 15790320
+    DownColorLight = 15790320
+    DownColorBorder = 10048512
+    DownColorText = clBlack
+    DisabledColorFace = clSilver
+    DisabledColorGrad = clSilver
+    DisabledColorDark = clSilver
+    DisabledColorLight = clSilver
+    DisabledColorBorder = clBlack
+    DisabledColorText = clBlack
+    ColorFocusRect = clNone
+    ColorScheme = csCustom
+    Ctl3D = True
+    Layout = blGlyphLeft
+    Spacing = 4
+    TransparentGlyph = True
+    Gradient = False
+    HotTrack = True
+    Caption = 'Delete'
+    TabOrder = 11
+    OnClick = Button4Click
+  end
+  object HotKey1: TCustoHotKey
+    Left = 128
+    Top = 39
     Width = 129
     Height = 23
     HotKey = 0
     InvalidKeys = []
     Modifiers = []
-    TabOrder = 8
-    OnChange = HotKey3Change
-    OnEnter = HotKey3Enter
-    OnExit = HotKey3Exit
+    TabOrder = 12
+    OnChange = HotKey1Change
+    OnEnter = HotKey1Enter
+    OnExit = HotKey1Exit
     Color = clWhite
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
@@ -354,124 +475,16 @@ object Form1: TForm1
     Font.Name = 'Calibri'
     Font.Style = []
   end
-  object Button2: TXiButton
-    Left = 90
-    Top = 231
-    Width = 73
-    Height = 25
-    HelpType = htKeyword
-    ColorFace = clBlue
-    ColorGrad = clRed
-    ColorDark = clLime
-    ColorLight = clYellow
-    ColorBorder = clBlack
-    ColorText = clBlack
-    OverColorFace = clWhite
-    OverColorGrad = clWhite
-    OverColorDark = clWhite
-    OverColorLight = clWhite
-    OverColorBorder = 14120960
-    OverColorText = clBlack
-    DownColorFace = 15790320
-    DownColorGrad = 15790320
-    DownColorDark = 15790320
-    DownColorLight = 15790320
-    DownColorBorder = 10048512
-    DownColorText = clBlack
-    DisabledColorFace = clSilver
-    DisabledColorGrad = clSilver
-    DisabledColorDark = clSilver
-    DisabledColorLight = clSilver
-    DisabledColorBorder = clBlack
-    DisabledColorText = clBlack
-    ColorFocusRect = clNone
-    ColorScheme = csCustom
-    Ctl3D = True
-    Layout = blGlyphLeft
-    Spacing = 4
-    TransparentGlyph = True
-    Gradient = False
-    HotTrack = True
-    Caption = 'Microphones'
-    TabOrder = 9
-    OnClick = Button2Click
-  end
-  object Button3: TXiButton
-    Left = 170
-    Top = 231
-    Width = 73
-    Height = 25
-    HelpType = htKeyword
-    ColorFace = clBlue
-    ColorGrad = clRed
-    ColorDark = clLime
-    ColorLight = clYellow
-    ColorBorder = clBlack
-    ColorText = clBlack
-    OverColorFace = clWhite
-    OverColorGrad = clWhite
-    OverColorDark = clWhite
-    OverColorLight = clWhite
-    OverColorBorder = 14120960
-    OverColorText = clBlack
-    DownColorFace = 15790320
-    DownColorGrad = 15790320
-    DownColorDark = 15790320
-    DownColorLight = 15790320
-    DownColorBorder = 10048512
-    DownColorText = clBlack
-    DisabledColorFace = clSilver
-    DisabledColorGrad = clSilver
-    DisabledColorDark = clSilver
-    DisabledColorLight = clSilver
-    DisabledColorBorder = clBlack
-    DisabledColorText = clBlack
-    ColorFocusRect = clNone
-    ColorScheme = csCustom
-    Ctl3D = True
-    Layout = blGlyphLeft
-    Spacing = 4
-    TransparentGlyph = True
-    Gradient = False
-    HotTrack = True
-    Caption = 'Shadow Play'
-    TabOrder = 10
-    OnClick = Button3Click
-  end
-  object PopupMenu1: TPopupMenu
-    AutoHotkeys = maManual
-    OnPopup = PopupMenu1Popup
-    Left = 352
-    Top = 168
-    object ToggleCoolerBoost1: TMenuItem
-      Caption = 'Toggle Cooler Boost'
-      OnClick = ToggleCoolerBoost1Click
-    end
-    object ToggleEthernet1: TMenuItem
-      Caption = 'Toggle Ethernet'
-      OnClick = ToggleEthernet1Click
-    end
-    object ToggleAutoruns1: TMenuItem
-      Caption = 'Toggle Autoruns'
-      OnClick = ToggleAutoruns1Click
-    end
-    object Restart1: TMenuItem
-      Caption = 'Restart'
-      OnClick = Restart1Click
-    end
-    object Exit1: TMenuItem
-      Caption = 'Exit'
-      OnClick = Exit1Click
-    end
-  end
-  object TrayIcon1: TTrayIcon
-    OnAction = TrayIcon1Action
-    Left = 288
-  end
   object Timer1: TTimer
     Enabled = False
-    Interval = 2000
+    Interval = 5000
     OnTimer = Timer1Timer
-    Left = 256
+    Left = 240
+  end
+  object Timer2: TTimer
+    Enabled = False
+    Interval = 100
+    OnTimer = Timer2Timer
+    Left = 208
   end
 end

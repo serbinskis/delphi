@@ -1,11 +1,11 @@
-unit Microphones;
+unit MSIMicrophones;
 
 interface
 
 uses
   Windows, SysUtils, Classes, Controls, Forms, StdCtrls, ComCtrls, ExtCtrls, Variants, MMSystem,
-  XiTrackBar, XiButton, TFlatCheckBoxUnit, TFlatComboBoxUnit, CustoHotKey, CustoBevel, uSettings,
-  uHotKey, uAudioMixer, uDynamicData, Functions;
+  XiTrackBar, XiButton, TFlatCheckBoxUnit, TFlatComboBoxUnit, CustoHotKey, CustoBevel, uHotKey,
+  uAudioMixer, uDynamicData, MSISettings, Functions;
 
 type
   TForm2 = class(TForm)
@@ -37,6 +37,7 @@ type
     procedure Button2Click(Sender: TObject);
     procedure FormClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -59,7 +60,8 @@ procedure GetMicrophoneList(List: TStrings);
 
 implementation
 
-uses MSIControl;
+uses
+  MSIControl, MSIThemes;
 
 {$R *.dfm}
 
@@ -68,7 +70,7 @@ var
   i, mOperation, mVolume, mIndex: Integer;
   mName: WideString;
 begin
-  i := MicDynData.FindIndex('HotKey', ShortCut);
+  i := MicDynData.FindIndex(0, 'HotKey', ShortCut);
   if (i < 0) then Exit;
   if GetSettingByName('MICROPHONES_HOTKEY_SOUNDS') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
 
@@ -202,9 +204,29 @@ end;
 //============================================================================
 
 
+procedure TForm2.FormClick(Sender: TObject);
+begin
+  MSIControl.RemoveFocus(Form2);
+end;
+
+
+procedure TForm2.FormShow(Sender: TObject);
+begin
+  MSIControl.RemoveFocus(Form2);
+end;
+
+
+procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  MicDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Microphones');
+end;
+
+
 procedure TForm2.FormCreate(Sender: TObject);
 begin
   TrackBar1.Position := 100;
+  LoadMicrophoneSettings;
+  ChangeTheme(Theme, Form2);
 end;
 
 
@@ -290,7 +312,7 @@ begin
   MicDynData.SetValue(i, 'HotKey', mNewHotKey);
 
   //Remove existing one, if there is such
-  i := MicDynData.FindIndex('HotKey', mOldHotKey);
+  i := MicDynData.FindIndex(0, 'HotKey', mOldHotKey);
   if (i > -1) and (mOldHotKey <> 0) then MicDynData.SetValue(i, 'HotKey', 0);
 
   //If new hotkey is empty, just clear previous
@@ -382,16 +404,6 @@ end;
 procedure TForm2.ComboBoxKey(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   Key := 0;
-end;
-
-procedure TForm2.FormClick(Sender: TObject);
-begin
-  MSIControl.RemoveFocus(Form2);
-end;
-
-procedure TForm2.FormShow(Sender: TObject);
-begin
-  MSIControl.RemoveFocus(Form2);
 end;
 
 end.

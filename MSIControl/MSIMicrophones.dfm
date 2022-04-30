@@ -15,6 +15,7 @@ object Form2: TForm2
   OldCreateOrder = False
   Position = poScreenCenter
   OnClick = FormClick
+  OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96

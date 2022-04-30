@@ -6,24 +6,24 @@ uses
   Windows, Messages, SysUtils, Dialogs, Classes, Forms, Menus, MMSystem, Graphics, ShellAPI,
   ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
   XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, EmbeddedController,
-  uHotKey, uQueryShutdown, uAudioMixer, uThemes, uSettings, uMicrophones, uLanguages, uReadConsole,
-  WinXP, Functions;
+  ShadowPlay, uHotKey, uQueryShutdown, uAudioMixer, uReadConsole, WinXP, MSIThemes, MSISettings,
+  MSILanguages, Functions;
 
 type
   TForm1 = class(TForm)
-    PopupMenu1: TPopupMenu;
-    ToggleCoolerBoost1: TMenuItem;
-    ToggleAutoruns1: TMenuItem;
-    Exit1: TMenuItem;
     Bevel1: TCustoBevel;
     Bevel2: TCustoBevel;
     Bevel3: TCustoBevel;
     Bevel5: TCustoBevel;
+    Button1: TXiButton;
+    Button2: TXiButton;
+    Button3: TXiButton;
     CheckBox1: TFlatCheckBox;
     ComboBox1: TFlatComboBox;
     ComboBox2: TFlatComboBox;
     ComboBox3: TFlatComboBox;
     ComboBox7: TFlatComboBox;
+    Exit1: TMenuItem;
     HotKey1: TCustoHotKey;
     HotKey3: TCustoHotKey;
     Label1: TLabel;
@@ -31,15 +31,14 @@ type
     Label3: TLabel;
     Label4: TLabel;
     Label6: TLabel;
-    TrackBar1: TXiTrackBar;
-    Button1: TXiButton;
-    TrayIcon1: TTrayIcon;
-    Timer1: TTimer;
+    PopupMenu1: TPopupMenu;
     Restart1: TMenuItem;
+    Timer1: TTimer;
+    ToggleAutoruns1: TMenuItem;
+    ToggleCoolerBoost1: TMenuItem;
     ToggleEthernet1: TMenuItem;
-    CustoBevel1: TCustoBevel;
-    Label5: TLabel;
-    Button2: TXiButton;
+    TrackBar1: TXiTrackBar;
+    TrayIcon1: TTrayIcon;
     procedure ToggleCoolerBoost1Click(Sender: TObject);
     procedure ToggleAutoruns1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
@@ -70,6 +69,8 @@ type
     procedure Restart1Click(Sender: TObject);
     procedure ToggleEthernet1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure PopupMenu1Popup(Sender: TObject);
   private
     { Private declarations }
   public
@@ -88,7 +89,7 @@ procedure RemoveFocus(Form: TForm);
 
 implementation
 
-uses Microphones;
+uses MSIMicrophones, MSIShadowPlay;
 
 {$R *.dfm}
 
@@ -327,7 +328,7 @@ begin
 
   LoadSettings;
   ChangeTheme(Theme, Form1);
-  ChangeTheme(Theme, Form2);
+
   TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
   TrayIcon1.Title := Application.Title;
   TrayIcon1.AddToTray;
@@ -397,7 +398,6 @@ end;
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Timer1.Enabled := False;
-  MicDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Microphones');
   TrayIcon1.Destroy;
   EC.Close;
 end;
@@ -428,6 +428,12 @@ begin
   Form1.Hide;
   Wait(INACTIVE_TIMEOUT);
   AppInactive := False;
+end;
+
+
+procedure TForm1.PopupMenu1Popup(Sender: TObject);
+begin
+  PopupMenu1.Items[1].Enabled := MSIShadowPlay.ShadowPlay.IsLoaded;
 end;
 
 
@@ -657,6 +663,14 @@ begin
 end;
 
 
+procedure TForm1.Button3Click(Sender: TObject);
+begin
+  Application.OnDeactivate := nil;
+  Form3.ShowModal;
+  Application.OnDeactivate := FormDeactivate;
+end;
+
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   Theme := not Theme;
@@ -664,6 +678,7 @@ begin
   try
     ChangeTheme(Theme, Form1);
     ChangeTheme(Theme, Form2);
+    ChangeTheme(Theme, Form3);
   except
   end;
 end;

@@ -1,10 +1,10 @@
-unit uLanguages;
+unit MSILanguages;
 
 interface
 
 uses
-  Windows, SysUtils, Classes, MMSystem, TNTRegistry, TNTClasses, uSettings,
-  uHotKey, Functions;
+  Windows, SysUtils, Classes, MMSystem, TNTRegistry, TNTClasses, uHotKey,
+  MSISettings, Functions;
 
 const
   DEFAULT_LANGUAGE_KEY = '\Software\MSIControl\Languages';

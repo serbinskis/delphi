@@ -1,10 +1,10 @@
-unit uThemes;
+unit MSIThemes;
 
 interface
 
 uses
   Windows, Forms, StdCtrls, XiButton, XiTrackBar, TFlatComboBoxUnit, TFlatCheckBoxUnit,
-  CustoBevel, CustoHotKey, Functions;
+  TNTStdCtrls, CustoBevel, CustoHotKey, Functions;
 
 type
   TRGB = record
@@ -39,7 +39,7 @@ procedure ChangeTheme(WhiteMode: Boolean; Form: TForm);
 implementation
 
 uses
-  uSettings;
+  MSISettings;
 
 procedure ChangeButtonTheme(XiButton: TXiButton; WhitMode: Boolean);
 var
@@ -76,6 +76,7 @@ begin
   XiButton.DisabledColorLight := RGB(TRACKBAR_AFTER[i].R, TRACKBAR_AFTER[i].G, TRACKBAR_AFTER[i].B);
 end;
 
+
 procedure ChangeComboBoxTheme(ComboBox: TFlatComboBox; WhitMode: Boolean);
 var
   i: Integer;
@@ -87,6 +88,7 @@ begin
   ComboBox.ColorBorder := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
   ComboBox.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
 end;
+
 
 procedure ChangeCheckBoxTheme(CheckBox: TFlatCheckBox; WhitMode: Boolean);
 var
@@ -100,6 +102,7 @@ begin
   CheckBox.ColorBorder := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
   CheckBox.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
 end;
+
 
 procedure ChangeTrackBarTheme(TrackBar: TXiTrackBar; WhitMode: Boolean);
 var
@@ -124,6 +127,7 @@ begin
   TrackBar.OverThumbGradColor := RGB(TRACKBAR_BUTTON_HOVER[i].R, TRACKBAR_BUTTON_HOVER[i].G, TRACKBAR_BUTTON_HOVER[i].B);
 end;
 
+
 procedure ChangeBevelTheme(Bevel: TCustoBevel; WhitMode: Boolean);
 var
   i: Integer;
@@ -132,6 +136,7 @@ begin
   Bevel.Color := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
 end;
 
+
 procedure ChangeLabelTheme(cLabel: TLabel; WhitMode: Boolean);
 var
   i: Integer;
@@ -139,6 +144,7 @@ begin
   i := Integer(WhitMode);
   cLabel.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
 end;
+
 
 procedure ChangeHotKeyTheme(HotKey: TCustoHotKey; WhitMode: Boolean);
 var
@@ -149,6 +155,18 @@ begin
   HotKey.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
   HotKey.SetBorderColor(RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B));
 end;
+
+
+procedure ChangeEditTheme(Edit: TTntEdit; WhitMode: Boolean);
+var
+  i: Integer;
+begin
+  i := Integer(WhitMode);
+  Edit.Color := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
+  Edit.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+  SetWindowRgn(Edit.Handle, CreateRectRgn(1, 1, Edit.Width - 1,Edit.Height - 1), True);
+end;
+
 
 procedure ChangeTheme(WhiteMode: Boolean; Form: TForm);
 var
@@ -168,6 +186,7 @@ begin
     if Name = 'TCustoHotKey' then ChangeHotKeyTheme(TCustoHotKey(Form.Components[j]), WhiteMode);
     if Name = 'TXiTrackBar' then ChangeTrackBarTheme(TXiTrackBar(Form.Components[j]), WhiteMode);
     if Name = 'TXiButton' then ChangeButtonTheme(TXiButton(Form.Components[j]), WhiteMode);
+    if Name = 'TTntEdit' then ChangeEditTheme(TTntEdit(Form.Components[j]), WhiteMode);
     if (Name = 'TXiButton') and (TButton(Form.Components[j]).HelpKeyword = 'Theme') then TButton(Form.Components[j]).Caption := ThemeCaption[Integer(Theme)] + ' Theme';
   end;
 end;

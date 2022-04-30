@@ -3,7 +3,8 @@ program MSIControl_Created_By_WobbyChip;
 uses
   Forms, SysUtils, Windows, TNTSystem, Functions,
   MSIControl in 'MSIControl.pas' {Form1},
-  Microphones in 'Microphones.pas' {Form2};
+  MSIMicrophones in 'MSIMicrophones.pas' {Form2},
+  MSIShadowPlay in 'MSIShadowPlay.pas' {Form3};
 
 {$R MSIControl.res}
 
@@ -16,7 +17,8 @@ begin
   Application.Initialize;
   Application.ShowMainForm := False;
   Application.Title := 'MSI Control (GL65 9SE)';
-  Application.CreateForm(TForm2, Form2);
   Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TForm2, Form2);
+  Application.CreateForm(TForm3, Form3);
   Application.Run;
 end.
