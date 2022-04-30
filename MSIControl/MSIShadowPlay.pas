@@ -19,8 +19,8 @@ type
     Button4: TXiButton;
     CheckBox1: TFlatCheckBox;
     CheckBox2: TFlatCheckBox;
-    CheckBox3: TFlatCheckBox;
     CheckBox4: TFlatCheckBox;
+    CheckBox5: TFlatCheckBox;
     ComboBox1: TFlatComboBox;
     ComboBox2: TFlatComboBox;
     CustoBevel1: TCustoBevel;
@@ -33,6 +33,7 @@ type
     Label4: TLabel;
     Timer1: TTimer;
     Timer2: TTimer;
+    CheckBox3: TFlatCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -48,8 +49,8 @@ type
     procedure Timer2Timer(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure CheckBox2MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure CheckBox5MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure CheckBox4MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure CheckBox3MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
   public
@@ -58,6 +59,7 @@ type
 
 type
   TSettingsSP = record
+    HotkeySound: Boolean;
     AutoIT: Boolean;
     ITActivateType: Integer;
     ToggleSPHotkey: Integer;
@@ -146,8 +148,8 @@ end;
 
 procedure ShadowPlayHotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
 begin
-  if GetSettingByName('HOTKEY_SOUNDS') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
-  Form3.CheckBox4.Checked := ShadowPlay.ToggleShadowPlay;
+  if SettingsSP.HotkeySound then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
+  Form3.CheckBox5.Checked := ShadowPlay.ToggleShadowPlay;
 end;
 
 
@@ -159,9 +161,10 @@ begin
   LoadRegistryInteger(SettingsSP.ITActivateType, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ITActivateType');
   LoadRegistryInteger(SettingsSP.ToggleSPHotkey, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ToggleSPHotkey');
 
-  Form3.CheckBox3.Checked := SettingsSP.AutoIT;
   Form3.CheckBox1.Checked := (SettingsSP.ITActivateType = PROCESS_TYPE_DISABLE);
   Form3.CheckBox2.Checked := (SettingsSP.ITActivateType = PROCESS_TYPE_ENABLE);
+  Form3.CheckBox3.Checked := SettingsSP.HotkeySound;
+  Form3.CheckBox4.Checked := SettingsSP.AutoIT;
 
   case SettingsSP.ITActivateType of
     PROCESS_TYPE_DISABLE: if ShadowPlay.IsShadowPlayOn then ShadowPlay.EnableInstantReplay(True);
@@ -252,7 +255,7 @@ end;
 procedure TForm3.FormShow(Sender: TObject);
 begin
   MSIControl.RemoveFocus(Form3);
-  CheckBox4.Checked := ShadowPlay.IsShadowPlayOn;
+  CheckBox5.Checked := ShadowPlay.IsShadowPlayOn;
 end;
 
 
@@ -379,19 +382,20 @@ begin
 end;
 
 
-procedure TForm3.CheckBox3MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm3.CheckBox4MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  SettingsSP.AutoIT := CheckBox4.Checked;
+  SettingsSP.AutoIT := CheckBox5.Checked;
 end;
 
 
-procedure TForm3.CheckBox4MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm3.CheckBox5MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  CheckBox4.Checked := ShadowPlay.ToggleShadowPlay;
+  CheckBox5.Checked := ShadowPlay.ToggleShadowPlay;
 end;
 
 
 initialization
+  SettingsSP.HotkeySound := True;
   SettingsSP.AutoIT := False;
   SettingsSP.ITActivateType := 0;
   SettingsSP.ToggleSPHotkey := 0;

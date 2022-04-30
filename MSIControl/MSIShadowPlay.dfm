@@ -3,7 +3,7 @@ object Form3: TForm3
   Top = 505
   BorderStyle = bsDialog
   Caption = 'Shadow Play'
-  ClientHeight = 390
+  ClientHeight = 415
   ClientWidth = 270
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -285,9 +285,9 @@ object Form3: TForm3
     TabOrder = 5
     Text = 'explorer.exe'
   end
-  object CheckBox3: TFlatCheckBox
+  object CheckBox4: TFlatCheckBox
     Left = 8
-    Top = 338
+    Top = 362
     Width = 145
     Height = 17
     Caption = 'Auto Enable IT On Start'
@@ -306,11 +306,11 @@ object Form3: TForm3
     ShowHint = True
     TabOrder = 6
     TabStop = True
-    OnMouseUp = CheckBox3MouseUp
+    OnMouseUp = CheckBox4MouseUp
   end
-  object CheckBox4: TFlatCheckBox
+  object CheckBox5: TFlatCheckBox
     Left = 8
-    Top = 362
+    Top = 386
     Width = 129
     Height = 17
     Hint = 
@@ -332,7 +332,7 @@ object Form3: TForm3
     ShowHint = True
     TabOrder = 7
     TabStop = True
-    OnMouseUp = CheckBox4MouseUp
+    OnMouseUp = CheckBox5MouseUp
   end
   object Edit2: TTntEdit
     Left = 8
@@ -474,6 +474,29 @@ object Form3: TForm3
     Font.Height = -12
     Font.Name = 'Calibri'
     Font.Style = []
+  end
+  object CheckBox3: TFlatCheckBox
+    Left = 8
+    Top = 338
+    Width = 145
+    Height = 17
+    Caption = 'Enable Hotkey Sounds'
+    Color = clLime
+    ColorFocused = clBlue
+    ColorDown = clAqua
+    ColorCheck = clYellow
+    ColorBorder = clFuchsia
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clRed
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+    ShowHint = True
+    TabOrder = 13
+    TabStop = True
+    OnMouseUp = CheckBox4MouseUp
   end
   object Timer1: TTimer
     Enabled = False

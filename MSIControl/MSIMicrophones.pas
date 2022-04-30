@@ -23,11 +23,15 @@ type
     ComboBox1: TFlatComboBox;
     Button1: TXiButton;
     Button2: TXiButton;
+    Bevel4: TCustoBevel;
+    Label6: TLabel;
+    CheckBox2: TFlatCheckBox;
     procedure ComboBox1Change(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
     procedure ComboBox3Change(Sender: TObject);
     procedure ComboBoxKey(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure CheckBox2MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure HotKey1Change(Sender: TObject);
     procedure HotKey1Enter(Sender: TObject);
     procedure HotKey1Exit(Sender: TObject);
@@ -44,12 +48,19 @@ type
     { Public declarations }
   end;
 
+type
+  TSettingsMic = record
+    HotkeySound: Boolean;
+  end;
+
 const
   MICROPHONE_DEFAULT = 'Default';
+  DEFAULT_MICROPHONE_KEY = DEFAULT_KEY + '\Microphones';
 
 var
   Form2: TForm2;
   MicDynData: TDynamicData;
+  SettingsMic: TSettingsMic;
   mOldHotKey: Integer;
   mNewHotKey: Integer;
 
@@ -72,7 +83,7 @@ var
 begin
   i := MicDynData.FindIndex(0, 'HotKey', ShortCut);
   if (i < 0) then Exit;
-  if GetSettingByName('MICROPHONES_HOTKEY_SOUNDS') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
+  if SettingsMic.HotkeySound then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
 
   mName := MicDynData.GetValue(i, 'Name');
   mOperation := MicDynData.GetValue(i, 'Operation');
@@ -145,8 +156,11 @@ var
   Name: WideString;
 begin
   MicDynData := TDynamicData.Create(['Name', 'Operation', 'Volume', 'Fixed', 'HotKey']);
-  MicDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Microphones', True);
+  MicDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'Microphones', True);
   if (MicDynData.GetLength) = 0 then Form2.Button1Click(nil);
+
+  LoadRegistryBoolean(SettingsMic.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'HotkeySound');
+  Form2.CheckBox2.Checked := SettingsMic.HotkeySound;
 
   for i := 0 to MicDynData.GetLength-1 do begin
     Name := MicDynData.GetValue(i, 'Name');
@@ -218,7 +232,8 @@ end;
 
 procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  MicDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Microphones');
+  MicDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'Microphones');
+  SaveRegistryBoolean(SettingsMic.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'HotkeySound');
 end;
 
 
@@ -382,6 +397,12 @@ begin
 end;
 
 
+procedure TForm2.CheckBox2MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  SettingsMic.HotkeySound := CheckBox2.Checked;
+end;
+
+
 procedure TForm2.TrackBar1Change(Sender: TObject);
 var
   i, MxId: Integer;
@@ -406,5 +427,8 @@ begin
   Key := 0;
 end;
 
+
+initialization
+  SettingsMic.HotkeySound := True;
 end.
 

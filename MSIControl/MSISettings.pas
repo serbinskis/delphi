@@ -31,9 +31,8 @@ var
   );
 
 var
-  Settings: array[0..5] of TSetting = (
+  Settings: array[0..4] of TSetting = (
     (Name: 'HOTKEY_SOUNDS'; Description: 'HotKey Sounds'),
-    (Name: 'MICROPHONES_HOTKEY_SOUNDS'; Description: 'Microphones HotKey Sounds'),
     (Name: 'LANGUAGES_HOTKEY_SOUNDS'; Description: 'Languages HotKey Sounds'),
     (Name: 'WEBCAM'; Description: 'MSI Webcam'),
     (Name: 'COOLER_BOOST'; Description: 'Cooler Boost'),
@@ -44,7 +43,6 @@ const
   DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
   DEFAULT_KEY = '\Software\MSIControl';
   DEFAULT_HOTKEY_KEY = '\Software\MSIControl\HotKeys';
-  THEME_REGISTRY_NAME = 'THEME';
   INACTIVE_TIMEOUT = 350;
 
 const
@@ -81,7 +79,7 @@ procedure LoadSettings;
 var
   i: Integer;
 begin
-  LoadRegistryBoolean(Theme, DEFAULT_ROOT_KEY, DEFAULT_KEY, THEME_REGISTRY_NAME);
+  LoadRegistryBoolean(Theme, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Theme');
 
   for i := 0 to Length(HotKeys)-1 do begin
     Form1.ComboBox1.Items.Add(HotKeys[i].Description);

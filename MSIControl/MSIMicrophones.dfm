@@ -4,7 +4,7 @@ object Form2: TForm2
   ActiveControl = CheckBox1
   BorderStyle = bsDialog
   Caption = 'Microphones'
-  ClientHeight = 276
+  ClientHeight = 340
   ClientWidth = 269
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -93,6 +93,27 @@ object Form2: TForm2
     Font.Height = -12
     Font.Name = 'Calibri'
     Font.Style = []
+    ParentFont = False
+  end
+  object Bevel4: TCustoBevel
+    Left = -2
+    Top = 303
+    Width = 263
+    Height = 1
+    Shape = bsFrame
+    Color = clBlack
+  end
+  object Label6: TLabel
+    Left = 8
+    Top = 280
+    Width = 59
+    Height = 18
+    Caption = 'SETTINGS'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
     ParentFont = False
   end
   object HotKey1: TCustoHotKey
@@ -332,5 +353,28 @@ object Form2: TForm2
     Caption = 'Delete'
     TabOrder = 7
     OnClick = Button2Click
+  end
+  object CheckBox2: TFlatCheckBox
+    Left = 8
+    Top = 314
+    Width = 145
+    Height = 17
+    Caption = 'Enable Hotkey Sounds'
+    Color = clLime
+    ColorFocused = clBlue
+    ColorDown = clAqua
+    ColorCheck = clYellow
+    ColorBorder = clFuchsia
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clRed
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+    ShowHint = True
+    TabOrder = 8
+    TabStop = True
+    OnMouseUp = CheckBox2MouseUp
   end
 end
