@@ -22,7 +22,7 @@ object Form1: TForm1
   PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TCustoBevel
-    Left = 6
+    Left = 3
     Top = 30
     Width = 325
     Height = 1
@@ -30,7 +30,7 @@ object Form1: TForm1
     Color = clBlack
   end
   object Bevel2: TCustoBevel
-    Left = 6
+    Left = 3
     Top = 95
     Width = 325
     Height = 1
