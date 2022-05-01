@@ -9,23 +9,23 @@ uses
 
 type
   TForm2 = class(TForm)
-    HotKey1: TCustoHotKey;
+    Bevel1: TCustoBevel;
+    Bevel2: TCustoBevel;
+    Button1: TXiButton;
+    Button2: TXiButton;
     CheckBox1: TFlatCheckBox;
+    CheckBox2: TFlatCheckBox;
+    ComboBox1: TFlatComboBox;
     ComboBox2: TFlatComboBox;
     ComboBox3: TFlatComboBox;
-    Bevel1: TCustoBevel;
+    HotKey1: TCustoHotKey;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
     Label5: TLabel;
-    TrackBar1: TXiTrackBar;
-    ComboBox1: TFlatComboBox;
-    Button1: TXiButton;
-    Button2: TXiButton;
-    Bevel4: TCustoBevel;
     Label6: TLabel;
-    CheckBox2: TFlatCheckBox;
+    TrackBar1: TXiTrackBar;
     procedure ComboBox1Change(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
     procedure ComboBox3Change(Sender: TObject);
@@ -411,7 +411,7 @@ begin
   if (ComboBox1.ItemIndex < 0) then Exit;
   i := Integer(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
   MicDynData.SetValue(i, 'Volume', TrackBar1.Position);
-  Label3.Caption := IntToStr(TrackBar1.Position) + '%';
+  Label5.Caption := IntToStr(TrackBar1.Position) + '%';
   Name := MicDynData.GetValue(i, 'Name');
 
   if Name = MICROPHONE_DEFAULT

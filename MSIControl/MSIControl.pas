@@ -7,14 +7,13 @@ uses
   ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
   XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, EmbeddedController,
   ShadowPlay, uHotKey, uQueryShutdown, uAudioMixer, uReadConsole, WinXP, MSIThemes, MSISettings,
-  MSILanguages, Functions;
+  Functions;
 
 type
   TForm1 = class(TForm)
     Bevel1: TCustoBevel;
     Bevel2: TCustoBevel;
     Bevel3: TCustoBevel;
-    Bevel5: TCustoBevel;
     Button1: TXiButton;
     Button2: TXiButton;
     Button3: TXiButton;
@@ -22,15 +21,12 @@ type
     ComboBox1: TFlatComboBox;
     ComboBox2: TFlatComboBox;
     ComboBox3: TFlatComboBox;
-    ComboBox7: TFlatComboBox;
     Exit1: TMenuItem;
     HotKey1: TCustoHotKey;
-    HotKey3: TCustoHotKey;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
-    Label6: TLabel;
     PopupMenu1: TPopupMenu;
     Restart1: TMenuItem;
     Timer1: TTimer;
@@ -39,6 +35,7 @@ type
     ToggleEthernet1: TMenuItem;
     TrackBar1: TXiTrackBar;
     TrayIcon1: TTrayIcon;
+    Button4: TXiButton;
     procedure ToggleCoolerBoost1Click(Sender: TObject);
     procedure ToggleAutoruns1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
@@ -61,16 +58,13 @@ type
     procedure TrayIcon1Action(Sender: TObject; Code: Integer);
     procedure Timer1Timer(Sender: TObject);
     procedure ComboBox3Change(Sender: TObject);
-    procedure ComboBox7Change(Sender: TObject);
-    procedure HotKey3Enter(Sender: TObject);
-    procedure HotKey3Exit(Sender: TObject);
-    procedure HotKey3Change(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Restart1Click(Sender: TObject);
     procedure ToggleEthernet1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -89,7 +83,7 @@ procedure RemoveFocus(Form: TForm);
 
 implementation
 
-uses MSIMicrophones, MSIShadowPlay;
+uses MSIMicrophones, MSIShadowPlay, MSILanguages;
 
 {$R *.dfm}
 
@@ -373,11 +367,6 @@ begin
 
   while not EC.readByte(EC_WEBCAM[0], bResult) do;
   UpdateSettingByName('WEBCAM', (bResult = EC_WEBCAM[1]), False);
-
-  GetLanguageList(ComboBox7.Items);
-  ComboBox7.ItemIndex := 0;
-  ComboBox7Change(nil);
-
   Form1.Repaint;
 end;
 
@@ -571,38 +560,6 @@ begin
 end;
 
 
-procedure TForm1.ComboBox7Change(Sender: TObject);
-var
-  KeyboardLayout: HKL;
-begin
-  KeyboardLayout := Hkl(ComboBox7.Items.Objects[ComboBox7.ItemIndex]);
-  HotKey3.HotKey := GetLanguageHotKey(KeyboardLayout);
-end;
-
-
-procedure TForm1.HotKey3Change(Sender: TObject);
-begin
-  lNewHotKey := HotKey3.HotKey;
-end;
-
-
-procedure TForm1.HotKey3Enter(Sender: TObject);
-begin
-  lOldHotKey := HotKey3.HotKey;
-  lNewHotKey := HotKey3.HotKey;
-  DisableHotKey(ShortCutToHotKey(lOldHotKey));
-end;
-
-
-procedure TForm1.HotKey3Exit(Sender: TObject);
-var
-  KeyboardLayout: HKL;
-begin
-  KeyboardLayout := Hkl(ComboBox7.Items.Objects[ComboBox7.ItemIndex]);
-  SetLanguageHotKey(KeyboardLayout, lOldHotKey, lNewHotKey);
-end;
-
-
 procedure TForm1.ComboBox3Change(Sender: TObject);
 var
   Name: WideString;
@@ -671,6 +628,14 @@ begin
 end;
 
 
+procedure TForm1.Button4Click(Sender: TObject);
+begin
+  Application.OnDeactivate := nil;
+  Form4.ShowModal;
+  Application.OnDeactivate := FormDeactivate;
+end;
+
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   Theme := not Theme;
@@ -679,6 +644,7 @@ begin
     ChangeTheme(Theme, Form1);
     ChangeTheme(Theme, Form2);
     ChangeTheme(Theme, Form3);
+    ChangeTheme(Theme, Form4);
   except
   end;
 end;

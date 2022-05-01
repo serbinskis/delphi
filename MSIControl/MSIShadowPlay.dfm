@@ -1,6 +1,6 @@
 object Form3: TForm3
-  Left = 472
-  Top = 505
+  Left = 808
+  Top = 125
   BorderStyle = bsDialog
   Caption = 'Shadow Play'
   ClientHeight = 415
@@ -19,7 +19,7 @@ object Form3: TForm3
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object Bevel1: TCustoBevel
+  object Bevel2: TCustoBevel
     Left = 3
     Top = 103
     Width = 263
@@ -27,7 +27,7 @@ object Form3: TForm3
     Shape = bsFrame
     Color = clBlack
   end
-  object Label1: TLabel
+  object Label3: TLabel
     Left = 8
     Top = 80
     Width = 91
@@ -40,7 +40,7 @@ object Form3: TForm3
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Bevel2: TCustoBevel
+  object Bevel3: TCustoBevel
     Left = 7
     Top = 145
     Width = 162
@@ -48,15 +48,15 @@ object Form3: TForm3
     Shape = bsFrame
     Color = clBlack
   end
-  object Bevel4: TCustoBevel
-    Left = -2
+  object Bevel5: TCustoBevel
+    Left = 3
     Top = 327
     Width = 263
     Height = 1
     Shape = bsFrame
     Color = clBlack
   end
-  object Label2: TLabel
+  object Label4: TLabel
     Left = 8
     Top = 304
     Width = 59
@@ -69,7 +69,7 @@ object Form3: TForm3
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Bevel3: TCustoBevel
+  object Bevel4: TCustoBevel
     Left = 7
     Top = 233
     Width = 162
@@ -77,7 +77,7 @@ object Form3: TForm3
     Shape = bsFrame
     Color = clBlack
   end
-  object Label3: TLabel
+  object Label1: TLabel
     Left = 8
     Top = 8
     Width = 56
@@ -90,7 +90,7 @@ object Form3: TForm3
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label4: TLabel
+  object Label2: TLabel
     Left = 8
     Top = 43
     Width = 109
@@ -103,7 +103,7 @@ object Form3: TForm3
     Font.Style = []
     ParentFont = False
   end
-  object CustoBevel1: TCustoBevel
+  object Bevel1: TCustoBevel
     Left = 3
     Top = 31
     Width = 263
@@ -496,7 +496,7 @@ object Form3: TForm3
     ShowHint = True
     TabOrder = 13
     TabStop = True
-    OnMouseUp = CheckBox4MouseUp
+    OnMouseUp = CheckBox3MouseUp
   end
   object Timer1: TTimer
     Enabled = False

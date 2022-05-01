@@ -13,17 +13,18 @@ type
     Bevel2: TCustoBevel;
     Bevel3: TCustoBevel;
     Bevel4: TCustoBevel;
+    Bevel5: TCustoBevel;
     Button1: TXiButton;
     Button2: TXiButton;
     Button3: TXiButton;
     Button4: TXiButton;
     CheckBox1: TFlatCheckBox;
     CheckBox2: TFlatCheckBox;
+    CheckBox3: TFlatCheckBox;
     CheckBox4: TFlatCheckBox;
     CheckBox5: TFlatCheckBox;
     ComboBox1: TFlatComboBox;
     ComboBox2: TFlatComboBox;
-    CustoBevel1: TCustoBevel;
     Edit1: TTntEdit;
     Edit2: TTntEdit;
     HotKey1: TCustoHotKey;
@@ -33,7 +34,6 @@ type
     Label4: TLabel;
     Timer1: TTimer;
     Timer2: TTimer;
-    CheckBox3: TFlatCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -49,8 +49,9 @@ type
     procedure Timer2Timer(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure CheckBox2MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure CheckBox5MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure CheckBox3MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure CheckBox4MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure CheckBox5MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
   public
@@ -86,7 +87,6 @@ var
   SavedHWND: HWND;
   SavedProcess: WideString;
 
-procedure LoadShadowPlaySettings;
 procedure GenerateProcessList;
 
 implementation
@@ -153,49 +153,21 @@ begin
 end;
 
 
-procedure LoadShadowPlaySettings;
-begin
-  ShadowDynData := TDynamicData.Create(['Process', 'Type']);
-  ShadowDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ShadowPlay', True);
-  LoadRegistryBoolean(SettingsSP.AutoIT, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'AutoIT');
-  LoadRegistryInteger(SettingsSP.ITActivateType, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ITActivateType');
-  LoadRegistryInteger(SettingsSP.ToggleSPHotkey, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ToggleSPHotkey');
-
-  Form3.CheckBox1.Checked := (SettingsSP.ITActivateType = PROCESS_TYPE_DISABLE);
-  Form3.CheckBox2.Checked := (SettingsSP.ITActivateType = PROCESS_TYPE_ENABLE);
-  Form3.CheckBox3.Checked := SettingsSP.HotkeySound;
-  Form3.CheckBox4.Checked := SettingsSP.AutoIT;
-
-  case SettingsSP.ITActivateType of
-    PROCESS_TYPE_DISABLE: if ShadowPlay.IsShadowPlayOn then ShadowPlay.EnableInstantReplay(True);
-    PROCESS_TYPE_ENABLE: if ShadowPlay.IsShadowPlayOn then ShadowPlay.EnableInstantReplay(False);
-  end;
-
-  if SettingsSP.ToggleSPHotkey > 0 then SetShortCut(ShadowPlayHotKeyCallback, SettingsSP.ToggleSPHotkey);
-  GenerateProcessList;
-end;
-
-
 procedure GenerateProcessList;
 var
   i, PType: Integer;
   Name: WideString;
-  DisableList: TStrings;
-  EnableList: TStrings;
 begin
   SavedHWND := 0;
   SavedProcess := '';
-  DisableList := Form3.ComboBox1.Items;
-  DisableList.Clear;
-
-  EnableList := Form3.ComboBox2.Items;
-  EnableList.Clear;
+  Form3.ComboBox1.Items.Clear;
+  Form3.ComboBox2.Items.Clear;
 
   for i := 0 to ShadowDynData.GetLength-1 do begin
     Name := ShadowDynData.GetValue(i, 'Process');
     PType := ShadowDynData.GetValue(i, 'Type');
-    if (PType = PROCESS_TYPE_DISABLE) then DisableList.AddObject(Name, TObject(i));
-    if (PType = PROCESS_TYPE_ENABLE) then EnableList.AddObject(Name, TObject(i));
+    if (PType = PROCESS_TYPE_DISABLE) then Form3.ComboBox1.Items.AddObject(Name, TObject(i));
+    if (PType = PROCESS_TYPE_ENABLE) then Form3.ComboBox2.Items.AddObject(Name, TObject(i));
   end;
 
   Form3.ComboBox1.ItemIndex := 0;
@@ -236,7 +208,26 @@ var
 begin
   ShadowPlay := TShadowPlay.Create;
   if not ShadowPlay.IsLoaded then Exit;
-  LoadShadowPlaySettings;
+
+  ShadowDynData := TDynamicData.Create(['Process', 'Type']);
+  ShadowDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ShadowPlay', True);
+  LoadRegistryBoolean(SettingsSP.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'HotkeySound');
+  LoadRegistryBoolean(SettingsSP.AutoIT, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'AutoIT');
+  LoadRegistryInteger(SettingsSP.ITActivateType, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ITActivateType');
+  LoadRegistryInteger(SettingsSP.ToggleSPHotkey, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ToggleSPHotkey');
+
+  Form3.CheckBox1.Checked := (SettingsSP.ITActivateType = PROCESS_TYPE_DISABLE);
+  Form3.CheckBox2.Checked := (SettingsSP.ITActivateType = PROCESS_TYPE_ENABLE);
+  Form3.CheckBox3.Checked := SettingsSP.HotkeySound;
+  Form3.CheckBox4.Checked := SettingsSP.AutoIT;
+
+  case SettingsSP.ITActivateType of
+    PROCESS_TYPE_DISABLE: if ShadowPlay.IsShadowPlayOn then ShadowPlay.EnableInstantReplay(True);
+    PROCESS_TYPE_ENABLE: if ShadowPlay.IsShadowPlayOn then ShadowPlay.EnableInstantReplay(False);
+  end;
+
+  if SettingsSP.ToggleSPHotkey > 0 then SetShortCut(ShadowPlayHotKeyCallback, SettingsSP.ToggleSPHotkey);
+  GenerateProcessList;
 
   EventHandler := TEventHandler.Create;
   MenuItem := TMenuItem.Create(nil);
@@ -262,6 +253,7 @@ end;
 procedure TForm3.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   ShadowDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ShadowPlay');
+  SaveRegistryBoolean(SettingsSP.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'HotkeySound');
   SaveRegistryBoolean(SettingsSP.AutoIT, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'AutoIT');
   SaveRegistryInteger(SettingsSP.ITActivateType, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ITActivateType');
   SaveRegistryInteger(SettingsSP.ToggleSPHotkey, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ToggleSPHotkey');
@@ -379,6 +371,12 @@ begin
   if CheckBox2.Checked then CheckBox1.Checked := False;
   SavedHWND := 0;
   SavedProcess := '';
+end;
+
+
+procedure TForm3.CheckBox3MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  SettingsSP.HotkeySound := CheckBox3.Checked;
 end;
 
 

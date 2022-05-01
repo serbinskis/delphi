@@ -3,91 +3,55 @@ unit MSILanguages;
 interface
 
 uses
-  Windows, SysUtils, Classes, MMSystem, TNTRegistry, TNTClasses, uHotKey,
-  MSISettings, Functions;
+  Windows, Classes, Controls, Forms, ExtCtrls, ComCtrls, StdCtrls, MMSystem, CustoBevel,
+  CustoHotKey, TFlatComboBoxUnit, TFlatCheckBoxUnit, MSIThemes, MSISettings, MSIControl,
+  uHotKey, uDynamicData, Functions;
+
+type
+  TForm4 = class(TForm)
+    Bevel1: TCustoBevel;
+    Bevel2: TCustoBevel;
+    CheckBox1: TFlatCheckBox;
+    ComboBox1: TFlatComboBox;
+    HotKey1: TCustoHotKey;
+    Label1: TLabel;
+    Label2: TLabel;
+    procedure ComboBox1Change(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure HotKey1Enter(Sender: TObject);
+    procedure HotKey1Exit(Sender: TObject);
+    procedure HotKey1Change(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure FormClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+type
+  TSettingsLan = record
+    HotkeySound: Boolean;
+  end;
 
 const
-  DEFAULT_LANGUAGE_KEY = '\Software\MSIControl\Languages';
+  DEFAULT_LANGUAGES_KEY = DEFAULT_KEY + '\Languages';
 
 var
-  lOldHotKey: Integer;
-  lNewHotKey: Integer;
+  Form4: TForm4;
+  LanDynData: TDynamicData;
+  SettingsLan: TSettingsLan;
+  mOldHotKey: Integer;
+  mNewHotKey: Integer;
 
-procedure LoadLanguageSetting;
-procedure GetLanguageList(List: TStrings);
-procedure SetLanguageHotKey(kbLayout: HKL; oHotKey, nHotKey: Integer);
-function GetLanguageHotKey(kbLayout: HKL): Integer;
 function LayoutActive(kbLayout: HKL):Boolean;
-function ChangeKeyboardLayout(kbLayout: HKL): Boolean;
+procedure GetLanguageList(List: TStrings);
 
 implementation
 
-uses
-  MSIControl;
-
-procedure LanguageHotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
-begin
-  if GetSettingByName('LANGUAGES_HOTKEY_SOUNDS') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
-  ChangeKeyboardLayout(CustomValue);
-end;
-
-procedure LoadLanguageSetting;
-var
-  Registry: TTNTRegistry;
-  SubList: TTNTStringList;
-  i, HotKey: Integer;
-  kbLayout: HKL;
-begin
-  SubList := TTNTStringList.Create;
-  Registry := TTNTRegistry.Create;
-  Registry.RootKey := DEFAULT_ROOT_KEY;
-  Registry.OpenKey(DEFAULT_LANGUAGE_KEY, True);
-  Registry.GetValueNames(SubList);
-
-  for i := 0 to SubList.Count-1 do begin
-    HotKey := Registry.ReadInteger(SubList.Strings[i]);
-    kbLayout := StrToInt64(SubList.Strings[i]);
-    if (HotKey > 0) and LayoutActive(kbLayout) then SetShortCut(LanguageHotKeyCallback, HotKey, kbLayout);
-  end;
-
-  SubList.Free;
-  Registry.Free;
-end;
-
-procedure GetLanguageList(List: TStrings);
-var
-  HklList: array [0..9] of HKL;
-  AklName: array [0..255] of WideChar;
-  i: Integer;
-begin
-  List.Clear;
-  List.AddObject('Next', Pointer(1));
-  List.AddObject('Previous', Pointer(0));
-
-  for i := 0 to GetKeyboardLayoutList(SizeOf(HklList), HklList)-1 do begin
-    GetLocaleInfoW(LoWord(HklList[i]), LOCALE_SLANGUAGE, AklName, SizeOf(AklName));
-    List.AddObject(AklName, Pointer(HklList[i]));
-  end;
-end;
-
-procedure SetLanguageHotKey(kbLayout: HKL; oHotKey, nHotKey: Integer);
-var
-  Key: Integer;
-begin
-  if nHotKey > 0 then begin
-    SaveRegistryInteger(nHotKey, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGE_KEY, IntToStr(kbLayout));
-    if oHotKey <> 0 then Key := ShortCutToHotKey(oHotKey) else Key := -1;
-    if Key > -1 then ChangeShortCut(Key, nHotKey) else SetShortCut(LanguageHotKeyCallback, nHotKey, kbLayout);
-  end else begin
-    DeleteRegistryValue(DEFAULT_ROOT_KEY, DEFAULT_LANGUAGE_KEY, IntToStr(kbLayout));
-  end;
-end;
-
-function GetLanguageHotKey(kbLayout: HKL): Integer;
-begin
-  Result := 0;
-  LoadRegistryInteger(Result, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGE_KEY, IntToStr(kbLayout));
-end;
+{$R *.dfm}
 
 function LayoutActive(kbLayout: HKL):Boolean;
 var
@@ -103,55 +67,135 @@ begin
   end;
 end;
 
-function WndProc(hWnd, Msg: Longint; wParam: WPARAM; lParam: LPARAM): Longint; stdcall;
-begin
-  Result := DefWindowProc(hWnd, Msg, wParam, lParam);
-end;
 
-procedure MessageLoop(Parameter: Pointer);
+procedure GetLanguageList(List: TStrings);
 var
-  LWndClass: TWndClass;
-  Msg: TMsg;
+  HklList: array [0..9] of HKL;
+  AklName: array [0..255] of WideChar;
+  i: Integer;
 begin
-  FillChar(LWndClass, SizeOf(LWndClass), 0);
-  LWndClass.hInstance := HInstance;
-  LWndClass.lpszClassName := PChar(IntToStr(Random(MaxInt)) + 'Wnd');
-  LWndClass.Style := CS_PARENTDC;
-  LWndClass.lpfnWndProc := @WndProc;
+  List.Clear;
+  List.AddObject('Next', TObject(1));
+  List.AddObject('Previous', TObject(0));
 
-  Windows.RegisterClass(LWndClass);
-  CreateWindow(LWndClass.lpszClassName, nil, 0,0,0,0,0,0,0, HInstance, nil);
-  String(Parameter^) := LWndClass.lpszClassName;
-
-  while GetMessage(Msg, 0,0,0) do begin
-    TranslateMessage(Msg);
-    DispatchMessage(Msg);
+  for i := 0 to GetKeyboardLayoutList(SizeOf(HklList), HklList)-1 do begin
+    GetLocaleInfoW(LoWord(HklList[i]), LOCALE_SLANGUAGE, AklName, SizeOf(AklName));
+    List.AddObject(AklName, TObject(HklList[i]));
   end;
 end;
 
-//This causes memory leak, idk where and how to fix it
-function ChangeKeyboardLayout(kbLayout: HKL): Boolean;
+
+procedure LanguageHotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
 const
   WM_INPUTLANGCHANGEREQUEST = $0050;
 var
   Dummy: DWORD;
-  fWindow: HWND;
-  WinHandle: HWND;
-  ThreadID: Cardinal;
-  lpszClassName: String;
+  fWindow, kbLayout: HWND;
 begin
-  ThreadID := BeginThread(nil, 0, Addr(MessageLoop), Addr(lpszClassName), 0, ThreadID);
-  while lpszClassName = '' do Sleep(1);
-  WinHandle := FindWindow(PChar(lpszClassName), nil);
-
+  if SettingsLan.HotkeySound then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
   fWindow := GetForegroundWindow;
-  SetForegroundWindow(WinHandle);
-  Result := SendMessageTimeOut(WinHandle, WM_INPUTLANGCHANGEREQUEST, 0, kbLayout, SMTO_ABORTIFHUNG, 200, Dummy) <> 0;
+  SetForegroundWindow(Application.Handle);
+  kbLayout := CustomValue;
+  SendMessageTimeOut(Application.Handle, WM_INPUTLANGCHANGEREQUEST, 0, kbLayout, SMTO_ABORTIFHUNG, 200, Dummy);
   SetForegroundWindow(fWindow);
-
-  TerminateThread(ThreadID, 0);
-  DestroyWindow(WinHandle);
-  Windows.UnregisterClass(PChar(lpszClassName), HInstance);
 end;
 
+
+procedure TForm4.FormCreate(Sender: TObject);
+var
+  i, Hotkey: Integer;
+  kbLayout: HKL;
+begin
+  LanDynData := TDynamicData.Create(['kbLayout', 'Hotkey']);
+  LanDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'Languages', True);
+  LoadRegistryBoolean(SettingsLan.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'HotkeySound');
+
+  for i := 0 to (LanDynData.GetLength-1) do begin
+    kbLayout := LanDynData.GetValue(i, 'kbLayout');
+    Hotkey := LanDynData.GetValue(i, 'Hotkey');
+    if (Hotkey > 0) and LayoutActive(kbLayout) then SetShortCut(LanguageHotKeyCallback, Hotkey, kbLayout);
+  end;
+
+  CheckBox1.Checked := SettingsLan.HotkeySound;
+  GetLanguageList(ComboBox1.Items);
+  ComboBox1.ItemIndex := 0;
+  ComboBox1Change(nil);
+  ChangeTheme(Theme, Form4);
+end;
+
+
+procedure TForm4.FormShow(Sender: TObject);
+begin
+  MSIControl.RemoveFocus(Form4);
+end;
+
+
+procedure TForm4.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  LanDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'Languages');
+  SaveRegistryBoolean(SettingsLan.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'HotkeySound');
+end;
+
+
+procedure TForm4.FormClick(Sender: TObject);
+begin
+  MSIControl.RemoveFocus(Form4);
+end;
+
+
+procedure TForm4.ComboBox1Change(Sender: TObject);
+var
+  i: Integer;
+  kbLayout: HKL;
+begin
+  kbLayout := Hkl(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
+  i := LanDynData.FindIndex(0, 'kbLayout', kbLayout);
+  HotKey1.HotKey := Q((i < 0), 0, LanDynData.GetValue(i, 'Hotkey'));
+end;
+
+
+procedure TForm4.HotKey1Exit(Sender: TObject);
+var
+  i, Key: Integer;
+  kbLayout: HKL;
+begin
+  if (mNewHotKey = mOldHotKey) then EnableHotKey(ShortCutToHotKey(mOldHotKey));
+  if (mNewHotKey = mOldHotKey) then Exit;
+
+  kbLayout := Hkl(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
+  i := LanDynData.FindIndex(0, 'kbLayout', kbLayout);
+  if i < 0 then i := LanDynData.CreateData(-1);
+  LanDynData.SetValue(i, 'kbLayout', kbLayout);
+  LanDynData.SetValue(i, 'Hotkey', mNewHotKey);
+
+  if (mNewHotKey = 0) then RemoveHotKey(ShortCutToHotKey(mOldHotKey));
+  if (mNewHotKey = 0) then Exit;
+
+  if (mOldHotKey <> 0) then Key := ShortCutToHotKey(mOldHotKey) else Key := -1;
+  if (Key > -1) then ChangeShortCut(Key, mNewHotKey) else SetShortCut(LanguageHotKeyCallback, mNewHotKey, kbLayout);
+end;
+
+
+procedure TForm4.HotKey1Enter(Sender: TObject);
+begin
+  mOldHotKey := HotKey1.HotKey;
+  mNewHotKey := HotKey1.HotKey;
+  DisableHotKey(ShortCutToHotKey(mOldHotKey));
+end;
+
+
+procedure TForm4.HotKey1Change(Sender: TObject);
+begin
+  mNewHotKey := HotKey1.HotKey;
+end;
+
+
+procedure TForm4.CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  SettingsLan.HotkeySound := CheckBox1.Checked;
+end;
+
+
+initialization
+  SettingsLan.HotkeySound := True;
 end.

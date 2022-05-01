@@ -2,7 +2,7 @@
 
 This is the source code of MSIControl. MSIControl is an application that will allow you to control fans of your MSI computer and other stuff. You probably will not be able to compile this project because it depends on other packages and units, which are not included.
 
-<p align="center"><img width="320" height="330" src="-(RES)-/Example.png"></p>
+<p align="center"><img width="335" height="265" src="-(RES)-/Example.png"></p>
 
 ## Features
 

@@ -73,7 +73,7 @@ function GetDescriptionFromName(Name: WideString): WideString;
 implementation
 
 uses
-  MSIControl, MSIMicrophones, MSIShadowPlay, MSILanguages;
+  MSIControl, MSIMicrophones, MSIShadowPlay;
 
 procedure LoadSettings;
 var
@@ -93,7 +93,6 @@ begin
 
   Form1.ComboBox1.ItemIndex := 0;
   Form1.ComboBox3.ItemIndex := 0;
-  LoadLanguageSetting;
 end;
 
 

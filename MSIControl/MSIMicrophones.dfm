@@ -1,6 +1,6 @@
 object Form2: TForm2
-  Left = 192
-  Top = 505
+  Left = 533
+  Top = 125
   ActiveControl = CheckBox1
   BorderStyle = bsDialog
   Caption = 'Microphones'
@@ -41,7 +41,7 @@ object Form2: TForm2
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label3: TLabel
+  object Label5: TLabel
     Left = 224
     Top = 225
     Width = 33
@@ -69,7 +69,7 @@ object Form2: TForm2
     Font.Style = []
     ParentFont = False
   end
-  object Label4: TLabel
+  object Label3: TLabel
     Left = 8
     Top = 160
     Width = 68
@@ -82,7 +82,7 @@ object Form2: TForm2
     Font.Style = []
     ParentFont = False
   end
-  object Label5: TLabel
+  object Label4: TLabel
     Left = 8
     Top = 192
     Width = 57
@@ -94,14 +94,6 @@ object Form2: TForm2
     Font.Name = 'Calibri'
     Font.Style = []
     ParentFont = False
-  end
-  object Bevel4: TCustoBevel
-    Left = -2
-    Top = 303
-    Width = 263
-    Height = 1
-    Shape = bsFrame
-    Color = clBlack
   end
   object Label6: TLabel
     Left = 8
@@ -115,6 +107,14 @@ object Form2: TForm2
     Font.Name = 'Calibri'
     Font.Style = [fsBold]
     ParentFont = False
+  end
+  object Bevel2: TCustoBevel
+    Left = 3
+    Top = 303
+    Width = 263
+    Height = 1
+    Shape = bsFrame
+    Color = clBlack
   end
   object HotKey1: TCustoHotKey
     Left = 88

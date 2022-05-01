@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 192
   Top = 125
   BorderStyle = bsNone
-  ClientHeight = 300
-  ClientWidth = 320
+  ClientHeight = 235
+  ClientWidth = 335
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -24,7 +24,7 @@ object Form1: TForm1
   object Bevel1: TCustoBevel
     Left = 6
     Top = 30
-    Width = 309
+    Width = 325
     Height = 1
     Shape = bsFrame
     Color = clBlack
@@ -32,15 +32,15 @@ object Form1: TForm1
   object Bevel2: TCustoBevel
     Left = 6
     Top = 95
-    Width = 309
+    Width = 325
     Height = 1
     Shape = bsFrame
     Color = clBlack
   end
   object Bevel3: TCustoBevel
     Left = 3
-    Top = 223
-    Width = 309
+    Top = 159
+    Width = 325
     Height = 1
     Shape = bsFrame
     Color = clBlack
@@ -88,7 +88,7 @@ object Form1: TForm1
   end
   object Label4: TLabel
     Left = 8
-    Top = 200
+    Top = 136
     Width = 59
     Height = 18
     Caption = 'SETTINGS'
@@ -99,31 +99,10 @@ object Form1: TForm1
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Bevel5: TCustoBevel
-    Left = 3
-    Top = 158
-    Width = 309
-    Height = 1
-    Shape = bsFrame
-    Color = clBlack
-  end
-  object Label6: TLabel
-    Left = 8
-    Top = 136
-    Width = 78
-    Height = 18
-    Caption = 'LANGUAGES'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -15
-    Font.Name = 'Calibri'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
   object ComboBox1: TFlatComboBox
     Left = 144
     Top = 39
-    Width = 169
+    Width = 177
     Height = 22
     Style = csDropDownList
     Color = clWhite
@@ -202,9 +181,9 @@ object Form1: TForm1
     OnMouseUp = TrackBar1MouseUp
   end
   object Button1: TXiButton
-    Left = 8
-    Top = 231
-    Width = 75
+    Left = 10
+    Top = 167
+    Width = 73
     Height = 25
     HelpKeyword = 'Theme'
     ColorFace = clBlue
@@ -245,7 +224,7 @@ object Form1: TForm1
   object ComboBox2: TFlatComboBox
     Left = 232
     Top = 103
-    Width = 80
+    Width = 89
     Height = 22
     Style = csDropDownList
     Color = clWhite
@@ -270,9 +249,9 @@ object Form1: TForm1
     OnKeyUp = ComboBoxKey
   end
   object ComboBox3: TFlatComboBox
-    Left = 7
-    Top = 265
-    Width = 274
+    Left = 10
+    Top = 201
+    Width = 266
     Height = 22
     Style = csDropDownList
     Color = clWhite
@@ -293,7 +272,7 @@ object Form1: TForm1
   end
   object CheckBox1: TFlatCheckBox
     Left = 293
-    Top = 267
+    Top = 203
     Width = 12
     Height = 17
     Checked = True
@@ -313,50 +292,9 @@ object Form1: TForm1
     TabStop = True
     OnMouseUp = CheckBox1MouseUp
   end
-  object ComboBox7: TFlatComboBox
-    Left = 143
-    Top = 167
-    Width = 169
-    Height = 22
-    Style = csDropDownList
-    Color = clWhite
-    ColorArrowBackground = clWhite
-    ColorBorder = clBlack
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ItemHeight = 14
-    ParentFont = False
-    TabOrder = 7
-    ItemIndex = -1
-    OnChange = ComboBox7Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
-  end
-  object HotKey3: TCustoHotKey
-    Left = 8
-    Top = 167
-    Width = 129
-    Height = 23
-    HotKey = 0
-    InvalidKeys = []
-    Modifiers = []
-    TabOrder = 8
-    OnChange = HotKey3Change
-    OnEnter = HotKey3Enter
-    OnExit = HotKey3Exit
-    Color = clWhite
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-  end
   object Button2: TXiButton
     Left = 90
-    Top = 231
+    Top = 167
     Width = 73
     Height = 25
     HelpType = htKeyword
@@ -393,12 +331,12 @@ object Form1: TForm1
     Gradient = False
     HotTrack = True
     Caption = 'Microphones'
-    TabOrder = 9
+    TabOrder = 7
     OnClick = Button2Click
   end
   object Button3: TXiButton
     Left = 170
-    Top = 231
+    Top = 167
     Width = 73
     Height = 25
     HelpType = htKeyword
@@ -435,14 +373,55 @@ object Form1: TForm1
     Gradient = False
     HotTrack = True
     Caption = 'Shadow Play'
-    TabOrder = 10
+    TabOrder = 8
     OnClick = Button3Click
+  end
+  object Button4: TXiButton
+    Left = 250
+    Top = 167
+    Width = 73
+    Height = 25
+    HelpType = htKeyword
+    ColorFace = clBlue
+    ColorGrad = clRed
+    ColorDark = clLime
+    ColorLight = clYellow
+    ColorBorder = clBlack
+    ColorText = clBlack
+    OverColorFace = clWhite
+    OverColorGrad = clWhite
+    OverColorDark = clWhite
+    OverColorLight = clWhite
+    OverColorBorder = 14120960
+    OverColorText = clBlack
+    DownColorFace = 15790320
+    DownColorGrad = 15790320
+    DownColorDark = 15790320
+    DownColorLight = 15790320
+    DownColorBorder = 10048512
+    DownColorText = clBlack
+    DisabledColorFace = clSilver
+    DisabledColorGrad = clSilver
+    DisabledColorDark = clSilver
+    DisabledColorLight = clSilver
+    DisabledColorBorder = clBlack
+    DisabledColorText = clBlack
+    ColorFocusRect = clNone
+    ColorScheme = csCustom
+    Ctl3D = True
+    Layout = blGlyphLeft
+    Spacing = 4
+    TransparentGlyph = True
+    Gradient = False
+    HotTrack = True
+    Caption = 'Languages'
+    TabOrder = 9
+    OnClick = Button4Click
   end
   object PopupMenu1: TPopupMenu
     AutoHotkeys = maManual
     OnPopup = PopupMenu1Popup
-    Left = 352
-    Top = 168
+    Left = 224
     object ToggleCoolerBoost1: TMenuItem
       Caption = 'Toggle Cooler Boost'
       OnClick = ToggleCoolerBoost1Click
