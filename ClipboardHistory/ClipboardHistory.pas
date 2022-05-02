@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
   ExtCtrls, MMSystem, Grids, Menus, Registry, DateUtils, ShellAPI, TNTSysUtils, TNTGrids,
   TNTClipBrd, TNTGraphics, TNTStdCtrls, TNTSystem, TNTDialogs, ATScrollBar, TFlatComboBoxUnit,
-  TFlatCheckBoxUnit, uQueryShutdown, CustoTrayIcon, uDynamicData, Functions;
+  TFlatCheckBoxUnit, CustoTrayIcon, uQueryShutdown, uDynamicData, Functions;
 
 const
   INACTIVE_TIMEOUT = 350;
@@ -229,10 +229,12 @@ end;
 //QueryShutdown
 procedure QueryShutdown(BS: TBlockShutdown);
 begin
-  BS.CreateReason('Saving settings...');
+  BS.CreateReason('Saving clipboard history...');
+  Form1.DisableClipboard;
   SaveSettings;
+  Form1.TrayIcon1.Destroy;
   BS.DestroyReason;
-  Application.Terminate;
+  TerminateProcess(GetCurrentProcess, 0);
 end;
 //QueryShutdown
 
@@ -539,7 +541,7 @@ begin
   if (TNTStringGrid1.RowCount - (TNTStringGrid1.TopRow + ItemsPerPage)) > 2 then Exit;
   if TNTStringGrid1.RowCount > DynamicData.GetLength then Exit;
   UID := StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.RowCount-1]);
-  BuildList(TNTStringGrid1.RowCount-1, DynamicData.FindIndex('UID', UID), APPEND_ITEMS);
+  BuildList(TNTStringGrid1.RowCount-1, DynamicData.FindIndex(0, 'UID', UID), APPEND_ITEMS);
 end;
 //CheckListEnding
 
@@ -575,6 +577,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
   LoadSettings;
   SetClipboardViewer(Handle);
+  SetQueryShutdown(QueryShutdown);
 
   Scroll := TATScroll.Create(Self);
   Scroll.Parent := Form1;
@@ -644,7 +647,7 @@ begin
   EnableClipboard;
 
   if (SaveClipboard <> 0) and SettingsDB.Monitoring then begin
-    Index := DynamicData.FindIndex('UID', SaveClipboard);
+    Index := DynamicData.FindIndex(0, 'UID', SaveClipboard);
     isFavorite := False;
     if Index > -1 then isFavorite := DynamicData.GetValue(Index, 'Favorite');
     if Index > 0 then DynamicData.DeleteData(Index);
@@ -706,8 +709,8 @@ var
   Index: Integer;
   LastIndex: Integer;
 begin
-  Index := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, ARow]));
-  LastIndex := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.RowCount-1]))-1;
+  Index := DynamicData.FindIndex(0, 'UID', StrToInt64(TNTStringGrid1.Cells[4, ARow]));
+  LastIndex := DynamicData.FindIndex(0, 'UID', StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.RowCount-1]))-1;
   PrepareList(TNTStringGrid1.RowCount-1);
   THackGrid(TNTStringGrid1).DeleteRow(ARow);
   DynamicData.DeleteData(Index);
@@ -783,7 +786,7 @@ begin
     PopupMenu2.Items[0].Visible := TNTStringGrid1.Selection.Top >= 0;
 
     if TNTStringGrid1.Selection.Top >= 0 then begin
-      Index := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.Selection.Top]));
+      Index := DynamicData.FindIndex(0, 'UID', StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.Selection.Top]));
 
       if DynamicData.GetValue(Index, 'Favorite')
         then PopupMenu2.Items[0].Items[2].Caption := 'Unfavorite'
@@ -867,7 +870,7 @@ var
 begin
   SaveClipboard := StrToInt64(TNTStringGrid1.Cells[4, TNTStringGrid1.Selection.Top]);
   TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
-  Index := DynamicData.FindIndex('UID', SaveClipboard);
+  Index := DynamicData.FindIndex(0, 'UID', SaveClipboard);
   TNTClipboard.AsWideText := DynamicData.GetValue(Index, 'Content');
 end;
 
@@ -887,7 +890,7 @@ begin
   Row := TNTStringGrid1.Selection.Top;
   TNTStringGrid1.Selection := TGridRect(Rect(0,-1,0,-1));
 
-  Index := DynamicData.FindIndex('UID', StrToInt64(TNTStringGrid1.Cells[4, Row]));
+  Index := DynamicData.FindIndex(0, 'UID', StrToInt64(TNTStringGrid1.Cells[4, Row]));
   isFavorite := DynamicData.GetValue(Index, 'Favorite');
   DynamicData.SetValue(Index, 'Favorite', not isFavorite);
   TNTStringGrid1.Cells[5, Row] := IntToStr(Integer(not isFavorite));
