@@ -16,15 +16,15 @@ type
     HotKey1: TCustoHotKey;
     Label1: TLabel;
     Label2: TLabel;
+    procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ComboBox1Change(Sender: TObject);
+    procedure FormClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure HotKey1Change(Sender: TObject);
     procedure HotKey1Enter(Sender: TObject);
     procedure HotKey1Exit(Sender: TObject);
-    procedure HotKey1Change(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure FormClick(Sender: TObject);
-    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -168,6 +168,7 @@ begin
   LanDynData.SetValue(i, 'kbLayout', kbLayout);
   LanDynData.SetValue(i, 'Hotkey', mNewHotKey);
 
+  if (mNewHotKey = 0) then LanDynData.DeleteData(i);
   if (mNewHotKey = 0) then RemoveHotKey(ShortCutToHotKey(mOldHotKey));
   if (mNewHotKey = 0) then Exit;
 
