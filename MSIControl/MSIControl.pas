@@ -226,10 +226,6 @@ begin
     UpdateSettingByName('WEBCAM', (bResult <> EC_WEBCAM[1]), False);
     SetWebcamStatus(bResult <> EC_WEBCAM[1]);
   end;
-
-  if (CustomValue = 'MUTE_AUDIO') then SendMessage(Form1.Handle, WM_APPCOMMAND, Form1.Handle, APPCOMMAND_VOLUME_MUTE);
-  if (CustomValue = 'INCREASE_AUDIO') then SendMessage(Form1.Handle, WM_APPCOMMAND, Form1.Handle, APPCOMMAND_VOLUME_UP);
-  if (CustomValue = 'DECREASE_AUDIO') then SendMessage(Form1.Handle, WM_APPCOMMAND, Form1.Handle, APPCOMMAND_VOLUME_DOWN);
 end;
 //HotKeyCallback
 

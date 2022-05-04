@@ -20,20 +20,16 @@ type
   end;
 
 var
-  HotKeys: array[0..6] of THotKey = (
+  HotKeys: array[0..3] of THotKey = (
     (Key: 0; ShortCut: 0; Name: 'TOGGLE_COOLER_BOOST'; Description: 'Toggle Cooler Boost'),
     (Key: 0; ShortCut: 0; Name: 'CHANGE_MODE_BASIC'; Description: 'Change Mode To Basic'),
     (Key: 0; ShortCut: 0; Name: 'CHANGE_MODE_AUTO'; Description: 'Change Mode To Auto'),
-    (Key: 0; ShortCut: 0; Name: 'TOGGLE_WEBCAM'; Description: 'Toggle Webcam'),
-    (Key: 0; ShortCut: 0; Name: 'MUTE_AUDIO'; Description: 'Mute Audio'),
-    (Key: 0; ShortCut: 0; Name: 'INCREASE_AUDIO'; Description: 'Increase Audio'),
-    (Key: 0; ShortCut: 0; Name: 'DECREASE_AUDIO'; Description: 'Decrease Audio')
+    (Key: 0; ShortCut: 0; Name: 'TOGGLE_WEBCAM'; Description: 'Toggle Webcam')
   );
 
 var
-  Settings: array[0..4] of TSetting = (
+  Settings: array[0..3] of TSetting = (
     (Name: 'HOTKEY_SOUNDS'; Description: 'HotKey Sounds'),
-    (Name: 'LANGUAGES_HOTKEY_SOUNDS'; Description: 'Languages HotKey Sounds'),
     (Name: 'WEBCAM'; Description: 'MSI Webcam'),
     (Name: 'COOLER_BOOST'; Description: 'Cooler Boost'),
     (Name: 'TRAY_UPDATE'; Description: 'Fan Mode Tray Update')
@@ -44,11 +40,6 @@ const
   DEFAULT_KEY = '\Software\MSIControl';
   DEFAULT_HOTKEY_KEY = '\Software\MSIControl\HotKeys';
   INACTIVE_TIMEOUT = 350;
-
-const
-  APPCOMMAND_VOLUME_MUTE = $80000;
-  APPCOMMAND_VOLUME_UP = $A0000;
-  APPCOMMAND_VOLUME_DOWN = $90000;
 
 const
   AUTO_MODE = $0C;

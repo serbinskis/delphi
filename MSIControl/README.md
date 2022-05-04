@@ -14,7 +14,6 @@ This is the source code of MSIControl. MSIControl is an application that will al
 - Toggle Cooler Boost.
 - Control Shadow Play.
 - Control fan speed.
-- Control audio.
 - Control microphone volume and mute.
 - Set fixed volume on microphone.
 - Set custom hotkey to change keyboard language.
