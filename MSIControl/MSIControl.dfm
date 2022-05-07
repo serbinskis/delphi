@@ -451,7 +451,7 @@ object Form1: TForm1
     TransparentGlyph = True
     Gradient = False
     HotTrack = True
-    Caption = 'Bluetooth and Ethernet'
+    Caption = 'Bluetooth && Ethernet'
     TabOrder = 10
     OnClick = Button5Click
   end
@@ -459,7 +459,7 @@ object Form1: TForm1
     AutoHotkeys = maManual
     OnPopup = PopupMenu1Popup
     Left = 272
-    object oggle1: TMenuItem
+    object Toggle1: TMenuItem
       Caption = 'Toggle'
       object ToggleAutoruns1: TMenuItem
         Caption = 'Toggle Autoruns'

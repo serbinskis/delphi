@@ -143,7 +143,7 @@ begin
   for i := 0 to SettingDynData.GetLength-1 do begin
     ComboBox2.Items.Add(SettingDynData.GetValue(i, 'Description'));
     Name := SettingDynData.GetValue(i, 'Name');
-    if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_CON_KEY, Name) then SettingDynData.SetValue(i, 'Value', Boolean(v));
+    if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_CON_KEY, Name) then SettingDynData.SetValue(i, 'Value', v);
   end;
 
   EventHandler := TEventHandler.Create;
@@ -158,17 +158,14 @@ begin
   MenuItem.OnClick := EventHandler.BluetoothToggleClick;
   if isBluetooth then Form1.PopupMenu1.Items.Find('Toggle').Add(MenuItem);
 
-  i := SettingDynData.FindIndex(0, 'Name', 'SETTING_AUTO_ENABLE_ETHERNET');
-  v := SettingDynData.GetValue(i, 'Value');
-  if (v < 0) then SetEthernetEnabled(True);
+  v := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_ENABLE_ETHERNET', 'Value');
+  if (v > 0) then SetEthernetEnabled(True);
 
-  i := SettingDynData.FindIndex(0, 'Name', 'SETTING_AUTO_ENABLE_BLUETOOTH');
-  v := SettingDynData.GetValue(i, 'Value');
-  if (v < 0) and isBluetooth then EnableBluetooth(True);
+  v := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_ENABLE_BLUETOOTH', 'Value');
+  if (v > 0) and isBluetooth then EnableBluetooth(True);
 
-  i := SettingDynData.FindIndex(0, 'Name', 'SETTING_AUTO_DISABLE_DISCOVERY');
-  v := SettingDynData.GetValue(i, 'Value');
-  if (v < 0) and isBluetooth then EnableBluetoothDiscovery(False);
+  v := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_DISABLE_DISCOVERY', 'Value');
+  if (v > 0) and isBluetooth then EnableBluetoothDiscovery(False);
 
   ComboBox1.ItemIndex := 0;
   ComboBox1Change(nil);

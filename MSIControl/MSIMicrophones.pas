@@ -153,10 +153,10 @@ var
   Name: WideString;
 begin
   MicDynData := TDynamicData.Create(['Name', 'Operation', 'Volume', 'Fixed', 'HotKey']);
-  MicDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'Microphones', True);
+  MicDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'BINARY_MICROPHONES', True);
   if (MicDynData.GetLength) = 0 then Form2.Button1Click(nil);
 
-  LoadRegistryBoolean(SettingsMic.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'HotkeySound');
+  LoadRegistryBoolean(SettingsMic.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'SETTING_HOTKEY_SOUND');
   Form2.CheckBox2.Checked := SettingsMic.HotkeySound;
 
   for i := 0 to MicDynData.GetLength-1 do begin
@@ -229,8 +229,8 @@ end;
 
 procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  MicDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'Microphones');
-  SaveRegistryBoolean(SettingsMic.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'HotkeySound');
+  MicDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'BINARY_MICROPHONES');
+  SaveRegistryBoolean(SettingsMic.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'SETTING_HOTKEY_SOUND');
 end;
 
 

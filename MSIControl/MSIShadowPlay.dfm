@@ -3,7 +3,7 @@ object Form3: TForm3
   Top = 125
   BorderStyle = bsDialog
   Caption = 'Shadow Play'
-  ClientHeight = 415
+  ClientHeight = 370
   ClientWidth = 270
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -90,19 +90,6 @@ object Form3: TForm3
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label2: TLabel
-    Left = 8
-    Top = 43
-    Width = 109
-    Height = 14
-    Caption = 'Toggle Shadow Play:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ParentFont = False
-  end
   object Bevel1: TCustoBevel
     Left = 3
     Top = 31
@@ -163,7 +150,7 @@ object Form3: TForm3
     TabStop = True
     OnMouseUp = CheckBox2MouseUp
   end
-  object ComboBox1: TFlatComboBox
+  object ComboBox2: TFlatComboBox
     Left = 7
     Top = 177
     Width = 162
@@ -285,55 +272,6 @@ object Form3: TForm3
     TabOrder = 5
     Text = 'explorer.exe'
   end
-  object CheckBox4: TFlatCheckBox
-    Left = 8
-    Top = 362
-    Width = 145
-    Height = 17
-    Caption = 'Auto Enable IT On Start'
-    Color = clLime
-    ColorFocused = clBlue
-    ColorDown = clAqua
-    ColorCheck = clYellow
-    ColorBorder = clFuchsia
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clRed
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
-    ShowHint = True
-    TabOrder = 6
-    TabStop = True
-    OnMouseUp = CheckBox4MouseUp
-  end
-  object CheckBox5: TFlatCheckBox
-    Left = 8
-    Top = 386
-    Width = 129
-    Height = 17
-    Hint = 
-      'Enable instant replay when active window process is one in the l' +
-      'ist'
-    Caption = 'Enable Shadow Play'
-    Color = clLime
-    ColorFocused = clBlue
-    ColorDown = clAqua
-    ColorCheck = clYellow
-    ColorBorder = clFuchsia
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clRed
-    Font.Height = -12
-    Font.Name = 'Calibri'
-    Font.Style = []
-    ParentColor = False
-    ParentFont = False
-    ShowHint = True
-    TabOrder = 7
-    TabStop = True
-    OnMouseUp = CheckBox5MouseUp
-  end
   object Edit2: TTntEdit
     Left = 8
     Top = 233
@@ -350,10 +288,10 @@ object Form3: TForm3
     MaxLength = 256
     ParentCtl3D = False
     ParentFont = False
-    TabOrder = 8
+    TabOrder = 6
     Text = 'explorer.exe'
   end
-  object ComboBox2: TFlatComboBox
+  object ComboBox3: TFlatComboBox
     Left = 7
     Top = 265
     Width = 162
@@ -369,7 +307,7 @@ object Form3: TForm3
     Font.Style = []
     ItemHeight = 14
     ParentFont = False
-    TabOrder = 9
+    TabOrder = 7
     ItemIndex = -1
   end
   object Button3: TXiButton
@@ -411,7 +349,7 @@ object Form3: TForm3
     Gradient = False
     HotTrack = True
     Caption = 'Add'
-    TabOrder = 10
+    TabOrder = 8
     OnClick = Button3Click
   end
   object Button4: TXiButton
@@ -453,18 +391,18 @@ object Form3: TForm3
     Gradient = False
     HotTrack = True
     Caption = 'Delete'
-    TabOrder = 11
+    TabOrder = 9
     OnClick = Button4Click
   end
   object HotKey1: TCustoHotKey
-    Left = 128
+    Left = 8
     Top = 39
-    Width = 129
+    Width = 113
     Height = 23
     HotKey = 0
     InvalidKeys = []
     Modifiers = []
-    TabOrder = 12
+    TabOrder = 10
     OnChange = HotKey1Change
     OnEnter = HotKey1Enter
     OnExit = HotKey1Exit
@@ -475,12 +413,52 @@ object Form3: TForm3
     Font.Name = 'Calibri'
     Font.Style = []
   end
+  object ComboBox1: TFlatComboBox
+    Left = 128
+    Top = 39
+    Width = 130
+    Height = 22
+    Style = csDropDownList
+    Color = clWhite
+    ColorArrowBackground = clWhite
+    ColorBorder = clBlack
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ItemHeight = 14
+    ParentFont = False
+    TabOrder = 11
+    ItemIndex = -1
+    OnChange = ComboBox1Change
+  end
+  object ComboBox4: TFlatComboBox
+    Left = 7
+    Top = 337
+    Width = 218
+    Height = 22
+    Style = csDropDownList
+    Color = clWhite
+    ColorArrowBackground = clWhite
+    ColorBorder = clBlack
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ItemHeight = 14
+    ParentFont = False
+    TabOrder = 12
+    ItemIndex = -1
+    OnChange = ComboBox4Change
+  end
   object CheckBox3: TFlatCheckBox
-    Left = 8
-    Top = 338
-    Width = 145
+    Left = 237
+    Top = 339
+    Width = 17
     Height = 17
-    Caption = 'Enable Hotkey Sounds'
+    Checked = True
     Color = clLime
     ColorFocused = clBlue
     ColorDown = clAqua
@@ -493,7 +471,6 @@ object Form3: TForm3
     Font.Style = []
     ParentColor = False
     ParentFont = False
-    ShowHint = True
     TabOrder = 13
     TabStop = True
     OnMouseUp = CheckBox3MouseUp

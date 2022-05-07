@@ -16,6 +16,8 @@ type
     Button1: TXiButton;
     Button2: TXiButton;
     Button3: TXiButton;
+    Button4: TXiButton;
+    Button5: TXiButton;
     CheckBox1: TFlatCheckBox;
     ComboBox1: TFlatComboBox;
     ComboBox2: TFlatComboBox;
@@ -32,37 +34,35 @@ type
     ToggleCoolerBoost1: TMenuItem;
     TrackBar1: TXiTrackBar;
     TrayIcon1: TTrayIcon;
-    Button4: TXiButton;
-    Button5: TXiButton;
-    oggle1: TMenuItem;
-    procedure ToggleCoolerBoost1Click(Sender: TObject);
-    procedure ToggleAutoruns1Click(Sender: TObject);
-    procedure Exit1Click(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
-    procedure FormShow(Sender: TObject);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure FormClick(Sender: TObject);
-    procedure FormDeactivate(Sender: TObject);
-    procedure FormHide(Sender: TObject);
-    procedure TrackBar1Change(Sender: TObject);
-    procedure TrackBar1MouseUp(Sender: TObject);
-    procedure FormPaint(Sender: TObject);
+    Toggle1: TMenuItem;
     procedure Button1Click(Sender: TObject);
-    procedure ComboBox1Change(Sender: TObject);
-    procedure ComboBox2Change(Sender: TObject);
-    procedure HotKey1Exit(Sender: TObject);
-    procedure HotKey1Enter(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure TrayIcon1Action(Sender: TObject; Code: Integer);
-    procedure ComboBox3Change(Sender: TObject);
-    procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure Restart1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
-    procedure PopupMenu1Popup(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure ComboBox1Change(Sender: TObject);
+    procedure ComboBox2Change(Sender: TObject);
+    procedure ComboBox3Change(Sender: TObject);
+    procedure Exit1Click(Sender: TObject);
+    procedure FormClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDeactivate(Sender: TObject);
+    procedure FormHide(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure HotKey1Change(Sender: TObject);
+    procedure HotKey1Enter(Sender: TObject);
+    procedure HotKey1Exit(Sender: TObject);
+    procedure PopupMenu1Popup(Sender: TObject);
+    procedure Restart1Click(Sender: TObject);
+    procedure ToggleAutoruns1Click(Sender: TObject);
+    procedure ToggleCoolerBoost1Click(Sender: TObject);
+    procedure TrackBar1Change(Sender: TObject);
+    procedure TrackBar1MouseUp(Sender: TObject);
+    procedure TrayIcon1Action(Sender: TObject; Code: Integer);
   private
     { Private declarations }
   public
@@ -208,7 +208,7 @@ begin
   for i := 0 to SettingDynData.GetLength-1 do begin
     ComboBox3.Items.Add(SettingDynData.GetValue(i, 'Description'));
     Name := SettingDynData.GetValue(i, 'Name');
-    if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, Name) then SettingDynData.SetValue(i, 'Value', Boolean(v));
+    if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, Name) then SettingDynData.SetValue(i, 'Value', v);
   end;
 
   ComboBox1.ItemIndex := 0;

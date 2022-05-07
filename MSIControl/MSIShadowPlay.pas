@@ -21,49 +21,40 @@ type
     CheckBox1: TFlatCheckBox;
     CheckBox2: TFlatCheckBox;
     CheckBox3: TFlatCheckBox;
-    CheckBox4: TFlatCheckBox;
-    CheckBox5: TFlatCheckBox;
     ComboBox1: TFlatComboBox;
     ComboBox2: TFlatComboBox;
+    ComboBox3: TFlatComboBox;
+    ComboBox4: TFlatComboBox;
     Edit1: TTntEdit;
     Edit2: TTntEdit;
     HotKey1: TCustoHotKey;
     Label1: TLabel;
-    Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
     Timer1: TTimer;
     Timer2: TTimer;
-    procedure FormCreate(Sender: TObject);
-    procedure FormClick(Sender: TObject);
-    procedure FormShow(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
-    procedure HotKey1Exit(Sender: TObject);
-    procedure HotKey1Enter(Sender: TObject);
-    procedure HotKey1Change(Sender: TObject);
-    procedure Timer1Timer(Sender: TObject);
-    procedure Timer2Timer(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure CheckBox2MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure CheckBox3MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure CheckBox4MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure CheckBox5MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure ComboBox1Change(Sender: TObject);
+    procedure ComboBox4Change(Sender: TObject);
+    procedure FormClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure HotKey1Change(Sender: TObject);
+    procedure HotKey1Enter(Sender: TObject);
+    procedure HotKey1Exit(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
-  end;
-
-type
-  TSettingsSP = record
-    HotkeySound: Boolean;
-    AutoIT: Boolean;
-    ITActivateType: Integer;
-    ToggleSPHotkey: Integer;
   end;
 
 type
@@ -78,11 +69,12 @@ const
 
 var
   Form3: TForm3;
+  ShadowDynData: TDynamicData;
+  HotkeyDynData: TDynamicData;
+  SettingDynData: TDynamicData;
+  ShadowPlay: TShadowPlay;
   mOldHotKey: Integer;
   mNewHotKey: Integer;
-  ShadowPlay: TShadowPlay;
-  ShadowDynData: TDynamicData;
-  SettingsSP: TSettingsSP;
   SavedHWND: HWND;
   SavedProcess: WideString;
 
@@ -112,10 +104,13 @@ end;
 procedure WindowChange(hwnd: HWND);
 var
   S: WideString;
-  i, j: Integer;
+  i, j, ITActivateType: Integer;
   bool: Boolean;
 begin
-  if SettingsSP.ITActivateType = 0 then Exit;
+  i := SettingDynData.FindIndex(0, 'Name', 'SETTING_IT_ACTIVATE_TYPE');
+  if (i > -1) then ITActivateType := SettingDynData.GetValue(i, 'Value') else ITActivateType := 0;
+  if ITActivateType = 0 then Exit;
+
   S := GetProcessFromHWND(hwnd);
   if SavedProcess = S then Exit;
   SavedProcess := S;
@@ -124,28 +119,40 @@ begin
   if not ShadowPlay.IsShadowPlayOn then Exit;
 
   for i := 0 to ShadowDynData.GetLength-1 do begin
-    if (ShadowDynData.GetValue(i, 'Process') = S) and (ShadowDynData.GetValue(i, 'Type') = SettingsSP.ITActivateType) then j := i;
+    if (ShadowDynData.GetValue(i, 'Process') = S) and (ShadowDynData.GetValue(i, 'Type') = ITActivateType) then j := i;
   end;
 
-  if (j < 0) and (SettingsSP.ITActivateType = PROCESS_TYPE_DISABLE) then ShadowPlay.EnableInstantReplay(True);
-  if (j < 0) and (SettingsSP.ITActivateType = PROCESS_TYPE_ENABLE) then ShadowPlay.EnableInstantReplay(False);
+  if (j < 0) and (ITActivateType = PROCESS_TYPE_DISABLE) then ShadowPlay.EnableInstantReplay(True);
+  if (j < 0) and (ITActivateType = PROCESS_TYPE_ENABLE) then ShadowPlay.EnableInstantReplay(False);
 
-  if (j > -1) and (SettingsSP.ITActivateType = PROCESS_TYPE_DISABLE) then begin
+  if (j > -1) and (ITActivateType = PROCESS_TYPE_DISABLE) then begin
     bool := ShadowDynData.GetValue(j, 'Type') <> PROCESS_TYPE_DISABLE;
     ShadowPlay.EnableInstantReplay(bool);
   end;
 
-  if (j > -1) and (SettingsSP.ITActivateType = PROCESS_TYPE_ENABLE) then begin
+  if (j > -1) and (ITActivateType = PROCESS_TYPE_ENABLE) then begin
     bool := ShadowDynData.GetValue(j, 'Type') = PROCESS_TYPE_ENABLE;
     ShadowPlay.EnableInstantReplay(bool);
   end;
 end;
 
 
-procedure ShadowPlayHotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
+procedure ShadowPlayHotkeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
+var
+  i: Integer;
 begin
-  if SettingsSP.HotkeySound then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
-  Form3.CheckBox5.Checked := ShadowPlay.ToggleShadowPlay;
+  i := SettingDynData.FindIndex(0, 'Name', 'SETTING_HOTKEY_SOUND');
+  if (i > -1) and SettingDynData.GetValue(i, 'Value') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
+
+  if (CustomValue = 'HOTKEY_TOGGLE_SP') then begin
+    ShadowPlay.ToggleShadowPlay;
+  end;
+
+  if (CustomValue = 'HOTKEY_TOGGLE_IT') then begin
+    ShadowPlay.ToggleInstantReplay;
+  end;
+
+  Form3.ComboBox4Change(nil);
 end;
 
 
@@ -156,18 +163,18 @@ var
 begin
   SavedHWND := 0;
   SavedProcess := '';
-  Form3.ComboBox1.Items.Clear;
   Form3.ComboBox2.Items.Clear;
+  Form3.ComboBox3.Items.Clear;
 
   for i := 0 to ShadowDynData.GetLength-1 do begin
     Name := ShadowDynData.GetValue(i, 'Process');
     PType := ShadowDynData.GetValue(i, 'Type');
-    if (PType = PROCESS_TYPE_DISABLE) then Form3.ComboBox1.Items.AddObject(Name, TObject(i));
-    if (PType = PROCESS_TYPE_ENABLE) then Form3.ComboBox2.Items.AddObject(Name, TObject(i));
+    if (PType = PROCESS_TYPE_DISABLE) then Form3.ComboBox2.Items.AddObject(Name, TObject(i));
+    if (PType = PROCESS_TYPE_ENABLE) then Form3.ComboBox3.Items.AddObject(Name, TObject(i));
   end;
 
-  Form3.ComboBox1.ItemIndex := 0;
   Form3.ComboBox2.ItemIndex := 0;
+  Form3.ComboBox3.ItemIndex := 0;
 end;
 
 
@@ -178,11 +185,15 @@ end;
 
 
 procedure TForm3.Timer1Timer(Sender: TObject);
+var
+  isOn: Boolean;
 begin
   Timer1.Enabled := False;
-  if not SettingsSP.AutoIT then Exit;
-  ShadowPlay.EnableShadowPlay(True);
-  Wait(10000);
+  if not Boolean(SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_ENABLE_IT', 'Value')) then Exit;
+
+  isOn := ShadowPlay.IsShadowPlayOn;
+  if not isOn then ShadowPlay.EnableShadowPlay(True);
+  if not isOn then Wait(10000);
   ShadowPlay.EnableInstantReplay(True);
 end;
 
@@ -202,29 +213,47 @@ procedure TForm3.FormCreate(Sender: TObject);
 var
   MenuItem: TMenuItem;
   EventHandler: TEventHandler;
+  Name: WideString;
+  i, v: Integer;
 begin
   ShadowPlay := TShadowPlay.Create;
+  Form1.Button3.Enabled := ShadowPlay.IsLoaded;
   if not ShadowPlay.IsLoaded then Exit;
 
   ShadowDynData := TDynamicData.Create(['Process', 'Type']);
-  ShadowDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ShadowPlay', True);
-  LoadRegistryBoolean(SettingsSP.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'HotkeySound');
-  LoadRegistryBoolean(SettingsSP.AutoIT, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'AutoIT');
-  LoadRegistryInteger(SettingsSP.ITActivateType, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ITActivateType');
-  LoadRegistryInteger(SettingsSP.ToggleSPHotkey, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ToggleSPHotkey');
+  ShadowDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'BINARY_SHADOWPLAY', True);
+  GenerateProcessList;
 
-  Form3.CheckBox1.Checked := (SettingsSP.ITActivateType = PROCESS_TYPE_DISABLE);
-  Form3.CheckBox2.Checked := (SettingsSP.ITActivateType = PROCESS_TYPE_ENABLE);
-  Form3.CheckBox3.Checked := SettingsSP.HotkeySound;
-  Form3.CheckBox4.Checked := SettingsSP.AutoIT;
+  HotkeyDynData := TDynamicData.Create(['Hotkey', 'Name', 'Description']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_SP', 'Toggle Shadow Play']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_IT', 'Toggle Instant Replay']);
 
-  case SettingsSP.ITActivateType of
-    PROCESS_TYPE_DISABLE: if ShadowPlay.IsShadowPlayOn then ShadowPlay.EnableInstantReplay(True);
-    PROCESS_TYPE_ENABLE: if ShadowPlay.IsShadowPlayOn then ShadowPlay.EnableInstantReplay(False);
+  SettingDynData := TDynamicData.Create(['Visible', 'Value', 'Name', 'Description']);
+  SettingDynData.CreateData(-1, -1, ['Visible', 'Value', 'Name', 'Description'], [True, True, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
+  SettingDynData.CreateData(-1, -1, ['Visible', 'Value', 'Name', 'Description'], [True, False, 'SETTING_AUTO_ENABLE_IT', 'Enable Instant Replay On Startup']);
+  SettingDynData.CreateData(-1, -1, ['Visible', 'Value', 'Name', 'Description'], [True, False, 'SETTING_ENABLE_SP', 'Enable Shadow Play']);
+  SettingDynData.CreateData(-1, -1, ['Visible', 'Value', 'Name', 'Description'], [False, 0, 'SETTING_IT_ACTIVATE_TYPE', '']);
+
+  for i := 0 to HotkeyDynData.GetLength-1 do begin
+    ComboBox1.Items.Add(HotkeyDynData.GetValue(i, 'Description'));
+    Name := HotkeyDynData.GetValue(i, 'Name');
+    if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, Name) then begin
+      HotkeyDynData.SetValue(i, 'Hotkey', v);
+      SetShortCut(ShadowPlayHotkeyCallback, v, Name);
+    end;
   end;
 
-  if SettingsSP.ToggleSPHotkey > 0 then SetShortCut(ShadowPlayHotKeyCallback, SettingsSP.ToggleSPHotkey);
-  GenerateProcessList;
+  for i := 0 to SettingDynData.GetLength-1 do begin
+    if SettingDynData.GetValue(i, 'Visible') then ComboBox4.Items.Add(SettingDynData.GetValue(i, 'Description'));
+    Name := SettingDynData.GetValue(i, 'Name');
+    if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, Name) then SettingDynData.SetValue(i, 'Value', v);
+  end;
+
+  Form3.CheckBox1.Checked := (SettingDynData.FindValue(0, 'Name', 'SETTING_IT_ACTIVATE_TYPE', 'Value') = PROCESS_TYPE_DISABLE);
+  Form3.CheckBox2.Checked := (SettingDynData.FindValue(0, 'Name', 'SETTING_IT_ACTIVATE_TYPE', 'Value') = PROCESS_TYPE_ENABLE);
+
+  if Form3.CheckBox1.Checked then if ShadowPlay.IsShadowPlayOn then ShadowPlay.EnableInstantReplay(True);
+  if Form3.CheckBox2.Checked then if ShadowPlay.IsShadowPlayOn then ShadowPlay.EnableInstantReplay(False);
 
   EventHandler := TEventHandler.Create;
   MenuItem := TMenuItem.Create(nil);
@@ -232,10 +261,14 @@ begin
   MenuItem.OnClick := EventHandler.ToggleSPClick;
   Form1.PopupMenu1.Items.Find('Toggle').Add(MenuItem);
 
+  ComboBox1.ItemIndex := 0;
+  ComboBox1Change(nil);
+
+  ComboBox4.ItemIndex := 0;
+  ComboBox4Change(nil);
+
   Timer1.Enabled := True;
   Timer2.Enabled := True;
-  HotKey1.HotKey := SettingsSP.ToggleSPHotkey;
-  Form1.Button3.Enabled := MSIShadowPlay.ShadowPlay.IsLoaded;
   ChangeTheme(Theme, Form3);
 end;
 
@@ -243,17 +276,22 @@ end;
 procedure TForm3.FormShow(Sender: TObject);
 begin
   MSIControl.RemoveFocus(Form3);
-  CheckBox5.Checked := ShadowPlay.IsShadowPlayOn;
 end;
 
 
 procedure TForm3.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  i: Integer;
 begin
-  ShadowDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ShadowPlay');
-  SaveRegistryBoolean(SettingsSP.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'HotkeySound');
-  SaveRegistryBoolean(SettingsSP.AutoIT, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'AutoIT');
-  SaveRegistryInteger(SettingsSP.ITActivateType, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ITActivateType');
-  SaveRegistryInteger(SettingsSP.ToggleSPHotkey, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'ToggleSPHotkey');
+  ShadowDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'BINARY_SHADOWPLAY');
+
+  for i := 0 to HotkeyDynData.GetLength-1 do begin
+    SaveRegistryInteger(HotkeyDynData.GetValue(i, 'Hotkey'), DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, HotkeyDynData.GetValue(i, 'Name'));
+  end;
+
+  for i := 0 to SettingDynData.GetLength-1 do begin
+    SaveRegistryBoolean(SettingDynData.GetValue(i, 'Value'), DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, SettingDynData.GetValue(i, 'Name'));
+  end;
 end;
 
 
@@ -305,8 +343,8 @@ procedure TForm3.Button2Click(Sender: TObject);
 var
   i: Integer;
 begin
-  if ComboBox1.ItemIndex < 0 then Exit;
-  i := Integer(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
+  if ComboBox2.ItemIndex < 0 then Exit;
+  i := Integer(ComboBox2.Items.Objects[ComboBox2.ItemIndex]);
   ShadowDynData.DeleteData(i);
   GenerateProcessList;
 end;
@@ -316,8 +354,8 @@ procedure TForm3.Button4Click(Sender: TObject);
 var
   i: Integer;
 begin
-  if ComboBox2.ItemIndex < 0 then Exit;
-  i := Integer(ComboBox2.Items.Objects[ComboBox2.ItemIndex]);
+  if ComboBox3.ItemIndex < 0 then Exit;
+  i := Integer(ComboBox3.Items.Objects[ComboBox3.ItemIndex]);
   ShadowDynData.DeleteData(i);
   GenerateProcessList;
 end;
@@ -339,23 +377,31 @@ end;
 
 procedure TForm3.HotKey1Exit(Sender: TObject);
 var
-  Key: Integer;
+  i, Key: Integer;
+  Name: WideString;
 begin
   if (mNewHotKey = mOldHotKey) then EnableHotKey(ShortCutToHotKey(mOldHotKey));
   if (mNewHotKey = mOldHotKey) then Exit;
-  SettingsSP.ToggleSPHotkey := mNewHotKey;
+
+  i := HotkeyDynData.FindIndex(0, 'Description', ComboBox1.Text);
+  HotkeyDynData.SetValue(i, 'Hotkey', mNewHotKey);
 
   if (mNewHotKey = 0) then RemoveHotKey(ShortCutToHotKey(mOldHotKey));
   if (mNewHotKey = 0) then Exit;
 
   if (mOldHotKey <> 0) then Key := ShortCutToHotKey(mOldHotKey) else Key := -1;
-  if (Key > -1) then ChangeShortCut(Key, mNewHotKey) else SetShortCut(ShadowPlayHotKeyCallback, mNewHotKey, Null);
+  Name := HotkeyDynData.GetValue(i, 'Name');
+  if (Key > -1) then ChangeShortCut(Key, mNewHotKey) else SetShortCut(ShadowPlayHotkeyCallback, mNewHotKey, Name);
 end;
 
 
 procedure TForm3.CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  i: Integer;
 begin
-  SettingsSP.ITActivateType := Q(CheckBox1.Checked, 1, 0);
+  i := SettingDynData.FindIndex(0, 'Name', 'SETTING_IT_ACTIVATE_TYPE');
+  SettingDynData.SetValue(i, 'Value', Q(CheckBox1.Checked, 1, 0));
+
   if CheckBox1.Checked then CheckBox2.Checked := False;
   SavedHWND := 0;
   SavedProcess := '';
@@ -363,35 +409,56 @@ end;
 
 
 procedure TForm3.CheckBox2MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  i: Integer;
 begin
-  SettingsSP.ITActivateType := Q(CheckBox2.Checked, 2, 0);
+  i := SettingDynData.FindIndex(0, 'Name', 'SETTING_IT_ACTIVATE_TYPE');
+  SettingDynData.SetValue(i, 'Value', Q(CheckBox2.Checked, 2, 0));
+
   if CheckBox2.Checked then CheckBox1.Checked := False;
   SavedHWND := 0;
   SavedProcess := '';
 end;
 
 
+procedure TForm3.ComboBox1Change(Sender: TObject);
+var
+  i: Integer;
+begin
+  RemoveFocus(Form3);
+  i := HotkeyDynData.FindIndex(0, 'Description', ComboBox1.Text);
+  if (i > -1) then HotKey1.HotKey := HotkeyDynData.GetValue(i, 'Hotkey');
+end;
+
+
+procedure TForm3.ComboBox4Change(Sender: TObject);
+var
+  i: Integer;
+  Name: WideString;
+begin
+  RemoveFocus(Form3);
+  i := SettingDynData.FindIndex(0, 'Description', ComboBox4.Text);
+  if (i < 0) then Exit;
+
+  Name := SettingDynData.GetValue(i, 'Name');
+  if Name = 'SETTING_HOTKEY_SOUND' then CheckBox3.Checked := SettingDynData.GetValue(i, 'Value');
+  if Name = 'SETTING_AUTO_ENABLE_IT' then CheckBox3.Checked := SettingDynData.GetValue(i, 'Value');
+  if Name = 'SETTING_ENABLE_SP' then CheckBox3.Checked := ShadowPlay.IsShadowPlayOn;
+end;
+
+
 procedure TForm3.CheckBox3MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  i: Integer;
+  Name: WideString;
 begin
-  SettingsSP.HotkeySound := CheckBox3.Checked;
+  i := SettingDynData.FindIndex(0, 'Description', ComboBox4.Text);
+  if (i < 0) then Exit;
+  Name := SettingDynData.GetValue(i, 'Name');
+
+  if Name = 'SETTING_HOTKEY_SOUND' then SettingDynData.SetValue(i, 'Value', CheckBox3.Checked);
+  if Name = 'SETTING_AUTO_ENABLE_IT' then SettingDynData.SetValue(i, 'Value', CheckBox3.Checked);
+  if Name = 'SETTING_ENABLE_SP' then ShadowPlay.EnableShadowPlay(CheckBox3.Checked);
 end;
 
-
-procedure TForm3.CheckBox4MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  SettingsSP.AutoIT := CheckBox5.Checked;
-end;
-
-
-procedure TForm3.CheckBox5MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  CheckBox5.Checked := ShadowPlay.ToggleShadowPlay;
-end;
-
-
-initialization
-  SettingsSP.HotkeySound := True;
-  SettingsSP.AutoIT := False;
-  SettingsSP.ITActivateType := 0;
-  SettingsSP.ToggleSPHotkey := 0;
 end.
