@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, StdCtrls, ExtCtrls, ComCtrls, Variants, MMSystem, Classes, Graphics, Controls,
   Forms, Menus, PsApi, TNTStdCtrls, TNTSysUtils, XiButton, TFlatComboBoxUnit, TFlatCheckBoxUnit, CustoBevel,
-  CustoHotKey, uDynamicData, uHotKey, ShadowPlay, MSISettings, Functions;
+  CustoHotKey, uDynamicData, uHotKey, ShadowPlay, MSIControl, MSIThemes, Functions;
 
 type
   TForm3 = class(TForm)
@@ -68,7 +68,7 @@ type
 
 type
   TEventHandler = class
-    procedure PopupClick(Sender: TObject);
+    procedure ToggleSPClick(Sender: TObject);
   end;
 
 const
@@ -80,7 +80,6 @@ var
   Form3: TForm3;
   mOldHotKey: Integer;
   mNewHotKey: Integer;
-  EventHandler: TEventHandler;
   ShadowPlay: TShadowPlay;
   ShadowDynData: TDynamicData;
   SettingsSP: TSettingsSP;
@@ -90,9 +89,6 @@ var
 procedure GenerateProcessList;
 
 implementation
-
-uses
-  MSIControl, MSIThemes;
 
 {$R *.dfm}
 
@@ -175,7 +171,7 @@ begin
 end;
 
 
-procedure TEventHandler.PopupClick(Sender: TObject);
+procedure TEventHandler.ToggleSPClick(Sender: TObject);
 begin
   ShadowPlay.ToggleShadowPlay;
 end;
@@ -205,6 +201,7 @@ end;
 procedure TForm3.FormCreate(Sender: TObject);
 var
   MenuItem: TMenuItem;
+  EventHandler: TEventHandler;
 begin
   ShadowPlay := TShadowPlay.Create;
   if not ShadowPlay.IsLoaded then Exit;
@@ -232,8 +229,8 @@ begin
   EventHandler := TEventHandler.Create;
   MenuItem := TMenuItem.Create(nil);
   MenuItem.Caption := 'Toggle Shadow Play';
-  MenuItem.OnClick := EventHandler.PopupClick;
-  Form1.PopupMenu1.Items.Insert(1, MenuItem);
+  MenuItem.OnClick := EventHandler.ToggleSPClick;
+  Form1.PopupMenu1.Items.Find('Toggle').Add(MenuItem);
 
   Timer1.Enabled := True;
   Timer2.Enabled := True;

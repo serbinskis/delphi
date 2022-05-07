@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 192
   Top = 125
   BorderStyle = bsNone
-  ClientHeight = 235
+  ClientHeight = 265
   ClientWidth = 335
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -118,8 +118,6 @@ object Form1: TForm1
     TabOrder = 0
     ItemIndex = -1
     OnChange = ComboBox1Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
   end
   object HotKey1: TCustoHotKey
     Left = 8
@@ -130,6 +128,7 @@ object Form1: TForm1
     InvalidKeys = []
     Modifiers = []
     TabOrder = 1
+    OnChange = HotKey1Change
     OnEnter = HotKey1Enter
     OnExit = HotKey1Exit
     Color = clWhite
@@ -245,13 +244,11 @@ object Form1: TForm1
     Text = 'Auto'
     ItemIndex = 0
     OnChange = ComboBox2Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
   end
   object ComboBox3: TFlatComboBox
     Left = 10
-    Top = 201
-    Width = 266
+    Top = 233
+    Width = 287
     Height = 22
     Style = csDropDownList
     Color = clWhite
@@ -267,13 +264,11 @@ object Form1: TForm1
     TabOrder = 5
     ItemIndex = -1
     OnChange = ComboBox3Change
-    OnKeyDown = ComboBoxKey
-    OnKeyUp = ComboBoxKey
   end
   object CheckBox1: TFlatCheckBox
-    Left = 293
-    Top = 203
-    Width = 12
+    Left = 304
+    Top = 235
+    Width = 17
     Height = 17
     Checked = True
     Color = clLime
@@ -418,21 +413,62 @@ object Form1: TForm1
     TabOrder = 9
     OnClick = Button4Click
   end
+  object Button5: TXiButton
+    Left = 10
+    Top = 199
+    Width = 151
+    Height = 25
+    HelpType = htKeyword
+    ColorFace = clBlue
+    ColorGrad = clRed
+    ColorDark = clLime
+    ColorLight = clYellow
+    ColorBorder = clBlack
+    ColorText = clBlack
+    OverColorFace = clWhite
+    OverColorGrad = clWhite
+    OverColorDark = clWhite
+    OverColorLight = clWhite
+    OverColorBorder = 14120960
+    OverColorText = clBlack
+    DownColorFace = 15790320
+    DownColorGrad = 15790320
+    DownColorDark = 15790320
+    DownColorLight = 15790320
+    DownColorBorder = 10048512
+    DownColorText = clBlack
+    DisabledColorFace = clSilver
+    DisabledColorGrad = clSilver
+    DisabledColorDark = clSilver
+    DisabledColorLight = clSilver
+    DisabledColorBorder = clBlack
+    DisabledColorText = clBlack
+    ColorFocusRect = clNone
+    ColorScheme = csCustom
+    Ctl3D = True
+    Layout = blGlyphLeft
+    Spacing = 4
+    TransparentGlyph = True
+    Gradient = False
+    HotTrack = True
+    Caption = 'Bluetooth and Ethernet'
+    TabOrder = 10
+    OnClick = Button5Click
+  end
   object PopupMenu1: TPopupMenu
     AutoHotkeys = maManual
     OnPopup = PopupMenu1Popup
-    Left = 224
-    object ToggleCoolerBoost1: TMenuItem
-      Caption = 'Toggle Cooler Boost'
-      OnClick = ToggleCoolerBoost1Click
-    end
-    object ToggleEthernet1: TMenuItem
-      Caption = 'Toggle Ethernet'
-      OnClick = ToggleEthernet1Click
-    end
-    object ToggleAutoruns1: TMenuItem
-      Caption = 'Toggle Autoruns'
-      OnClick = ToggleAutoruns1Click
+    Left = 272
+    object oggle1: TMenuItem
+      Caption = 'Toggle'
+      object ToggleAutoruns1: TMenuItem
+        Caption = 'Toggle Autoruns'
+        OnClick = ToggleAutoruns1Click
+      end
+      object ToggleCoolerBoost1: TMenuItem
+        Caption = 'Toggle Cooler Boost'
+        OnClick = ToggleCoolerBoost1Click
+      end
     end
     object Restart1: TMenuItem
       Caption = 'Restart'
@@ -445,12 +481,6 @@ object Form1: TForm1
   end
   object TrayIcon1: TTrayIcon
     OnAction = TrayIcon1Action
-    Left = 288
-  end
-  object Timer1: TTimer
-    Enabled = False
-    Interval = 2000
-    OnTimer = Timer1Timer
-    Left = 256
+    Left = 304
   end
 end

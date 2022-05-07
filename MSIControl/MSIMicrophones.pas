@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Classes, Controls, Forms, StdCtrls, ComCtrls, ExtCtrls, Variants, MMSystem,
   XiTrackBar, XiButton, TFlatCheckBoxUnit, TFlatComboBoxUnit, CustoHotKey, CustoBevel, uHotKey,
-  uAudioMixer, uDynamicData, MSISettings, Functions;
+  uAudioMixer, uDynamicData, MSIControl, MSIThemes, Functions;
 
 type
   TForm2 = class(TForm)
@@ -70,9 +70,6 @@ procedure GenerateList;
 procedure GetMicrophoneList(List: TStrings);
 
 implementation
-
-uses
-  MSIControl, MSIThemes;
 
 {$R *.dfm}
 
@@ -246,15 +243,8 @@ end;
 
 
 procedure TForm2.Button1Click(Sender: TObject);
-var
-  i: Integer;
 begin
-  i := MicDynData.CreateData(0);
-  MicDynData.SetValue(i, 'Name', MICROPHONE_DEFAULT);
-  MicDynData.SetValue(i, 'Operation', 0);
-  MicDynData.SetValue(i, 'Volume', 100);
-  MicDynData.SetValue(i, 'Fixed', False);
-  MicDynData.SetValue(i, 'HotKey', 0);
+  MicDynData.CreateData(0, -1, ['Name', 'Operation', 'Volume', 'Fixed', 'HotKey'], [MICROPHONE_DEFAULT, 0, 100, False, 0]);
   GenerateList;
 end;
 

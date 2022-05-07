@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Classes, Controls, Forms, ExtCtrls, ComCtrls, StdCtrls, MMSystem, CustoBevel,
-  CustoHotKey, TFlatComboBoxUnit, TFlatCheckBoxUnit, MSIThemes, MSISettings, MSIControl,
-  uHotKey, uDynamicData, Functions;
+  CustoHotKey, TFlatComboBoxUnit, TFlatCheckBoxUnit, MSIControl, MSIThemes, uHotKey,
+  uDynamicData, Functions;
 
 type
   TForm4 = class(TForm)

@@ -39,7 +39,7 @@ procedure ChangeTheme(WhiteMode: Boolean; Form: TForm);
 implementation
 
 uses
-  MSISettings;
+  MSIControl;
 
 procedure ChangeButtonTheme(XiButton: TXiButton; WhitMode: Boolean);
 var
@@ -174,7 +174,7 @@ var
   Name: String;
 begin
   i := Integer(WhiteMode);
-  SaveRegistryBoolean(WhiteMode, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Theme');
+  SaveRegistryBoolean(WhiteMode, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'THEME');
   Form.Color := RGB(EERIE_BLACK_COLOR[i].R, EERIE_BLACK_COLOR[i].G, EERIE_BLACK_COLOR[i].B);
 
   for j := 0 to Form.ComponentCount-1 do begin

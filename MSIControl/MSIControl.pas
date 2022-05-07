@@ -5,9 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Dialogs, Classes, Forms, Menus, MMSystem, Graphics, ShellAPI,
   ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
-  XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, EmbeddedController,
-  ShadowPlay, uHotKey, uQueryShutdown, uAudioMixer, uReadConsole, WinXP, MSIThemes, MSISettings,
-  Functions;
+  XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, WinXP, MSIThemes,
+  uHotKey, uQueryShutdown, uReadConsole, uCoolerBoost, uDynamicData, Functions;
 
 type
   TForm1 = class(TForm)
@@ -29,13 +28,13 @@ type
     Label4: TLabel;
     PopupMenu1: TPopupMenu;
     Restart1: TMenuItem;
-    Timer1: TTimer;
     ToggleAutoruns1: TMenuItem;
     ToggleCoolerBoost1: TMenuItem;
-    ToggleEthernet1: TMenuItem;
     TrackBar1: TXiTrackBar;
     TrayIcon1: TTrayIcon;
     Button4: TXiButton;
+    Button5: TXiButton;
+    oggle1: TMenuItem;
     procedure ToggleCoolerBoost1Click(Sender: TObject);
     procedure ToggleAutoruns1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
@@ -51,134 +50,46 @@ type
     procedure Button1Click(Sender: TObject);
     procedure ComboBox1Change(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
-    procedure ComboBoxKey(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure HotKey1Exit(Sender: TObject);
     procedure HotKey1Enter(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure TrayIcon1Action(Sender: TObject; Code: Integer);
-    procedure Timer1Timer(Sender: TObject);
     procedure ComboBox3Change(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Restart1Click(Sender: TObject);
-    procedure ToggleEthernet1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure HotKey1Change(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
   end;
 
+const
+  DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
+  DEFAULT_KEY = '\Software\MSIControl';
+  INACTIVE_TIMEOUT = 350;
+
 var
   Form1: TForm1;
+  HotkeyDynData: TDynamicData;
+  SettingDynData: TDynamicData;
   AppInactive: Boolean = False;
-  CurrentMode: Integer = 0;
-  EC: TEmbeddedController;
+  mOldHotKey: Integer;
+  mNewHotKey: Integer;
 
-procedure HotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
-procedure ToggleCoolerBoost;
+procedure HotkeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
 procedure RemoveFocus(Form: TForm);
 
 implementation
 
-uses MSIMicrophones, MSIShadowPlay, MSILanguages;
+uses MSIMicrophones, MSIShadowPlay, MSILanguages, MSIConnections;
 
 {$R *.dfm}
-
-
-//SetAutoMode
-procedure SetAutoMode;
-begin
-  while EC.readByte(EC_FANS[0]) <> EC_FANS[2] do EC.writeByte(EC_FANS[0], EC_FANS[2]);
-end;
-//SetAutoMode
-
-
-//GetBasicValue
-function GetBasicValue: Integer;
-var
-  bResult: Byte;
-begin
-  while not EC.readByte(EC_FANS[1], bResult) or (bResult = 255) do;
-  if bResult >= 128 then Result := 128 - bResult else Result := bResult;
-end;
-//GetBasicValue
-
-
-//SetBasicMode
-procedure SetBasicMode(Value: Integer);
-begin
-  if (Value < -15) or (Value > 15) then Exit;
-  if (Value <= 0) then Value := 128 + Abs(Value);
-  while EC.readByte(EC_FANS[0]) <> EC_FANS[3] do EC.writeByte(EC_FANS[0], EC_FANS[3]);
-  while EC.readByte(EC_FANS[1]) <> Value do EC.writeByte(EC_FANS[1], Value);
-end;
-//SetBasicMode
-
-
-//GetMode
-function GetMode: Byte;
-begin
-  while not EC.readByte(EC_FANS[0], Result) or (Result = 255) do;
-end;
-//GetMode
-
-
-//GetWebcamStatus
-function GetWebcamStatus: Boolean;
-var
-  bResult: Byte;
-begin
-  while not EC.readByte(EC_WEBCAM[0], bResult) do;
-  Result := (bResult = EC_WEBCAM[1]);
-end;
-//GetWebcamStatus
-
-
-//SetWebcamStatus
-procedure SetWebcamStatus(b: Boolean);
-begin
-  SetDeviceChangeCallback(nil);
-
-  if b then begin
-    while (EC.readByte(EC_WEBCAM[0]) <> EC_WEBCAM[1]) do EC.writeByte(EC_WEBCAM[0], EC_WEBCAM[1]);
-  end else begin
-    while (EC.readByte(EC_WEBCAM[0]) <> EC_WEBCAM[2]) do EC.writeByte(EC_WEBCAM[0], EC_WEBCAM[2]);
-  end;
-
-  Wait(1000);
-  SetDeviceChangeCallback(OnDeviceChange);
-end;
-//SetWebcamStatus
-
-
-//GetCoolerBoostStatus
-function GetCoolerBoostStatus: Boolean;
-var
-  bResult: Byte;
-begin
-  while not EC.readByte(EC_CB[0], bResult) or (bResult = 255) do;
-  Result := (bResult >= EC_CB[1]);
-end;
-//GetCoolerBoostStatus
-
-
-//ToggleCoolerBoost
-procedure ToggleCoolerBoost;
-var
-  bResult: Byte;
-begin
-  while not EC.readByte(EC_CB[0], bResult) or (bResult = 255) do;
-
-  if bResult >= EC_CB[1] then begin
-    while (EC.readByte(EC_CB[0]) <> EC_CB[2]) do EC.writeByte(EC_CB[0], EC_CB[2])
-  end else begin
-    while (EC.readByte(EC_CB[0]) <> EC_CB[1]) do EC.writeByte(EC_CB[0], EC_CB[1]);
-  end;
-end;
-//ToggleCoolerBoost
 
 
 //RemoveFocus
@@ -197,37 +108,30 @@ end;
 //RemoveFocus
 
 
-//HotKeyCallback
-procedure HotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
+//HotkeyCallback
+procedure HotkeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
 var
-  bResult: Byte;
+  i: Integer;
 begin
-  if (CustomValue = 'TOGGLE_COOLER_BOOST') then begin
-    if GetSettingByName('HOTKEY_SOUNDS') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
-    ToggleCoolerBoost;
-    UpdateSettingByName('COOLER_BOOST', GetCoolerBoostStatus, False);
-  end;
+  i := SettingDynData.FindIndex(0, 'Name', 'SETTING_HOTKEY_SOUND');
+  if (i > -1) and SettingDynData.GetValue(i, 'Value') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
 
-  if (CustomValue = 'CHANGE_MODE_AUTO') then begin
-    if GetSettingByName('HOTKEY_SOUNDS') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
+  if (CustomValue = 'HOTKEY_TOGGLE_CB') then ToggleCoolerBoost;
+  if (CustomValue = 'HOTKEY_TOGGLE_WEBCAM') then ToggleWebcam;
+
+  if (CustomValue = 'HOTKEY_CHANGE_MODE_AUTO') then begin
     Form1.ComboBox2.ItemIndex := 0;
     Form1.ComboBox2Change(nil);
   end;
 
-  if (CustomValue = 'CHANGE_MODE_BASIC') then begin
-    if GetSettingByName('HOTKEY_SOUNDS') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
+  if (CustomValue = 'HOTKEY_CHANGE_MODE_BASIC') then begin
     Form1.ComboBox2.ItemIndex := 1;
     Form1.ComboBox2Change(nil);
   end;
 
-  if (CustomValue = 'TOGGLE_WEBCAM') then begin
-    if GetSettingByName('HOTKEY_SOUNDS') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
-    while not EC.readByte(EC_WEBCAM[0], bResult) do;
-    UpdateSettingByName('WEBCAM', (bResult <> EC_WEBCAM[1]), False);
-    SetWebcamStatus(bResult <> EC_WEBCAM[1]);
-  end;
+  Form1.ComboBox3Change(nil);
 end;
-//HotKeyCallback
+//HotkeyCallback
 
 
 procedure QueryShutdown(BS: TBlockShutdown);
@@ -239,41 +143,6 @@ begin
   Form1.FormClose(nil, CloseAction);
   BS.DestroyReason;
   TerminateProcess(GetCurrentProcess, 0);
-end;
-
-
-procedure TForm1.Timer1Timer(Sender: TObject);
-var
-  bResult: Byte;
-begin
-  while not EC.readByte(EC_CB[0], bResult) or (bResult = 255) do;
-
-  if (bResult >= EC_CB[1]) then begin
-    if CurrentMode <> EC_CB[0] then TrayIcon1.Icon := LoadIcon(HInstance, '_TURBO');
-    CurrentMode := EC_CB[0];
-    Exit;
-  end;
-
-  while not EC.readByte(EC_FANS[0], bResult) or (bResult = 255) do;
-
-  case bResult of
-    AUTO_MODE: begin
-      if CurrentMode <> AUTO_MODE then TrayIcon1.Icon := LoadIcon(HInstance, '_AUTO');
-      CurrentMode := AUTO_MODE;
-    end;
-    BASIC_MODE: begin
-      if CurrentMode <> BASIC_MODE then TrayIcon1.Icon := LoadIcon(HInstance, '_BASIC');
-      CurrentMode := BASIC_MODE;
-    end;
-    ADVANCED_MODE: begin
-      if CurrentMode <> ADVANCED_MODE then TrayIcon1.Icon := LoadIcon(HInstance, '_ADVANCED');
-      CurrentMode := ADVANCED_MODE;
-    end;
-    else begin
-      TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
-      CurrentMode := 0;
-    end;
-  end;
 end;
 
 
@@ -305,25 +174,55 @@ end;
 
 
 procedure TForm1.FormCreate(Sender: TObject);
+var
+  Name: WideString;
+  i, v: Integer;
 begin
   Form1.Caption := Application.Title;
-  EC := TEmbeddedController.Create;
-  EC.retry := 5;
 
-  if (not EC.driverFileExist or not EC.driverLoaded) then begin
-    EC.Close;
+  if not isECLoaded then begin
     ShowMessage('There was an error initializing driver.');
     TerminateProcess(GetCurrentProcess, 0);
   end;
 
-  LoadSettings;
-  ChangeTheme(Theme, Form1);
+  HotkeyDynData := TDynamicData.Create(['Hotkey', 'Name', 'Description']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_CB', 'Toggle Cooler Boost']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_WEBCAM', 'Toggle Webcam']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_MODE_AUTO', 'Change Mode To Auto']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_MODE_BASIC', 'Change Mode To Basic']);
+
+  SettingDynData := TDynamicData.Create(['Value', 'Name', 'Description']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [True, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_COOLER_BOOST', 'Enable Cooler Boost']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_WEBCAM', 'Enable MSI Webcam']);
+
+  for i := 0 to HotkeyDynData.GetLength-1 do begin
+    ComboBox1.Items.Add(HotkeyDynData.GetValue(i, 'Description'));
+    Name := HotkeyDynData.GetValue(i, 'Name');
+    if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, Name) then begin
+      HotkeyDynData.SetValue(i, 'Hotkey', v);
+      SetShortCut(HotkeyCallback, v, Name);
+    end;
+  end;
+
+  for i := 0 to SettingDynData.GetLength-1 do begin
+    ComboBox3.Items.Add(SettingDynData.GetValue(i, 'Description'));
+    Name := SettingDynData.GetValue(i, 'Name');
+    if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, Name) then SettingDynData.SetValue(i, 'Value', Boolean(v));
+  end;
+
+  ComboBox1.ItemIndex := 0;
+  ComboBox1Change(nil);
+  ComboBox3.ItemIndex := 0;
+  ComboBox3Change(nil);
 
   TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
   TrayIcon1.Title := Application.Title;
   TrayIcon1.AddToTray;
-  Timer1.Enabled := GetSettingByName('TRAY_UPDATE');
+
+  LoadRegistryBoolean(Theme, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'THEME');
   SetQueryShutdown(QueryShutdown);
+  ChangeTheme(Theme, Form1);
 end;
 
 
@@ -331,7 +230,6 @@ procedure TForm1.FormShow(Sender: TObject);
 var
   CurrentMonitor: TMonitor;
   MonitorWidth, MonitorHeigth: Integer;
-  bResult: Byte;
 begin
   try
     CurrentMonitor := Screen.MonitorFromPoint(Mouse.CursorPos);
@@ -350,9 +248,9 @@ begin
   ComboBox1Change(nil);
 
   case GetMode of
-    AUTO_MODE: ComboBox2.ItemIndex := 0;
-    BASIC_MODE: ComboBox2.ItemIndex := 1;
-    ADVANCED_MODE: begin
+    modeAuto: ComboBox2.ItemIndex := 0;
+    modeBasic: ComboBox2.ItemIndex := 1;
+    modeAdvanced: begin
       ComboBox2.ItemIndex := 2;
       TrackBar1.Enabled := False;
     end;
@@ -361,8 +259,7 @@ begin
   if TrackBar1.Position = 0 then TrackBar1.Position := 0; //Fix some visual issues
   if ComboBox2.Enabled and (ComboBox2.ItemIndex <> 2) then ComboBox2Change(nil);
 
-  while not EC.readByte(EC_WEBCAM[0], bResult) do;
-  UpdateSettingByName('WEBCAM', (bResult = EC_WEBCAM[1]), False);
+  ComboBox3Change(nil);
   Form1.Repaint;
 end;
 
@@ -381,22 +278,24 @@ end;
 
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  i: Integer;
 begin
-  Timer1.Enabled := False;
+  for i := 0 to HotkeyDynData.GetLength-1 do begin
+    SaveRegistryInteger(HotkeyDynData.GetValue(i, 'Hotkey'), DEFAULT_ROOT_KEY, DEFAULT_KEY, HotkeyDynData.GetValue(i, 'Name'));
+  end;
+
+  for i := 0 to SettingDynData.GetLength-1 do begin
+    SaveRegistryBoolean(SettingDynData.GetValue(i, 'Value'), DEFAULT_ROOT_KEY, DEFAULT_KEY, SettingDynData.GetValue(i, 'Name'));
+  end;
+
   TrayIcon1.Destroy;
-  EC.Close;
 end;
 
 
 procedure TForm1.FormClick(Sender: TObject);
 begin
-  with TStaticText.Create(Self) do begin
-    Parent := Self;
-    Left := -MaxInt;
-    Top := -MaxInt;
-    SetFocus;
-    Destroy;
-  end;
+  RemoveFocus(Form1);
 end;
 
 
@@ -425,19 +324,6 @@ end;
 procedure TForm1.ToggleCoolerBoost1Click(Sender: TObject);
 begin
   ToggleCoolerBoost;
-end;
-
-
-procedure TForm1.ToggleEthernet1Click(Sender: TObject);
-var
-  b: Boolean;
-begin
-  b := not GetEthernetEnabled;
-
-  while GetEthernetEnabled <> b do begin
-    SetEthernetEnabled(b);
-    Wait(1000);
-  end;
 end;
 
 
@@ -479,30 +365,30 @@ end;
 
 
 procedure TForm1.HotKey1Enter(Sender: TObject);
-var
-  i: Integer;
 begin
-  for i := 0 to Length(HotKeys)-1 do begin
-    ChangeShortcut(HotKeys[i].Key, 0);
-  end;
+  mOldHotKey := HotKey1.HotKey;
+  mNewHotKey := HotKey1.HotKey;
+  DisableHotKey(ShortCutToHotKey(mOldHotKey));
 end;
 
 
 procedure TForm1.HotKey1Exit(Sender: TObject);
 var
-  i: Integer;
+  i, Key: Integer;
+  Name: WideString;
 begin
-  for i := 0 to Length(HotKeys)-1 do begin
-    if HotKeys[i].Description = ComboBox1.Text then begin
-      HotKeys[i].ShortCut := HotKey1.HotKey;
-      SaveRegistryInteger(HotKeys[i].ShortCut, DEFAULT_ROOT_KEY, DEFAULT_HOTKEY_KEY, HotKeys[i].Name);
-      Break;
-    end;
-  end;
+  if (mNewHotKey = mOldHotKey) then EnableHotKey(ShortCutToHotKey(mOldHotKey));
+  if (mNewHotKey = mOldHotKey) then Exit;
 
-  for i := 0 to Length(HotKeys)-1 do begin
-    ChangeShortcut(HotKeys[i].Key, HotKeys[i].ShortCut);
-  end;
+  i := HotkeyDynData.FindIndex(0, 'Description', ComboBox1.Text);
+  HotkeyDynData.SetValue(i, 'Hotkey', mNewHotKey);
+
+  if (mNewHotKey = 0) then RemoveHotKey(ShortCutToHotKey(mOldHotKey));
+  if (mNewHotKey = 0) then Exit;
+
+  if (mOldHotKey <> 0) then Key := ShortCutToHotKey(mOldHotKey) else Key := -1;
+  Name := HotkeyDynData.GetValue(i, 'Name');
+  if (Key > -1) then ChangeShortCut(Key, mNewHotKey) else SetShortCut(HotkeyCallback, mNewHotKey, Name);
 end;
 
 
@@ -511,13 +397,8 @@ var
   i: Integer;
 begin
   RemoveFocus(Form1);
-
-  for i := 0 to Length(HotKeys)-1 do begin
-    if HotKeys[i].Description = ComboBox1.Text then begin
-      HotKey1.HotKey := HotKeys[i].ShortCut;
-      Break;
-    end;
-  end;
+  i := HotkeyDynData.FindIndex(0, 'Description', ComboBox1.Text);
+  if (i > -1) then HotKey1.HotKey := HotkeyDynData.GetValue(i, 'Hotkey');
 end;
 
 
@@ -528,7 +409,7 @@ begin
   case ComboBox2.ItemIndex of
     0: begin
       TrackBar1.Enabled := False;
-      SetAutoMode;
+      SetMode(modeAuto);
     end;
     1: begin
       TrackBar1.Enabled := True;
@@ -538,7 +419,7 @@ begin
     2: begin
       ComboBox2.ItemIndex := 0;
       TrackBar1.Enabled := False;
-      SetAutoMode;
+      SetMode(modeAuto);
     end;
   end;
 end;
@@ -558,53 +439,32 @@ end;
 
 procedure TForm1.ComboBox3Change(Sender: TObject);
 var
+  i: Integer;
   Name: WideString;
 begin
   RemoveFocus(Form1);
-  Name := GetNameFromDescription(ComboBox3.Text);
+  i := SettingDynData.FindIndex(0, 'Description', ComboBox3.Text);
+  if (i < 0) then Exit;
 
-  if Name = 'WEBCAM' then begin
-    CheckBox1.Checked := GetWebcamStatus;
-    Exit;
-  end;
-
-  if Name = 'COOLER_BOOST' then begin
-    CheckBox1.Checked := GetCoolerBoostStatus;
-    Exit;
-  end;
-
-  CheckBox1.Checked := GetSettingByDescription(ComboBox3.Text);
+  Name := SettingDynData.GetValue(i, 'Name');
+  if Name = 'SETTING_HOTKEY_SOUND' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
+  if Name = 'SETTING_COOLER_BOOST' then CheckBox1.Checked := isCoolerBoostEnabled;
+  if Name = 'SETTING_WEBCAM' then CheckBox1.Checked := isWebcamEnabled;
 end;
 
 
 procedure TForm1.CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
+  i: Integer;
   Name: WideString;
 begin
-  RemoveFocus(Form1);
-  Name := GetNameFromDescription(ComboBox3.Text);
+  i := SettingDynData.FindIndex(0, 'Description', ComboBox3.Text);
+  if (i < 0) then Exit;
+  Name := SettingDynData.GetValue(i, 'Name');
 
-  if Name = 'WEBCAM' then begin
-    SetWebcamStatus(CheckBox1.Checked);
-    Exit;
-  end;
-
-  if Name = 'COOLER_BOOST' then begin
-    ToggleCoolerBoost;
-    CheckBox1.Checked := GetCoolerBoostStatus;
-    Exit;
-  end;
-
-  if Name = 'TRAY_UPDATE' then begin
-    Timer1.Enabled := CheckBox1.Checked;
-
-    if not CheckBox1.Checked then begin
-      TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
-      CurrentMode := 0;
-    end else Timer1Timer(nil);
-  end;
-
-  UpdateSettingByDescription(ComboBox3.Text, CheckBox1.Checked, True);
+  if Name = 'SETTING_HOTKEY_SOUND' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
+  if Name = 'SETTING_COOLER_BOOST' then SetCoolerBoostEnabled(CheckBox1.Checked);
+  if Name = 'SETTING_WEBCAM' then SetWebcamEnabled(CheckBox1.Checked);
 end;
 
 
@@ -632,6 +492,14 @@ begin
 end;
 
 
+procedure TForm1.Button5Click(Sender: TObject);
+begin
+  Application.OnDeactivate := nil;
+  Form5.ShowModal;
+  Application.OnDeactivate := FormDeactivate;
+end;
+
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   Theme := not Theme;
@@ -641,14 +509,15 @@ begin
     ChangeTheme(Theme, Form2);
     ChangeTheme(Theme, Form3);
     ChangeTheme(Theme, Form4);
+    ChangeTheme(Theme, Form5);
   except
   end;
 end;
 
 
-procedure TForm1.ComboBoxKey(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TForm1.HotKey1Change(Sender: TObject);
 begin
-  Key := 0;
+  mNewHotKey := HotKey1.HotKey;
 end;
 
 end.

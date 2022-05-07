@@ -1,9 +1,9 @@
-object Form4: TForm4
+object Form5: TForm5
   Left = 1083
-  Top = 125
+  Top = 300
   BorderStyle = bsDialog
-  Caption = 'Languages'
-  ClientHeight = 135
+  Caption = ' Bluetooth & Ethernet'
+  ClientHeight = 137
   ClientWidth = 270
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -22,9 +22,9 @@ object Form4: TForm4
   object Label1: TLabel
     Left = 8
     Top = 8
-    Width = 78
+    Width = 56
     Height = 18
-    Caption = 'LANGUAGES'
+    Caption = 'HOTKEYS'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -15
@@ -61,6 +61,25 @@ object Form4: TForm4
     Font.Style = [fsBold]
     ParentFont = False
   end
+  object HotKey1: TCustoHotKey
+    Left = 8
+    Top = 39
+    Width = 113
+    Height = 23
+    HotKey = 0
+    InvalidKeys = []
+    Modifiers = []
+    TabOrder = 0
+    OnChange = HotKey1Change
+    OnEnter = HotKey1Enter
+    OnExit = HotKey1Exit
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+  end
   object ComboBox1: TFlatComboBox
     Left = 128
     Top = 39
@@ -77,36 +96,36 @@ object Form4: TForm4
     Font.Style = []
     ItemHeight = 14
     ParentFont = False
-    TabOrder = 0
+    TabOrder = 1
     ItemIndex = -1
     OnChange = ComboBox1Change
   end
-  object HotKey1: TCustoHotKey
-    Left = 8
-    Top = 39
-    Width = 113
-    Height = 23
-    AutoSize = False
-    HotKey = 0
-    InvalidKeys = []
-    Modifiers = []
-    TabOrder = 1
-    OnChange = HotKey1Change
-    OnEnter = HotKey1Enter
-    OnExit = HotKey1Exit
+  object ComboBox2: TFlatComboBox
+    Left = 7
+    Top = 105
+    Width = 218
+    Height = 22
+    Style = csDropDownList
     Color = clWhite
+    ColorArrowBackground = clWhite
+    ColorBorder = clBlack
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -12
     Font.Name = 'Calibri'
     Font.Style = []
+    ItemHeight = 14
+    ParentFont = False
+    TabOrder = 2
+    ItemIndex = -1
+    OnChange = ComboBox2Change
   end
   object CheckBox1: TFlatCheckBox
-    Left = 8
-    Top = 106
-    Width = 145
+    Left = 237
+    Top = 107
+    Width = 17
     Height = 17
-    Caption = 'Enable Hotkey Sounds'
+    Checked = True
     Color = clLime
     ColorFocused = clBlue
     ColorDown = clAqua
@@ -119,8 +138,7 @@ object Form4: TForm4
     Font.Style = []
     ParentColor = False
     ParentFont = False
-    ShowHint = True
-    TabOrder = 2
+    TabOrder = 3
     TabStop = True
     OnMouseUp = CheckBox1MouseUp
   end
