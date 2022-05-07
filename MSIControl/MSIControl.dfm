@@ -416,7 +416,7 @@ object Form1: TForm1
   object Button5: TXiButton
     Left = 10
     Top = 199
-    Width = 151
+    Width = 153
     Height = 25
     HelpType = htKeyword
     ColorFace = clBlue
