@@ -1,12 +1,7 @@
 program MSIControl_Created_By_WobbyChip;
 
 uses
-  Forms,
-  SysUtils,
-  Windows,
-  Dialogs,
-  TNTSystem,
-  Functions,
+  Forms, SysUtils, Windows, Dialogs, TNTSystem, Functions,
   MSIControl in 'MSIControl.pas' {Form1},
   MSIMicrophones in 'MSIMicrophones.pas' {Form2},
   MSIShadowPlay in 'MSIShadowPlay.pas' {Form3},
