@@ -142,4 +142,10 @@ object Form5: TForm5
     TabStop = True
     OnMouseUp = CheckBox1MouseUp
   end
+  object Timer1: TTimer
+    Enabled = False
+    Interval = 1500
+    OnTimer = Timer1Timer
+    Left = 240
+  end
 end

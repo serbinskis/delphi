@@ -17,6 +17,7 @@ type
     HotKey1: TCustoHotKey;
     Label1: TLabel;
     Label2: TLabel;
+    Timer1: TTimer;
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ComboBox1Change(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
@@ -27,6 +28,7 @@ type
     procedure HotKey1Change(Sender: TObject);
     procedure HotKey1Enter(Sender: TObject);
     procedure HotKey1Exit(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
   private
     { Private declarations }
   public
@@ -117,6 +119,8 @@ var
   Name: WideString;
   i, v: Integer;
 begin
+  isBluetooth := (GetBluetoothStatus <> 0) and (GetBluetoothStatus <> 3);
+
   HotkeyDynData := TDynamicData.Create(['Hotkey', 'Name', 'Description']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_ETHERNET', 'Toggle Ethernet']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_BLUETOOTH', 'Toggle Bluetooth']);
@@ -165,7 +169,7 @@ begin
   if (v > 0) and isBluetooth then EnableBluetooth(True);
 
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_DISABLE_DISCOVERY', 'Value');
-  if (v > 0) and isBluetooth then EnableBluetoothDiscovery(False);
+  if (v > 0) and isBluetooth then Timer1.Enabled := True;
 
   ComboBox1.ItemIndex := 0;
   ComboBox1Change(nil);
@@ -277,10 +281,13 @@ begin
   if Name = 'SETTING_AUTO_DISABLE_DISCOVERY' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
   if Name = 'SETTING_ENABLE_ETHERNET' then SetEthernetEnabled(CheckBox1.Checked);
   if Name = 'SETTING_ENABLE_BLUETOOTH' then EnableBluetooth(CheckBox1.Checked);
-  if Name = 'SETTING_ENABLE_DISCOVERY' then EnableBluetoothDiscovery(CheckBox1.Checked);
+  if Name = 'SETTING_ENABLE_DISCOVERY' then Timer1.Enabled := CheckBox1.Checked;
 end;
 
 
-initialization
-  isBluetooth := (GetBluetoothStatus <> 0) and (GetBluetoothStatus <> 3);
+procedure TForm5.Timer1Timer(Sender: TObject);
+begin
+  EnableBluetoothDiscovery(False);
+end;
+
 end.
