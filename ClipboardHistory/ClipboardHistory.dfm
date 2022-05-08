@@ -219,4 +219,10 @@ object Form1: TForm1
       end
     end
   end
+  object Timer5: TTimer
+    Enabled = False
+    OnTimer = Timer5Timer
+    Left = 200
+    Top = 40
+  end
 end

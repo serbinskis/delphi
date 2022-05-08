@@ -45,76 +45,78 @@ type
 
 type
   TForm1 = class(TForm)
-    TNTStringGrid1: TTNTStringGrid;
+    About1: TMenuItem;
+    Copy1: TMenuItem;
+    Delete1: TMenuItem;
+    DisableClipboard1: TMenuItem;
+    Exit1: TMenuItem;
+    Favorite1: TMenuItem;
+    Favorite2: TMenuItem;
     Panel1: TPanel;
+    PopupMenu1: TPopupMenu;
+    PopupMenu2: TPopupMenu;
+    Restart1: TMenuItem;
+    Settings1: TMenuItem;
     Shape1: TShape;
+    Show1: TMenuItem;
+    ShowBySize1: TMenuItem;
+    ShowFavorites1: TMenuItem;
     StaticText1: TStaticText;
     StaticText2: TStaticText;
+    StaticText3: TStaticText;
     TNTEdit1: TTNTEdit;
-    PopupMenu1: TPopupMenu;
-    Settings1: TMenuItem;
-    Exit1: TMenuItem;
-    About1: TMenuItem;
+    TNTStringGrid1: TTNTStringGrid;
     Timer1: TTimer;
     Timer2: TTimer;
     Timer3: TTimer;
     Timer4: TTimer;
+    Timer5: TTimer;
     TrayIcon1: TTrayIcon;
-    Restart1: TMenuItem;
-    PopupMenu2: TPopupMenu;
-    Favorite1: TMenuItem;
-    Show1: TMenuItem;
-    ShowFavorites1: TMenuItem;
-    Favorite2: TMenuItem;
-    Delete1: TMenuItem;
-    Copy1: TMenuItem;
-    ShowBySize1: TMenuItem;
-    StaticText3: TStaticText;
-    DisableClipboard1: TMenuItem;
-    procedure FormShow(Sender: TObject);
-    procedure FormHide(Sender: TObject);
+    function CheckEmpty: Boolean;
+    procedure About1Click(Sender: TObject);
+    procedure AddItem(ArrayIndex, ListIndex, Position: Integer);
+    procedure ApplicationDecativate(Sender: TObject);
+    procedure BuildList(ListIndex, ArrayIndex, Count: Integer);
+    procedure CheckListEnding;
+    procedure Copy1Click(Sender: TObject);
+    procedure Delete1Click(Sender: TObject);
+    procedure DeleteRow(ARow: Integer);
+    procedure DisableClipboard1Click(Sender: TObject);
+    procedure DisableClipboard;
+    procedure EnableClipboard;
+    procedure Exit1Click(Sender: TObject);
+    procedure Favorite2Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure TNTStringGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FormCreate(Sender: TObject);
+    procedure FormHide(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure HideList;
+    procedure PrepareList(Len: Integer);
+    procedure Restart1Click(Sender: TObject);
+    procedure ScrollChangeVertical(Sender: TObject);
+    procedure Search(S: WideString);
+    procedure Settings1Click(Sender: TObject);
+    procedure Shape1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure ShowBySize1Click(Sender: TObject);
+    procedure ShowFavorites1Click(Sender: TObject);
+    procedure StaticText3Click(Sender: TObject);
+    procedure TNTEdit1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure TNTStringGrid1DblClick(Sender: TObject);
+    procedure TNTStringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
+    procedure TNTStringGrid1Exit(Sender: TObject);
+    procedure TNTStringGrid1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure TNTStringGrid1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure TNTStringGrid1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure TNTStringGrid1MouseWheelDown(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure TNTStringGrid1MouseWheelUp(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
-    procedure FormCreate(Sender: TObject);
-    procedure Settings1Click(Sender: TObject);
-    procedure About1Click(Sender: TObject);
-    procedure Exit1Click(Sender: TObject);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure ScrollChangeVertical(Sender: TObject);
-    procedure ApplicationDecativate(Sender: TObject);
-    procedure TNTStringGrid1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure TNTStringGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
     procedure Timer1Timer(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
     procedure Timer3Timer(Sender: TObject);
     procedure Timer4Timer(Sender: TObject);
-    procedure TNTStringGrid1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure TNTStringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
-    procedure Shape1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure TNTEdit1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure Timer5Timer(Sender: TObject);
     procedure TrayIcon1Action(Sender: TObject; Code: Integer);
-    procedure Restart1Click(Sender: TObject);
-    procedure TNTStringGrid1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure TNTStringGrid1DblClick(Sender: TObject);
-    procedure Copy1Click(Sender: TObject);
-    procedure Delete1Click(Sender: TObject);
-    procedure Favorite2Click(Sender: TObject);
-    procedure ShowFavorites1Click(Sender: TObject);
-    procedure TNTStringGrid1Exit(Sender: TObject);
-    procedure AddItem(ArrayIndex, ListIndex, Position: Integer);
-    procedure HideList;
-    procedure PrepareList(Len: Integer);
-    procedure BuildList(ListIndex, ArrayIndex, Count: Integer);
-    procedure Search(S: WideString);
-    procedure CheckListEnding;
-    procedure DisableClipboard;
-    procedure EnableClipboard;
-    function CheckEmpty: Boolean;
-    procedure DeleteRow(ARow: Integer);
-    procedure ShowBySize1Click(Sender: TObject);
-    procedure StaticText3Click(Sender: TObject);
-    procedure DisableClipboard1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -598,6 +600,7 @@ begin
   Timer2.Interval := SEARCH_DELAY;
   Timer3.Interval := SettingsDB.AutoSaveAfter*1000;
   Timer3.Enabled := True;
+  Timer5.Enabled := True;
 end;
 
 
@@ -1058,6 +1061,14 @@ end;
 procedure TForm1.Timer4Timer(Sender: TObject);
 begin
   if (TNTEDit1.Text = '') and (not TNTEDit1.Focused) then SetPlaceholder(TNTEDit1, TNTEDit1.Font, TNTEDit1.Hint);
+end;
+
+
+procedure TForm1.Timer5Timer(Sender: TObject);
+var
+  Msg: TMessage;
+begin
+  Form1.ClipboardChanged(Msg);
 end;
 
 
