@@ -256,7 +256,8 @@ end;
 procedure TForm1.ClipboardChanged(var Msg: TMessage);
 var
   Content: WideString;
-  ID, i: LongWord;
+  i: Integer;
+  ID: LongWord;
   DateTime: TDateTime;
   isSame, isFavorite: Boolean;
 begin
