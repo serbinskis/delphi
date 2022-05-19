@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Dialogs, Classes, Forms, Menus, MMSystem, Graphics, ShellAPI,
   ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
   XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, WinXP, MSIThemes,
-  uHotKey, uQueryShutdown, uReadConsole, uCoolerBoost, uDynamicData, Functions;
+  uHotKey, uQueryShutdown, uReadConsole, uDynamicData, MSIController, Functions;
 
 type
   TForm1 = class(TForm)
@@ -78,6 +78,7 @@ var
   Form1: TForm1;
   HotkeyDynData: TDynamicData;
   SettingDynData: TDynamicData;
+  MSI: TMSIController;
   AppInactive: Boolean = False;
   mOldHotKey: Integer;
   mNewHotKey: Integer;
@@ -116,8 +117,8 @@ begin
   i := SettingDynData.FindIndex(0, 'Name', 'SETTING_HOTKEY_SOUND');
   if (i > -1) and SettingDynData.GetValue(i, 'Value') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
 
-  if (CustomValue = 'HOTKEY_TOGGLE_CB') then ToggleCoolerBoost;
-  if (CustomValue = 'HOTKEY_TOGGLE_WEBCAM') then ToggleWebcam;
+  if (CustomValue = 'HOTKEY_TOGGLE_CB') then MSI.ToggleCoolerBoost;
+  if (CustomValue = 'HOTKEY_TOGGLE_WEBCAM') then MSI.ToggleWebcam;
 
   if (CustomValue = 'HOTKEY_CHANGE_MODE_AUTO') then begin
     Form1.ComboBox2.ItemIndex := 0;
@@ -179,8 +180,9 @@ var
   i, v: Integer;
 begin
   Form1.Caption := Application.Title;
+  MSI := TMSIController.Create;
 
-  if not isECLoaded then begin
+  if not MSI.isECLoaded then begin
     ShowMessage('There was an error initializing driver.');
     TerminateProcess(GetCurrentProcess, 0);
   end;
@@ -193,6 +195,7 @@ begin
 
   SettingDynData := TDynamicData.Create(['Value', 'Name', 'Description']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [True, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_CLEAR_CRASH_DUMPS', 'Clear Crash Dumps On Start']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_COOLER_BOOST', 'Enable Cooler Boost']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_WEBCAM', 'Enable MSI Webcam']);
 
@@ -210,6 +213,9 @@ begin
     Name := SettingDynData.GetValue(i, 'Name');
     if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, Name) then SettingDynData.SetValue(i, 'Value', v);
   end;
+
+  v := SettingDynData.FindValue(0, 'Name', 'SETTING_CLEAR_CRASH_DUMPS', 'Value');
+  if (v > 0) then DeleteDirectory(GetEnvironmentVariable('LocalAppData') + '\CrashDumps');
 
   ComboBox1.ItemIndex := 0;
   ComboBox1Change(nil);
@@ -247,7 +253,7 @@ begin
   Form1.Top := MonitorHeigth - Form1.Height - (MonitorHeigth - CurrentMonitor.WorkareaRect.Bottom);
   ComboBox1Change(nil);
 
-  case GetMode of
+  case MSI.GetFanMode of
     modeAuto: ComboBox2.ItemIndex := 0;
     modeBasic: ComboBox2.ItemIndex := 1;
     modeAdvanced: begin
@@ -289,6 +295,7 @@ begin
     SaveRegistryBoolean(SettingDynData.GetValue(i, 'Value'), DEFAULT_ROOT_KEY, DEFAULT_KEY, SettingDynData.GetValue(i, 'Name'));
   end;
 
+  MSI.Destroy;
   TrayIcon1.Destroy;
 end;
 
@@ -323,7 +330,7 @@ end;
 
 procedure TForm1.ToggleCoolerBoost1Click(Sender: TObject);
 begin
-  ToggleCoolerBoost;
+  MSI.ToggleCoolerBoost;
 end;
 
 
@@ -409,17 +416,17 @@ begin
   case ComboBox2.ItemIndex of
     0: begin
       TrackBar1.Enabled := False;
-      SetMode(modeAuto);
+      MSI.SetFanMode(modeAuto);
     end;
     1: begin
       TrackBar1.Enabled := True;
-      TrackBar1.Position := GetBasicValue;
-      SetBasicMode(TrackBar1.Position);
+      TrackBar1.Position := MSI.GetBasicValue;
+      MSI.SetBasicMode(TrackBar1.Position);
     end;
     2: begin
       ComboBox2.ItemIndex := 0;
       TrackBar1.Enabled := False;
-      SetMode(modeAuto);
+      MSI.SetFanMode(modeAuto);
     end;
   end;
 end;
@@ -433,7 +440,7 @@ end;
 
 procedure TForm1.TrackBar1MouseUp(Sender: TObject);
 begin
-  SetBasicMode(TrackBar1.Position);
+  MSI.SetBasicMode(TrackBar1.Position);
 end;
 
 
@@ -443,13 +450,15 @@ var
   Name: WideString;
 begin
   RemoveFocus(Form1);
+
   i := SettingDynData.FindIndex(0, 'Description', ComboBox3.Text);
   if (i < 0) then Exit;
-
   Name := SettingDynData.GetValue(i, 'Name');
+
   if Name = 'SETTING_HOTKEY_SOUND' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
-  if Name = 'SETTING_COOLER_BOOST' then CheckBox1.Checked := isCoolerBoostEnabled;
-  if Name = 'SETTING_WEBCAM' then CheckBox1.Checked := isWebcamEnabled;
+  if Name = 'SETTING_CLEAR_CRASH_DUMPS' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
+  if Name = 'SETTING_COOLER_BOOST' then CheckBox1.Checked := MSI.isCoolerBoostEnabled;
+  if Name = 'SETTING_WEBCAM' then CheckBox1.Checked := MSI.isWebcamEnabled;
 end;
 
 
@@ -463,8 +472,9 @@ begin
   Name := SettingDynData.GetValue(i, 'Name');
 
   if Name = 'SETTING_HOTKEY_SOUND' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
-  if Name = 'SETTING_COOLER_BOOST' then SetCoolerBoostEnabled(CheckBox1.Checked);
-  if Name = 'SETTING_WEBCAM' then SetWebcamEnabled(CheckBox1.Checked);
+  if Name = 'SETTING_CLEAR_CRASH_DUMPS' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
+  if Name = 'SETTING_COOLER_BOOST' then MSI.SetCoolerBoostEnabled(CheckBox1.Checked);
+  if Name = 'SETTING_WEBCAM' then MSI.SetWebcamEnabled(CheckBox1.Checked);
 end;
 
 

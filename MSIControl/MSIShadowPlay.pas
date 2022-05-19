@@ -84,23 +84,6 @@ implementation
 
 {$R *.dfm}
 
-
-function GetProcessFromHWND(hwnd:HWND): WideString;
-var
-  pid: DWORD;
-  hProcess: THandle;
-  Path: array[0..4095] of WideChar;
-begin
-  Result := '';
-  GetWindowThreadProcessId(hwnd, pid);
-  hProcess := OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ, False, pid);
-
-  if (hProcess = 0) then Exit;
-  if GetModuleFileNameExW(hProcess, 0, @Path[0], Length(Path)) <> 0 then Result := WideExtractFileName(Path);
-  CloseHandle(hProcess);
-end;
-
-
 procedure WindowChange(hwnd: HWND);
 var
   S: WideString;
