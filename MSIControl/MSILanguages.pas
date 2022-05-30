@@ -3,9 +3,8 @@ unit MSILanguages;
 interface
 
 uses
-  Windows, Classes, Controls, Forms, ExtCtrls, ComCtrls, StdCtrls, MMSystem, CustoBevel,
-  CustoHotKey, TFlatComboBoxUnit, TFlatCheckBoxUnit, MSIControl, MSIThemes, uHotKey,
-  uDynamicData, Functions;
+  Windows, Classes, Controls, Forms, ExtCtrls, ComCtrls, StdCtrls, MMSystem, CustoBevel, CustoHotKey,
+  TFlatComboBoxUnit, TFlatCheckBoxUnit, MSIControl, MSIThemes, uHotKey, uDynamicData, Functions;
 
 type
   TForm4 = class(TForm)
@@ -107,8 +106,8 @@ var
   kbLayout: HKL;
 begin
   LanDynData := TDynamicData.Create(['kbLayout', 'Hotkey']);
-  LanDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'Languages', True);
-  LoadRegistryBoolean(SettingsLan.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'HotkeySound');
+  LanDynData.Load(DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'BINARY_LANGUAGES', [loRemoveUnused, loOFDelete]);
+  LoadRegistryBoolean(SettingsLan.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'SETTING_HOTKEY_SOUND');
 
   for i := 0 to (LanDynData.GetLength-1) do begin
     kbLayout := LanDynData.GetValue(i, 'kbLayout');
@@ -132,8 +131,8 @@ end;
 
 procedure TForm4.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  LanDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'Languages');
-  SaveRegistryBoolean(SettingsLan.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'HotkeySound');
+  LanDynData.Save(DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'BINARY_LANGUAGES', []);
+  SaveRegistryBoolean(SettingsLan.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_LANGUAGES_KEY, 'SETTING_HOTKEY_SOUND');
 end;
 
 

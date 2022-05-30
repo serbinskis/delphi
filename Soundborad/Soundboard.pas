@@ -3,67 +3,64 @@ unit Soundboard;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, ExtCtrls, Grids, Menus, Variants,
-  ShellAPI, Registry, TNTDialogs, TNTClasses, TNTSysUtils, TNTGrids, TNTGraphics, XiTrackBar, TFlatCheckBoxUnit,
+  Windows, Messages, SysUtils, MMSystem, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, ExtCtrls, Grids, Menus,
+  Variants, ShellAPI, Registry, TNTDialogs, TNTClasses, TNTSysUtils, TNTGrids, TNTGraphics, XiTrackBar, TFlatCheckBoxUnit,
   TFlatPanelUnit, ATScrollBar, DirectShow, cbAudioPlay, ZipForge, uHotKey, uDynamicData, WinXP, Functions;
 
 type
   TForm1 = class(TForm)
-    MainMenu1: TMainMenu;
-    Settings1: TMenuItem;
-    TNTStringGrid1: TTntStringGrid;
-    PopupMenu1: TPopupMenu;
+    About1: TMenuItem;
+    AddFromYouTube1: TMenuItem;
     ChangeName1: TMenuItem;
-    MoveUp1: TMenuItem;
-    MoveDown1: TMenuItem;
+    CheckBox1: TFlatCheckBox;
+    ConvertToFile1: TMenuItem;
+    ConvertToMemory1: TMenuItem;
+    Delete1: TMenuItem;
+    ExitWithoutSave1: TMenuItem;
+    Export1: TMenuItem;
+    Favorite1: TMenuItem;
+    FromList1: TMenuItem;
+    FromListFile1: TMenuItem;
     Image1: TImage;
     Image2: TImage;
     Image3: TImage;
     Image4: TImage;
-    Open1: TMenuItem;
     Image5: TImage;
-    Favorite1: TMenuItem;
-    Delete1: TMenuItem;
+    Import1: TMenuItem;
     Location1: TMenuItem;
+    MainMenu1: TMainMenu;
+    MakeaCopyToFile1: TMenuItem;
+    MoveDown1: TMenuItem;
+    MoveTo1: TMenuItem;
+    MoveUp1: TMenuItem;
+    Open1: TMenuItem;
+    Panel1: TPanel;
+    Panel2: TFlatPanel;
+    PopupMenu1: TPopupMenu;
+    SaveCurrentState1: TMenuItem;
+    SaveInArchive1: TMenuItem;
+    Settings1: TMenuItem;
+    StaticText1: TStaticText;
+    TNTStringGrid1: TTntStringGrid;
     Timer1: TTimer;
     Timer2: TTimer;
-    Panel1: TPanel;
-    MoveTo1: TMenuItem;
-    FromList1: TMenuItem;
-    FromListFile1: TMenuItem;
-    Export1: TMenuItem;
-    Import1: TMenuItem;
-    ConvertToMemory1: TMenuItem;
-    ConvertToFile1: TMenuItem;
     Tools1: TMenuItem;
-    SaveInArchive1: TMenuItem;
     TrackBar1: TXiTrackBar;
     TrackBar2: TXiTrackBar;
-    CheckBox1: TFlatCheckBox;
-    Panel2: TFlatPanel;
-    StaticText1: TStaticText;
-    MakeaCopyToFile1: TMenuItem;
-    About1: TMenuItem;
-    AddFromYouTube1: TMenuItem;
-    SaveCurrentState1: TMenuItem;
-    ExitWithoutSave1: TMenuItem;
-    procedure PlayAudio;
-    procedure StopAudio;
-    procedure PauseAudio;
-    procedure TrackBar1Change(Sender: TObject);
-    procedure Settings1Click(Sender: TObject);
-    procedure FormShow(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure TNTStringGrid1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure TNTStringGrid1DblClick(Sender: TObject);
-    procedure MoveUp1Click(Sender: TObject);
-    procedure MoveDown1Click(Sender: TObject);
-    procedure MoveTo1Click(Sender: TObject);
+    procedure About1Click(Sender: TObject);
+    procedure AddFromYouTube1Click(Sender: TObject);
+    procedure ChangeName1Click(Sender: TObject);
+    procedure ChangeVertical(Sender: TObject);
+    procedure CheckBox1Click(Sender: TObject);
+    procedure ConvertToFile1Click(Sender: TObject);
+    procedure ConvertToMemory1Click(Sender: TObject);
+    procedure ExitWithoutSave1Click(Sender: TObject);
+    procedure Export1Click(Sender: TObject);
     procedure Favorite1Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormShow(Sender: TObject);
     procedure FromList1Click(Sender: TObject);
     procedure FromListFile1Click(Sender: TObject);
-    procedure ChangeName1Click(Sender: TObject);
-    procedure Location1Click(Sender: TObject);
     procedure Image1Click(Sender: TObject);
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -73,31 +70,34 @@ type
     procedure Image3Click(Sender: TObject);
     procedure Image3MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Image3MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure Import1Click(Sender: TObject);
+    procedure Location1Click(Sender: TObject);
+    procedure MakeaCopyToFile1Click(Sender: TObject);
+    procedure MoveDown1Click(Sender: TObject);
+    procedure MoveTo1Click(Sender: TObject);
+    procedure MoveUp1Click(Sender: TObject);
     procedure Open1Click(Sender: TObject);
-    procedure TrackBar2Change(Sender: TObject);
-    procedure CheckBox1Click(Sender: TObject);
     procedure Panel1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Panel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure Timer1Timer(Sender: TObject);
-    procedure Timer2Timer(Sender: TObject);
+    procedure PauseAudio;
+    procedure PlayAudio;
+    procedure PopupMenu1Popup(Sender: TObject);
+    procedure SaveCurrentState1Click(Sender: TObject);
+    procedure SaveInArchive1Click(Sender: TObject);
+    procedure Settings1Click(Sender: TObject);
+    procedure StopAudio;
+    procedure TNTStringGrid1DblClick(Sender: TObject);
+    procedure TNTStringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
+    procedure TNTStringGrid1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure TNTStringGrid1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure TNTStringGrid1MouseWheelDown(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure TNTStringGrid1MouseWheelUp(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure TNTStringGrid1SelectCell(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
-    procedure ChangeVertical(Sender: TObject);
-    procedure Export1Click(Sender: TObject);
-    procedure Import1Click(Sender: TObject);
-    procedure PopupMenu1Popup(Sender: TObject);
-    procedure ConvertToMemory1Click(Sender: TObject);
-    procedure ConvertToFile1Click(Sender: TObject);
-    procedure MakeaCopyToFile1Click(Sender: TObject);
-    procedure SaveInArchive1Click(Sender: TObject);
-    procedure TNTStringGrid1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-    procedure TNTStringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
+    procedure Timer1Timer(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
+    procedure TrackBar1Change(Sender: TObject);
+    procedure TrackBar2Change(Sender: TObject);
     function SelectFromInput: Boolean;
-    procedure About1Click(Sender: TObject);
-    procedure AddFromYouTube1Click(Sender: TObject);
-    procedure SaveCurrentState1Click(Sender: TObject);
-    procedure ExitWithoutSave1Click(Sender: TObject);
   private
     { Private declarations }
   protected
@@ -186,6 +186,7 @@ uses Settings, Archiving, YouTube;
 
 {$R *.dfm}
 
+
 //LoadSettings
 procedure LoadSettings;
 var
@@ -206,7 +207,7 @@ begin
 
   Form2.ComboBox3.ItemIndex := 0;
   DynamicData := TDynamicData.Create(['FileName', 'Name', 'Exstension', 'Favorite', 'Memory']);
-  DynamicData.Load(False, False, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Soundboard', False);
+  DynamicData.Load(DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Soundboard', [loRemoveUnused, loOFReset]);
 end;
 //LoadSettings
 
@@ -227,7 +228,7 @@ begin
     SaveRegistryInteger(HotKeys[i].ShortCut, DEFAULT_ROOT_KEY, DEFAULT_HOTKEY_KEY, HotKeys[i].Name);
   end;
 
-  DynamicData.Save(False, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Soundboard');
+  DynamicData.Save(DEFAULT_ROOT_KEY, DEFAULT_KEY, 'Soundboard', []);
 end;
 //SaveSettings
 
@@ -363,8 +364,7 @@ begin
     Name := TNT_WideStringReplace(WideExtractFileName(FileName), WideExtractFileExt(FileName), '', [rfReplaceAll, rfIgnoreCase]);
     Exstension := WideLowerCase(WideExtractFileExt(FileName));
 
-    DynamicData.CreateData(-1);
-    i := DynamicData.GetLength-1;
+    i := DynamicData.CreateData(-1);
     DynamicData.SetValue(i, 'FileName', FileName);
     DynamicData.SetValue(i, 'Name', Name);
     DynamicData.SetValue(i, 'Exstension', Exstension);
@@ -413,7 +413,7 @@ begin
   if (Length(Memory) > 0) then begin
     if not DirectoryExists(GetEnvironmentVariable('TEMP')) then CreateDir(GetEnvironmentVariable('TEMP'));
     FileName := GetEnvironmentVariable('TEMP') + '\' + RandomString(16, False) + DynamicData.GetValue(Row, 'Exstension');
-    SaveByteArray(Memory, FileName);
+    SaveByteArray_var(Memory, FileName);
   end;
 
   AudioPlay1 := TcbAudioPlay.Create(Self, FileName, FormatDevice(Form2.ComboBox1));
@@ -522,7 +522,7 @@ begin
       Exit;
     end;
 
-    DynamicData.Save(False, TNTSaveDialog.FileName);
+    DynamicData.Save(TNTSaveDialog.FileName, []);
     ShowMessage('Playlist exported.');
   end;
 end;
@@ -531,8 +531,6 @@ end;
 procedure TForm1.Import1Click(Sender: TObject);
 var
   TNTOpenDialog: TTNTOpenDialog;
-  srSearch: TWIN32FindDataW;
-  FileSize: Int64;
 begin
   TNTOpenDialog := TTNTOpenDialog.Create(nil);
   TNTOpenDialog.Filter := 'Sounboard Files|*' + SOUNDBOARD_EXTSENSION;
@@ -540,17 +538,13 @@ begin
   TNTOpenDialog.Title := 'Soundboard: Import Playlist';
 
   if TNTOpenDialog.Execute then begin
-    FindFirstFileW(PWideChar(TNTOpenDialog.FileName), srSearch);
-    FileSize := (srSearch.nFileSizeHigh * 4294967296) + srSearch.nFileSizeLow;
-
-    if FileSize > MAXIMUM_SIZE then begin
+    if GetFileSize(TNTOpenDialog.FileName) > MAXIMUM_SIZE then begin
       ShowMessage('Cannot import file bigger than ' + FormatSize(MAXIMUM_SIZE, 0) + '.');
       Exit;
     end;
 
-    DynamicData.Load(False, True, TNTOpenDialog.FileName, False);
-
-    if DynamicData.GetLength <= 0 then begin
+    if not DynamicData.Load(TNTOpenDialog.FileName, [loRemoveUnused]) then begin
+      PlaySound('SystemExclamation', 0, SND_ASYNC);
       ShowMessage('There was an error importing playlist.');
       Exit;
     end;
@@ -653,9 +647,9 @@ procedure TForm1.FormShow(Sender: TObject);
 var
   i: Integer;
 begin
-  DragAcceptFiles(Handle, True);
-  TNTStringGrid1.SetFocus;
   LoadSettings;
+  TNTStringGrid1.SetFocus;
+  DragAcceptFiles(Handle, True);
 
   Form2.CheckBox1.Checked := SettingsDB.AlwaysNumLock;
   Timer2.Enabled := SettingsDB.AlwaysNumLock;
@@ -1082,7 +1076,7 @@ begin
 
   if TNTSaveDialog.Execute then begin
     if Pos('.', TNTSaveDialog.FileName) <= 0 then TNTSaveDialog.FileName := WideChangeFileExt(TNTSaveDialog.FileName, Exstension);
-    SaveByteArray(Memory, TNTSaveDialog.FileName);
+    SaveByteArray_var(Memory, TNTSaveDialog.FileName);
 
     DynamicData.SetValue(i, 'FileName', TNTSaveDialog.FileName);
     DynamicData.SetValue(i, 'Exstension', WideLowerCase(WideExtractFileExt(TNTSaveDialog.FileName)));
@@ -1121,7 +1115,7 @@ begin
     if Pos('.', TNTSaveDialog.FileName) <= 0 then TNTSaveDialog.FileName := WideChangeFileExt(TNTSaveDialog.FileName, Exstension);
 
     if Length(Memory) > 0
-      then SaveByteArray(Memory, TNTSaveDialog.FileName)
+      then SaveByteArray_var(Memory, TNTSaveDialog.FileName)
       else CopyFileW(PWideChar(FileName), PWideChar(TNTSaveDialog.FileName), False);
   end;
 end;

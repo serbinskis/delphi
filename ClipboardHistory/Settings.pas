@@ -3,10 +3,9 @@ unit Settings;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, TFlatCheckBoxUnit, TFlatEditUnit,
-  TFlatSpinEditUnit, TFlatComboBoxUnit, TFlatPanelUnit, TNTDialogs, TNTClasses,
-  TNTSysUtils, WinXP, Functions;
+  Windows, Messages, MMsystem, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, ExtCtrls,
+  ComCtrls, TFlatCheckBoxUnit, TFlatEditUnit, TFlatSpinEditUnit, TFlatComboBoxUnit, TFlatPanelUnit, TNTDialogs,
+  TNTClasses, TNTSysUtils, uDynamicData, WinXP, Functions;
 
 type
   TForm2 = class(TForm)
@@ -63,7 +62,6 @@ type
 
 const
   MAXIMUM_SIZE = 1024*1024*500;
-  DO_COMPRESS = True;
   CLIPBOARD_EXTENSION = '.clp';
 
 var
@@ -267,7 +265,7 @@ begin
       Exit;
     end;
 
-    DynamicData.Save(DO_COMPRESS, TNTSaveDialog.FileName);
+    DynamicData.Save(TNTSaveDialog.FileName, [soCompress]);
     ShowMessage('Exported clipboard history.');
   end;
 end;
@@ -276,8 +274,6 @@ end;
 procedure TForm2.Panel2Click(Sender: TObject);
 var
   TNTOpenDialog: TTNTOpenDialog;
-  srSearch: TWIN32FindDataW;
-  FileSize: Int64;
   i: Integer;
   DateTime: TDateTime;
   buttonSelected: Integer;
@@ -288,17 +284,13 @@ begin
   TNTOpenDialog.Title := 'Clipboard History: Import Clipboard History';
 
   if TNTOpenDialog.Execute then begin
-    FindFirstFileW(PWideChar(TNTOpenDialog.FileName), srSearch);
-    FileSize := (srSearch.nFileSizeHigh * 4294967296) + srSearch.nFileSizeLow;
-
-    if FileSize > MAXIMUM_SIZE then begin
+    if GetFileSize(TNTOpenDialog.FileName) > MAXIMUM_SIZE then begin
       ShowMessage('Cannot import file bigger than ' + FormatSize(MAXIMUM_SIZE, 0) + '.');
       Exit;
     end;
 
-    DynamicData.Load(DO_COMPRESS, True, TNTOpenDialog.FileName, False);
-
-    if DynamicData.GetLength <= 0 then begin
+    if not DynamicData.Load(TNTOpenDialog.FileName, [loCompress, loRemoveUnused]) then begin
+      PlaySound('SystemExclamation', 0, SND_ASYNC);
       ShowMessage('There was an error importing list.');
       Exit;
     end;
@@ -326,7 +318,7 @@ var
 begin
   buttonSelected := MessageDlg('Are you sure you want to clear the list?', mtConfirmation, [mbYes, mbNo], 0);
   if buttonSelected <> mrYes then Exit;
-  DynamicData.ResetData;
+  DynamicData.ClearAllData;
   StaticText5.Caption := 'Size: ' + FormatSize(DynamicData.GetSize, 2);
 end;
 

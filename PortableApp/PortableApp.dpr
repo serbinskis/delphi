@@ -19,7 +19,7 @@ begin
     ZipArchive.OpenArchive(TResourceStream.Create(HInstance, 'ARCHIVE', RT_RCDATA), False);
     ZipArchive.BaseDir := GetTempDirectory + FOLDER_NAME;
     ZipArchive.ExtractFiles('*.*');
-    ZipArchive.CloseArchive();
+    ZipArchive.CloseArchive;
   end;
 
   hProcess := ExecuteProcess(GetTempDirectory + FOLDER_NAME + '\' + EXECUTABLE_NAME, '', SW_SHOW);

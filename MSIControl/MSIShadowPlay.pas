@@ -3,9 +3,9 @@ unit MSIShadowPlay;
 interface
 
 uses
-  Windows, Messages, SysUtils, StdCtrls, ExtCtrls, ComCtrls, Variants, MMSystem, Classes, Graphics, Controls,
-  Forms, Menus, PsApi, TNTStdCtrls, TNTSysUtils, XiButton, TFlatComboBoxUnit, TFlatCheckBoxUnit, CustoBevel,
-  CustoHotKey, uDynamicData, uHotKey, ShadowPlay, MSIControl, MSIThemes, Functions;
+  Windows, Messages, SysUtils, StdCtrls, ExtCtrls, ComCtrls, MMSystem, Classes, Graphics, Controls, Forms,
+  Menus, PsApi, TNTStdCtrls, TNTSysUtils, XiButton, TFlatComboBoxUnit, TFlatCheckBoxUnit, CustoBevel, CustoHotKey,
+  uDynamicData, uHotKey, ShadowPlay, MSIControl, MSIThemes, Functions;
 
 type
   TForm3 = class(TForm)
@@ -204,7 +204,7 @@ begin
   if not ShadowPlay.IsLoaded then Exit;
 
   ShadowDynData := TDynamicData.Create(['Process', 'Type']);
-  ShadowDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'BINARY_SHADOWPLAY', True);
+  ShadowDynData.Load(DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'BINARY_SHADOWPLAY', [loRemoveUnused, loOFDelete]);
   GenerateProcessList;
 
   HotkeyDynData := TDynamicData.Create(['Hotkey', 'Name', 'Description']);
@@ -266,7 +266,7 @@ procedure TForm3.FormClose(Sender: TObject; var Action: TCloseAction);
 var
   i: Integer;
 begin
-  ShadowDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'BINARY_SHADOWPLAY');
+  ShadowDynData.Save(DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'BINARY_SHADOWPLAY', []);
 
   for i := 0 to HotkeyDynData.GetLength-1 do begin
     SaveRegistryInteger(HotkeyDynData.GetValue(i, 'Hotkey'), DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, HotkeyDynData.GetValue(i, 'Name'));

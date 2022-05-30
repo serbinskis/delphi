@@ -3,9 +3,9 @@ unit MSIMicrophones;
 interface
 
 uses
-  Windows, SysUtils, Classes, Controls, Forms, StdCtrls, ComCtrls, ExtCtrls, Variants, MMSystem,
-  XiTrackBar, XiButton, TFlatCheckBoxUnit, TFlatComboBoxUnit, CustoHotKey, CustoBevel, uHotKey,
-  uAudioMixer, uDynamicData, MSIControl, MSIThemes, Functions;
+  Windows, SysUtils, Classes, Controls, Forms, StdCtrls, ComCtrls, ExtCtrls, MMSystem, XiTrackBar, XiButton,
+  TFlatCheckBoxUnit, TFlatComboBoxUnit, CustoHotKey, CustoBevel, uHotKey, uAudioMixer, uDynamicData, MSIControl,
+  MSIThemes, Functions;
 
 type
   TForm2 = class(TForm)
@@ -153,7 +153,7 @@ var
   Name: WideString;
 begin
   MicDynData := TDynamicData.Create(['Name', 'Operation', 'Volume', 'Fixed', 'HotKey']);
-  MicDynData.Load(True, True, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'BINARY_MICROPHONES', True);
+  MicDynData.Load(DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'BINARY_MICROPHONES', [loRemoveUnused, loOFDelete]);
   if (MicDynData.GetLength) = 0 then Form2.Button1Click(nil);
 
   LoadRegistryBoolean(SettingsMic.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'SETTING_HOTKEY_SOUND');
@@ -165,7 +165,7 @@ begin
     Fixed := MicDynData.GetValue(i, 'Fixed');
     Volume := MicDynData.GetValue(i, 'Volume');
     if (Name <> MICROPHONE_DEFAULT) then MxId := GetMixerMicrophone(Name) else MxId := GetDefaultMixerMicrophone;
-    if (MxId > -1) and (HotKey > 0) then SetShortCut(MicrophoneHotKeyCallback, HotKey, Null);
+    if (MxId > -1) and (HotKey > 0) then SetShortCut(MicrophoneHotKeyCallback, HotKey);
     if (MxId > -1) and Fixed then SetMicrophoneVolume(MxId, Volume, -1);
   end;
 
@@ -229,7 +229,7 @@ end;
 
 procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  MicDynData.Save(True, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'BINARY_MICROPHONES');
+  MicDynData.Save(DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'BINARY_MICROPHONES', []);
   SaveRegistryBoolean(SettingsMic.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'SETTING_HOTKEY_SOUND');
 end;
 
@@ -244,8 +244,9 @@ end;
 
 procedure TForm2.Button1Click(Sender: TObject);
 begin
-  MicDynData.CreateData(0, -1, ['Name', 'Operation', 'Volume', 'Fixed', 'HotKey'], [MICROPHONE_DEFAULT, 0, 100, False, 0]);
+  MicDynData.CreateData(-1, -1, ['Name', 'Operation', 'Volume', 'Fixed', 'HotKey'], [MICROPHONE_DEFAULT, 0, 100, False, 0]);
   GenerateList;
+  ComboBox1.ItemIndex := ComboBox1.Items.Count-1;
 end;
 
 
@@ -326,7 +327,7 @@ begin
 
   //Register new hotkey
   if (mOldHotKey <> 0) then Key := ShortCutToHotKey(mOldHotKey) else Key := -1;
-  if (Key > -1) then ChangeShortCut(Key, mNewHotKey) else SetShortCut(MicrophoneHotKeyCallback, mNewHotKey, Null);
+  if (Key > -1) then ChangeShortCut(Key, mNewHotKey) else SetShortCut(MicrophoneHotKeyCallback, mNewHotKey);
 end;
 
 

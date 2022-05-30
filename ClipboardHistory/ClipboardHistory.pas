@@ -165,7 +165,7 @@ begin
   Form1.TrayIcon1.Icon := LoadIcon(HInstance, PChar(String(Functions.Q(SettingsDB.Monitoring, 'MAINICON', '_DISABLED'))));
 
   DynamicData := TDynamicData.Create(['UID', 'DateTime', 'Content', 'Favorite']);
-  DynamicData.Load(DO_COMPRESS, True, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'History', True);
+  DynamicData.Load(DEFAULT_ROOT_KEY, DEFAULT_KEY, 'History', [loCompress, loRemoveUnused, loOFReset]);
 end;
 //LoadSettings
 
@@ -188,7 +188,7 @@ begin
   SaveRegistryInteger(SettingsDB.SizeIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SizeIndex');
   SaveRegistryInteger(SettingsDB.AutoSaveIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'AutoSaveIndex');
 
-  DynamicData.Save(DO_COMPRESS, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'History');
+  DynamicData.Save(DEFAULT_ROOT_KEY, DEFAULT_KEY, 'History', [soCompress]);
   Form1.TrayIcon1.Icon := LoadIcon(HInstance, PChar(String(Functions.Q(SettingsDB.Monitoring, 'MAINICON', '_DISABLED'))));
 end;
 //SaveSettings

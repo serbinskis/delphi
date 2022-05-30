@@ -3,8 +3,8 @@ unit MSIConnections;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Menus, ComCtrls, ExtCtrls, StdCtrls, Graphics, Controls,
-  Forms, MMSystem, TFlatCheckBoxUnit, TFlatComboBoxUnit, CustoHotKey, CustoBevel, MSIControl, MSIThemes,
+  Windows, Messages, SysUtils, Classes, Menus, ComCtrls, ExtCtrls, StdCtrls, Graphics, Controls, Forms,
+  MMSystem, TFlatCheckBoxUnit, TFlatComboBoxUnit, CustoHotKey, CustoBevel, MSIControl, MSIThemes,
   uHotKey, uBluetooth, uDynamicData, Functions;
 
 type
