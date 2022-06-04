@@ -1,7 +1,6 @@
 object Form2: TForm2
   Left = 533
   Top = 125
-  ActiveControl = CheckBox1
   BorderStyle = bsDialog
   Caption = 'Microphones'
   ClientHeight = 340

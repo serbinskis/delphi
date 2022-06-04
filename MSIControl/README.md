@@ -2,7 +2,7 @@
 
 This is the source code of MSIControl. MSIControl is an application that will allow you to control fans of your MSI computer and other stuff. You probably will not be able to compile this project because it depends on other packages and units, which are not included.
 
-<p align="center"><img width="335" height="265" src="-(RES)-/Example.png"></p>
+<p align="center"><img width="335" height="295" src="-(RES)-/Example.png"></p>
 
 ## Features
 
@@ -16,6 +16,7 @@ This is the source code of MSIControl. MSIControl is an application that will al
 - Control fan speed.
 - Control microphone volume and mute.
 - Control bluetooth.
+- Wake On Lan
 - Set fixed volume on microphone.
 - Set custom hotkey to change keyboard language.
 

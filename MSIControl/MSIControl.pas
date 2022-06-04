@@ -18,6 +18,7 @@ type
     Button3: TXiButton;
     Button4: TXiButton;
     Button5: TXiButton;
+    Button6: TXiButton;
     CheckBox1: TFlatCheckBox;
     ComboBox1: TFlatComboBox;
     ComboBox2: TFlatComboBox;
@@ -30,16 +31,17 @@ type
     Label4: TLabel;
     PopupMenu1: TPopupMenu;
     Restart1: TMenuItem;
+    Toggle1: TMenuItem;
     ToggleAutoruns1: TMenuItem;
     ToggleCoolerBoost1: TMenuItem;
     TrackBar1: TXiTrackBar;
     TrayIcon1: TTrayIcon;
-    Toggle1: TMenuItem;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ComboBox1Change(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
@@ -88,7 +90,8 @@ procedure RemoveFocus(Form: TForm);
 
 implementation
 
-uses MSIMicrophones, MSIShadowPlay, MSILanguages, MSIConnections;
+uses
+  MSIMicrophones, MSIShadowPlay, MSILanguages, MSIConnections, MSIWakeOnLan;
 
 {$R *.dfm}
 
@@ -510,18 +513,43 @@ begin
 end;
 
 
+procedure TForm1.Button6Click(Sender: TObject);
+begin
+  Application.OnDeactivate := nil;
+  Form6.ShowModal;
+  MSIControl.RemoveFocus(Form1);
+  Application.OnDeactivate := FormDeactivate;
+end;
+
+
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   Theme := not Theme;
 
   try
     ChangeTheme(Theme, Form1);
+  except end;
+
+  try
     ChangeTheme(Theme, Form2);
+  except end;
+
+  try
     ChangeTheme(Theme, Form3);
+  except end;
+
+  try
     ChangeTheme(Theme, Form4);
+  except end;
+
+  try
     ChangeTheme(Theme, Form5);
-  except
-  end;
+  except end;
+
+  try
+    ChangeTheme(Theme, Form6);
+  except end;
 end;
 
 
