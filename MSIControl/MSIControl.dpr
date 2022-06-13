@@ -7,7 +7,8 @@ uses
   MSIShadowPlay in 'MSIShadowPlay.pas' {Form3},
   MSILanguages in 'MSILanguages.pas' {Form4},
   MSIConnections in 'MSIConnections.pas' {Form5},
-  MSIWakeOnLan in 'MSIWakeOnLan.pas' {Form6};
+  MSIWakeOnLan in 'MSIWakeOnLan.pas' {Form6},
+  MSIKeyboard in 'MSIKeyboard.pas' {Form7};
 
 {$R MSIControl.res}
 
@@ -32,5 +33,6 @@ begin
   Application.CreateForm(TForm4, Form4);
   Application.CreateForm(TForm5, Form5);
   Application.CreateForm(TForm6, Form6);
+  Application.CreateForm(TForm7, Form7);
   Application.Run;
 end.

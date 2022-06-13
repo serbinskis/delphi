@@ -12,6 +12,7 @@ This is the source code of MSIControl. MSIControl is an application that will al
 - Toggle inbuilt MSI webcam.
 - Toggle ethernet adapter.
 - Toggle Cooler Boost.
+- Toggle keyboard.
 - Control Shadow Play.
 - Control fan speed.
 - Control microphone volume and mute.
