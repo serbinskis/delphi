@@ -12,7 +12,7 @@ const
   INACTIVE_TIMEOUT = 350;
   SEARCH_DELAY = 1000;
   DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
-  DEFAULT_KEY = '\Software\ClipboardHistory';
+  DEFAULT_KEY = '\Software\WobbyChip\ClipboardHistory';
   COLS: array[0..3] of Integer = (60, 422, 49, 24);
   ECLIPSIS_SIZE = 5;
   ROWS_PER_SCROLL = 3;
