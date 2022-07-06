@@ -202,6 +202,7 @@ begin
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [True, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_CLEAR_CRASH_DUMPS', 'Clear Crash Dumps On Start']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_COOLER_BOOST', 'Enable Cooler Boost']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_WEBCAM', 'Enable MSI Webcam']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_OVERHEATING', 'Prevent GPU and CPU overheating, enables Cooler Boost']);
 
   for i := 0 to HotkeyDynData.GetLength-1 do begin
