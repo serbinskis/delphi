@@ -525,4 +525,9 @@ object Form1: TForm1
     OnAction = TrayIcon1Action
     Left = 304
   end
+  object Timer1: TTimer
+    Enabled = False
+    OnTimer = Timer1Timer
+    Left = 240
+  end
 end

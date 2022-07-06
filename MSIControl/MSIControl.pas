@@ -36,6 +36,7 @@ type
     ToggleCoolerBoost1: TMenuItem;
     TrackBar1: TXiTrackBar;
     TrayIcon1: TTrayIcon;
+    Timer1: TTimer;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -65,6 +66,7 @@ type
     procedure TrackBar1Change(Sender: TObject);
     procedure TrackBar1MouseUp(Sender: TObject);
     procedure TrayIcon1Action(Sender: TObject; Code: Integer);
+    procedure Timer1Timer(Sender: TObject);
   private
     { Private declarations }
   public
@@ -200,7 +202,7 @@ begin
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [True, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_CLEAR_CRASH_DUMPS', 'Clear Crash Dumps On Start']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_COOLER_BOOST', 'Enable Cooler Boost']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_WEBCAM', 'Enable MSI Webcam']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_OVERHEATING', 'Prevent GPU and CPU overheating, enables Cooler Boost']);
 
   for i := 0 to HotkeyDynData.GetLength-1 do begin
     ComboBox1.Items.Add(HotkeyDynData.GetValue(i, 'Description'));
@@ -219,6 +221,9 @@ begin
 
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_CLEAR_CRASH_DUMPS', 'Value');
   if (v > 0) then DeleteDirectory(GetEnvironmentVariable('LocalAppData') + '\CrashDumps');
+
+  v := SettingDynData.FindValue(0, 'Name', 'SETTING_OVERHEATING', 'Value');
+  Timer1.Enabled := (v > 0);
 
   ComboBox1.ItemIndex := 0;
   ComboBox1Change(nil);
@@ -322,6 +327,12 @@ begin
   Form1.Hide;
   Wait(INACTIVE_TIMEOUT);
   AppInactive := False;
+end;
+
+
+procedure TForm1.Timer1Timer(Sender: TObject);
+begin
+  if (MSI.GetGPUTemp >= 95) or (MSI.GetCPUTemp >= 95) then MSI.SetCoolerBoostEnabled(True);
 end;
 
 
@@ -462,6 +473,7 @@ begin
   if Name = 'SETTING_CLEAR_CRASH_DUMPS' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
   if Name = 'SETTING_COOLER_BOOST' then CheckBox1.Checked := MSI.isCoolerBoostEnabled;
   if Name = 'SETTING_WEBCAM' then CheckBox1.Checked := MSI.isWebcamEnabled;
+  if Name = 'SETTING_OVERHEATING' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
 end;
 
 
@@ -478,6 +490,11 @@ begin
   if Name = 'SETTING_CLEAR_CRASH_DUMPS' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
   if Name = 'SETTING_COOLER_BOOST' then MSI.SetCoolerBoostEnabled(CheckBox1.Checked);
   if Name = 'SETTING_WEBCAM' then MSI.SetWebcamEnabled(CheckBox1.Checked);
+
+  if Name = 'SETTING_OVERHEATING' then begin
+    SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
+    Timer1.Enabled := CheckBox1.Checked;
+  end;
 end;
 
 
