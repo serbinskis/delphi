@@ -203,7 +203,7 @@ begin
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_CLEAR_CRASH_DUMPS', 'Clear Crash Dumps On Start']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_COOLER_BOOST', 'Enable Cooler Boost']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_WEBCAM', 'Enable MSI Webcam']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_OVERHEATING', 'Prevent GPU and CPU overheating, enables Cooler Boost']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_OVERHEATING', 'Prevent GPU overheating, enables Cooler Boost']);
 
   for i := 0 to HotkeyDynData.GetLength-1 do begin
     ComboBox1.Items.Add(HotkeyDynData.GetValue(i, 'Description'));
@@ -333,7 +333,7 @@ end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
-  if (MSI.GetGPUTemp >= 95) or (MSI.GetCPUTemp >= 95) then MSI.SetCoolerBoostEnabled(True);
+  if (MSI.GetGPUTemp >= 95) then MSI.SetCoolerBoostEnabled(True);
 end;
 
 
