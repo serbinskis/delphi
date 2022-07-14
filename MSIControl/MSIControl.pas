@@ -226,6 +226,8 @@ begin
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_OVERHEATING', 'Value');
   Timer1.Enabled := (v > 0);
 
+  if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'FAN_MODE') then MSI.SetFanMode(TModeType(v));
+
   ComboBox1.ItemIndex := 0;
   ComboBox1Change(nil);
   ComboBox3.ItemIndex := 0;
@@ -271,7 +273,7 @@ begin
     end;
   end;
 
-  if TrackBar1.Position = 0 then TrackBar1.Position := 0; //Fix some visual issues
+  TrackBar1.Position := MSI.GetBasicValue;
   if ComboBox2.Enabled and (ComboBox2.ItemIndex <> 2) then ComboBox2Change(nil);
 
   ComboBox3Change(nil);
@@ -304,6 +306,7 @@ begin
     SaveRegistryBoolean(SettingDynData.GetValue(i, 'Value'), DEFAULT_ROOT_KEY, DEFAULT_KEY, SettingDynData.GetValue(i, 'Name'));
   end;
 
+  Timer1.Enabled := False;
   MSI.Destroy;
   TrayIcon1.Destroy;
 end;
@@ -444,6 +447,8 @@ begin
       MSI.SetFanMode(modeAuto);
     end;
   end;
+
+  SaveRegistryInteger(ComboBox2.ItemIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'FAN_MODE');
 end;
 
 
