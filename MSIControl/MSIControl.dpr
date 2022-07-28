@@ -8,7 +8,8 @@ uses
   MSILanguages in 'MSILanguages.pas' {Form4},
   MSIConnections in 'MSIConnections.pas' {Form5},
   MSIWakeOnLan in 'MSIWakeOnLan.pas' {Form6},
-  MSIKeyboard in 'MSIKeyboard.pas' {Form7};
+  MSIKeyboard in 'MSIKeyboard.pas' {Form7},
+  MSIMonitors in 'MSIMonitors.pas' {Form8};
 
 {$R MSIControl.res}
 
@@ -34,5 +35,6 @@ begin
   Application.CreateForm(TForm5, Form5);
   Application.CreateForm(TForm6, Form6);
   Application.CreateForm(TForm7, Form7);
+  Application.CreateForm(TForm8, Form8);
   Application.Run;
 end.

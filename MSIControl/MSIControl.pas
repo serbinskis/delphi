@@ -19,6 +19,7 @@ type
     Button4: TXiButton;
     Button5: TXiButton;
     Button6: TXiButton;
+    Button7: TXiButton;
     CheckBox1: TFlatCheckBox;
     ComboBox1: TFlatComboBox;
     ComboBox2: TFlatComboBox;
@@ -31,18 +32,19 @@ type
     Label4: TLabel;
     PopupMenu1: TPopupMenu;
     Restart1: TMenuItem;
+    Timer1: TTimer;
     Toggle1: TMenuItem;
     ToggleAutoruns1: TMenuItem;
     ToggleCoolerBoost1: TMenuItem;
     TrackBar1: TXiTrackBar;
     TrayIcon1: TTrayIcon;
-    Timer1: TTimer;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ComboBox1Change(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
@@ -61,12 +63,12 @@ type
     procedure HotKey1Exit(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure Restart1Click(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
     procedure ToggleAutoruns1Click(Sender: TObject);
     procedure ToggleCoolerBoost1Click(Sender: TObject);
     procedure TrackBar1Change(Sender: TObject);
     procedure TrackBar1MouseUp(Sender: TObject);
     procedure TrayIcon1Action(Sender: TObject; Code: Integer);
-    procedure Timer1Timer(Sender: TObject);
   private
     { Private declarations }
   public
@@ -93,7 +95,8 @@ procedure RemoveFocus(Form: TForm);
 implementation
 
 uses
-  MSIMicrophones, MSIShadowPlay, MSILanguages, MSIConnections, MSIWakeOnLan;
+  MSIMicrophones, MSIShadowPlay, MSILanguages, MSIConnections, MSIWakeOnLan,
+  MSIKeyboard, MSIMonitors;
 
 {$R *.dfm}
 
@@ -545,6 +548,13 @@ begin
 end;
 
 
+procedure TForm1.Button7Click(Sender: TObject);
+begin
+  Application.OnDeactivate := nil;
+  Form8.ShowModal;
+  Application.OnDeactivate := FormDeactivate;
+end;
+
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
@@ -572,6 +582,14 @@ begin
 
   try
     ChangeTheme(Theme, Form6);
+  except end;
+
+  try
+    ChangeTheme(Theme, Form7);
+  except end;
+
+  try
+    ChangeTheme(Theme, Form8);
   except end;
 end;
 

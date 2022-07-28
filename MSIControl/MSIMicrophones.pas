@@ -107,18 +107,16 @@ end;
 
 procedure OnDeviceChange(wParam: Integer);
 begin
-  if (wParam = 7) then begin
-    if Form2.Visible then begin
-      Form2.HotKey1.OnExit := nil;
-      Form2.HotKey1.HotKey := mOldHotKey;
-      RemoveFocus(Form2);
-      Form2.HotKey1.OnExit := Form2.HotKey1Exit;
-    end;
+  if (wParam <> 7) or not Form2.Visible then Exit;
 
-    GetMicrophoneList(Form2.ComboBox2.Items);
-    Form2.ComboBox2.ItemIndex := 0;
-    Form2.ComboBox2Change(nil);
-  end;
+  Form2.HotKey1.OnExit := nil;
+  Form2.HotKey1.HotKey := mOldHotKey;
+  RemoveFocus(Form2);
+  Form2.HotKey1.OnExit := Form2.HotKey1Exit;
+
+  GetMicrophoneList(Form2.ComboBox2.Items);
+  Form2.ComboBox2.ItemIndex := 0;
+  Form2.ComboBox2Change(nil);
 end;
 
 
@@ -224,6 +222,7 @@ end;
 procedure TForm2.FormShow(Sender: TObject);
 begin
   MSIControl.RemoveFocus(Form2);
+  OnDeviceChange(7);
 end;
 
 

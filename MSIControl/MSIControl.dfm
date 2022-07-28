@@ -497,6 +497,48 @@ object Form1: TForm1
     TabOrder = 11
     OnClick = Button6Click
   end
+  object Button7: TXiButton
+    Left = 250
+    Top = 199
+    Width = 73
+    Height = 25
+    HelpType = htKeyword
+    ColorFace = clBlue
+    ColorGrad = clRed
+    ColorDark = clLime
+    ColorLight = clYellow
+    ColorBorder = clBlack
+    ColorText = clBlack
+    OverColorFace = clWhite
+    OverColorGrad = clWhite
+    OverColorDark = clWhite
+    OverColorLight = clWhite
+    OverColorBorder = 14120960
+    OverColorText = clBlack
+    DownColorFace = 15790320
+    DownColorGrad = 15790320
+    DownColorDark = 15790320
+    DownColorLight = 15790320
+    DownColorBorder = 10048512
+    DownColorText = clBlack
+    DisabledColorFace = clSilver
+    DisabledColorGrad = clSilver
+    DisabledColorDark = clSilver
+    DisabledColorLight = clSilver
+    DisabledColorBorder = clBlack
+    DisabledColorText = clBlack
+    ColorFocusRect = clNone
+    ColorScheme = csCustom
+    Ctl3D = True
+    Layout = blGlyphLeft
+    Spacing = 4
+    TransparentGlyph = True
+    Gradient = False
+    HotTrack = True
+    Caption = 'Monitors'
+    TabOrder = 12
+    OnClick = Button7Click
+  end
   object PopupMenu1: TPopupMenu
     AutoHotkeys = maManual
     OnPopup = PopupMenu1Popup
