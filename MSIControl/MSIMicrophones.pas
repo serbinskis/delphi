@@ -215,13 +215,13 @@ end;
 
 procedure TForm2.FormClick(Sender: TObject);
 begin
-  MSIControl.RemoveFocus(Form2);
+  MSIControl.RemoveFocus(self);
 end;
 
 
 procedure TForm2.FormShow(Sender: TObject);
 begin
-  MSIControl.RemoveFocus(Form2);
+  MSIControl.RemoveFocus(self);
   OnDeviceChange(7);
 end;
 
@@ -237,7 +237,7 @@ procedure TForm2.FormCreate(Sender: TObject);
 begin
   TrackBar1.Position := 100;
   LoadMicrophoneSettings;
-  ChangeTheme(Theme, Form2);
+  ChangeTheme(Theme, self);
 end;
 
 
@@ -335,7 +335,7 @@ var
   i: Integer;
   Name: WideString;
 begin
-  MSIControl.RemoveFocus(Form2);
+  MSIControl.RemoveFocus(self);
   i := Integer(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
   Name := ComboBox2.Items[ComboBox2.ItemIndex];
   MicDynData.SetValue(i, 'Name', Name);
@@ -350,7 +350,7 @@ procedure TForm2.ComboBox3Change(Sender: TObject);
 var
   i: Integer;
 begin
-  MSIControl.RemoveFocus(Form2);
+  MSIControl.RemoveFocus(self);
   CheckBox1.Enabled := (ComboBox3.ItemIndex = 0);
   TrackBar1.Enabled := (ComboBox3.ItemIndex = 0);
 

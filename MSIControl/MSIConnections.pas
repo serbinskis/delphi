@@ -101,7 +101,7 @@ end;
 
 procedure TForm5.FormShow(Sender: TObject);
 begin
-  MSIControl.RemoveFocus(Form5);
+  MSIControl.RemoveFocus(self);
   ComboBox2Change(nil);
 end;
 
@@ -109,7 +109,7 @@ end;
 procedure TForm5.FormClick(Sender: TObject);
 
 begin
-  MSIControl.RemoveFocus(Form5);
+  MSIControl.RemoveFocus(self);
 end;
 
 
@@ -175,7 +175,7 @@ begin
   ComboBox1Change(nil);
   ComboBox2.ItemIndex := 0;
   ComboBox2Change(nil);
-  ChangeTheme(Theme, Form5);
+  ChangeTheme(Theme, self);
 end;
 
 
@@ -231,7 +231,7 @@ procedure TForm5.ComboBox1Change(Sender: TObject);
 var
   i: Integer;
 begin
-  RemoveFocus(Form5);
+  RemoveFocus(self);
   i := HotkeyDynData.FindIndex(0, 'Description', ComboBox1.Text);
   if (i > -1) then HotKey1.HotKey := HotkeyDynData.GetValue(i, 'Hotkey');
 end;
@@ -242,7 +242,7 @@ var
   i: Integer;
   Name: WideString;
 begin
-  RemoveFocus(Form5);
+  RemoveFocus(self);
   i := SettingDynData.FindIndex(0, 'Description', ComboBox2.Text);
   if (i < 0) then Exit;
   CheckBox1.Enabled := True;

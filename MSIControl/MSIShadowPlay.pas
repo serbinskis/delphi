@@ -252,13 +252,13 @@ begin
 
   Timer1.Enabled := True;
   Timer2.Enabled := True;
-  ChangeTheme(Theme, Form3);
+  ChangeTheme(Theme, self);
 end;
 
 
 procedure TForm3.FormShow(Sender: TObject);
 begin
-  MSIControl.RemoveFocus(Form3);
+  MSIControl.RemoveFocus(self);
 end;
 
 
@@ -280,7 +280,7 @@ end;
 
 procedure TForm3.FormClick(Sender: TObject);
 begin
-  MSIControl.RemoveFocus(Form3);
+  MSIControl.RemoveFocus(self);
 end;
 
 
@@ -408,7 +408,7 @@ procedure TForm3.ComboBox1Change(Sender: TObject);
 var
   i: Integer;
 begin
-  RemoveFocus(Form3);
+  RemoveFocus(self);
   i := HotkeyDynData.FindIndex(0, 'Description', ComboBox1.Text);
   if (i > -1) then HotKey1.HotKey := HotkeyDynData.GetValue(i, 'Hotkey');
 end;
@@ -419,7 +419,7 @@ var
   i: Integer;
   Name: WideString;
 begin
-  RemoveFocus(Form3);
+  RemoveFocus(self);
   i := SettingDynData.FindIndex(0, 'Description', ComboBox4.Text);
   if (i < 0) then Exit;
 

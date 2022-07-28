@@ -127,13 +127,13 @@ end;
 
 procedure TForm6.FormClick(Sender: TObject);
 begin
-  MSIControl.RemoveFocus(Form6);
+  MSIControl.RemoveFocus(self);
 end;
 
 
 procedure TForm6.FormShow(Sender: TObject);
 begin
-  MSIControl.RemoveFocus(Form6);
+  MSIControl.RemoveFocus(self);
 end;
 
 
@@ -160,7 +160,7 @@ begin
 
   Button3.Enabled := (ComboBox1.Items.Count > 0);
   Button4.Enabled := (ComboBox1.Items.Count > 0);
-  ChangeTheme(Theme, Form6);
+  ChangeTheme(Theme, self);
 end;
 
 
@@ -220,7 +220,7 @@ end;
 procedure TForm6.ComboBox1Change(Sender: TObject);
 begin
   if (ComboBox1.ItemIndex < 0) then Exit;
-  MSIControl.RemoveFocus(Form6);
+  MSIControl.RemoveFocus(self);
 
   Edit1.Text := WoLDynData.GetValue(ComboBox1.ItemIndex, 'Name');
   Edit2.Text := WoLDynData.GetValue(ComboBox1.ItemIndex, 'IP');
@@ -250,7 +250,7 @@ end;
 procedure TForm6.EditKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Ord(Key) > 128) then Key := #0;
-  if (Ord(Key) = 13) then MSIControl.RemoveFocus(Form6);
+  if (Ord(Key) = 13) then MSIControl.RemoveFocus(self);
   if (Ord(Key) = 13) then Key := #0;
 end;
 

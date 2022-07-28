@@ -119,13 +119,13 @@ begin
   GetLanguageList(ComboBox1.Items);
   ComboBox1.ItemIndex := 0;
   ComboBox1Change(nil);
-  ChangeTheme(Theme, Form4);
+  ChangeTheme(Theme, self);
 end;
 
 
 procedure TForm4.FormShow(Sender: TObject);
 begin
-  MSIControl.RemoveFocus(Form4);
+  MSIControl.RemoveFocus(self);
 end;
 
 
@@ -138,7 +138,7 @@ end;
 
 procedure TForm4.FormClick(Sender: TObject);
 begin
-  MSIControl.RemoveFocus(Form4);
+  MSIControl.RemoveFocus(self);
 end;
 
 
