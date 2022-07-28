@@ -73,7 +73,14 @@ implementation
 
 procedure TForm8.WMDeviceChange(var Msg: TMessage);
 begin
-  if (Msg.wParam = 7) and Form8.Visible then GenerateList;
+  if (Msg.wParam <> 7) or not Form8.Visible then Exit;
+
+  Form8.HotKey1.OnExit := nil;
+  Form8.HotKey1.HotKey := mOldHotKey;
+  RemoveFocus(self);
+  Form8.HotKey1.OnExit := Form8.HotKey1Exit;
+
+  GenerateList;
 end;
 
 

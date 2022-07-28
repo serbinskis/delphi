@@ -114,9 +114,7 @@ begin
   RemoveFocus(Form2);
   Form2.HotKey1.OnExit := Form2.HotKey1Exit;
 
-  GetMicrophoneList(Form2.ComboBox2.Items);
-  Form2.ComboBox2.ItemIndex := 0;
-  Form2.ComboBox2Change(nil);
+  GenerateList;
 end;
 
 
@@ -222,7 +220,7 @@ end;
 procedure TForm2.FormShow(Sender: TObject);
 begin
   MSIControl.RemoveFocus(self);
-  OnDeviceChange(7);
+  GenerateList;
 end;
 
 
