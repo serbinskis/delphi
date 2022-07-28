@@ -3,9 +3,9 @@ unit MSIMonitors;
 interface
 
 uses
-  Windows, SysUtils, Classes, Controls, Forms, StdCtrls, Messages, ComCtrls, ExtCtrls, MMSystem, DateUtils,
-  XiTrackBar, XiButton, TFlatCheckBoxUnit, TFlatComboBoxUnit, CustoHotKey, CustoBevel, MSIControl, MSIThemes,
-  uHotKey, DDCCI, uDynamicData, Functions;
+  Windows, SysUtils, Classes, Controls, Forms, StdCtrls, TntStdCtrls, Messages, ComCtrls, ExtCtrls, MMSystem,
+  DateUtils, XiTrackBar, XiButton, TFlatCheckBoxUnit, TFlatComboBoxUnit, CustoHotKey, CustoBevel, MSIControl,
+  MSIThemes, uHotKey, DDCCI, uDynamicData, Functions;
 
 type
   TForm8 = class(TForm)
@@ -24,6 +24,7 @@ type
     Label3: TLabel;
     Label4: TLabel;
     Label6: TLabel;
+    Label7: TTntLabel;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -146,7 +147,7 @@ begin
     j := DDCCI.GetIndexByDeviceID(DeviceID);
     if (j < 0) then Continue;
     ID := MonDynData.GetValue(i, 'ID');
-    List.AddObject(DDCCI.GetFriendlyName(j) + ' (' + DDCCI.GetDeviceString(j) + ')', TObject(ID));
+    List.AddObject(DDCCI.GetFriendlyName(j) + ' (' + DDCCI.GetDeviceName(j) + ')', TObject(ID));
   end;
 
   if (DDCCI.GetMonitorCount <> 0) and (MonDynData.GetLength = 0) then Form8.Button1Click(nil);
@@ -162,7 +163,7 @@ begin
   List.Clear;
 
   for i := 0 to DDCCI.GetMonitorCount-1 do begin
-    List.Add(DDCCI.GetFriendlyName(i) + ' (' + DDCCI.GetDeviceString(i) + ')');
+    List.Add(DDCCI.GetFriendlyName(i) + ' (' + DDCCI.GetDeviceName(i) + ')');
   end;
 end;
 
@@ -229,7 +230,7 @@ procedure TForm8.ComboBox1Change(Sender: TObject);
 var
   i: Integer;
   ID: Int64;
-  Name: String;
+  Name, DeviceID: String;
 begin
   if (ComboBox1.ItemIndex < 0) then Exit;
   ID := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
@@ -240,6 +241,8 @@ begin
   ComboBox3Change(nil);
   HotKey1.HotKey := MonDynData.GetValue(i, 'HotKey');
   CheckBox1.Checked := MonDynData.GetValue(i, 'EnableOnStartup');
+  DeviceID := MonDynData.GetValue(i, 'DeviceID');
+  Label7.Visible := not DDCCI.isSupported(DeviceID);
 
   Name := ComboBox1.Items[ComboBox1.ItemIndex];
   GetMonitorList(ComboBox2.Items);
@@ -294,14 +297,17 @@ procedure TForm8.ComboBox2Change(Sender: TObject);
 var
   i: Integer;
   ID: Int64;
+  DeviceID: String;
 begin
   MSIControl.RemoveFocus(self);
   ID := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
   i := MonDynData.FindIndex(0, 'ID', ID);
-  MonDynData.SetValue(i, 'DeviceID', DDCCI.GetDeviceID(ComboBox2.ItemIndex));
+  DeviceID := DDCCI.GetDeviceID(ComboBox2.ItemIndex);
+  MonDynData.SetValue(i, 'DeviceID', DeviceID);
+  Label7.Visible := not DDCCI.isSupported(DeviceID);
 
   i := ComboBox1.ItemIndex;
-  ComboBox1.Items[i] := DDCCI.GetFriendlyName(ComboBox2.ItemIndex) + ' (' + DDCCI.GetDeviceString(ComboBox2.ItemIndex) + ')';
+  ComboBox1.Items[i] := DDCCI.GetFriendlyName(ComboBox2.ItemIndex) + ' (' + DDCCI.GetDeviceName(ComboBox2.ItemIndex) + ')';
   ComboBox1.ItemIndex := i;
 end;
 

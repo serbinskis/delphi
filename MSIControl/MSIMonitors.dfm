@@ -30,9 +30,9 @@ object Form8: TForm8
   object Label1: TLabel
     Left = 8
     Top = 8
-    Width = 189
+    Width = 190
     Height = 18
-    Caption = 'MONITORS (REQUIRES DCC/CI)'
+    Caption = 'MONITORS (REQUIRES DDC/CI)'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -15
@@ -99,6 +99,25 @@ object Form8: TForm8
     Height = 1
     Shape = bsFrame
     Color = clBlack
+  end
+  object Label7: TTntLabel
+    Left = 6
+    Top = 60
+    Width = 32
+    Height = 33
+    Hint = 'Monitor does not support DDC/CI'
+    Caption = #9888
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = 4966135
+    Font.Height = -27
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
+    Transparent = True
   end
   object HotKey1: TCustoHotKey
     Left = 88
