@@ -71,6 +71,24 @@ implementation
 
 {$R *.dfm}
 
+
+procedure ShutdownCallback;
+var
+  i, j: Integer;
+  DeviceID: WideString;
+  EnableOnStartup: Boolean;
+begin
+  DDCCI.Update;
+
+  for i := 0 to MonDynData.GetLength-1 do begin
+    DeviceID := MonDynData.GetValue(i, 'DeviceID');
+    EnableOnStartup := MonDynData.GetValue(i, 'EnableOnStartup');
+    j := DDCCI.GetIndexByDeviceID(DeviceID);
+    if (j > -1) and (EnableOnStartup) then DDCCI.PowerOn(DeviceID);
+  end;
+end;
+
+
 procedure TForm8.WMDeviceChange(var Msg: TMessage);
 begin
   if (Msg.wParam <> 7) or not Form8.Visible then Exit;
@@ -92,8 +110,7 @@ begin
   i := MonDynData.FindIndex(0, 'HotKey', ShortCut);
   if (i < 0) then Exit;
   DeviceID := MonDynData.GetValue(i, 'DeviceID');
-  DDCCI.Update;
-  if (DDCCI.GetIndexByDeviceID(DeviceID) < 0) then Exit;
+  if (DDCCI.Update.GetIndexByDeviceID(DeviceID) < 0) then Exit;
   if SettingsMon.HotkeySound then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
 
   case MonDynData.GetValue(i, 'Operation') of
@@ -199,6 +216,7 @@ procedure TForm8.FormCreate(Sender: TObject);
 begin
   LoadMonitorSettings;
   ChangeTheme(Theme, self);
+  MSIControl.ShutdownCallbacks.Add(@ShutdownCallback);
 end;
 
 

@@ -84,6 +84,7 @@ var
   Form1: TForm1;
   HotkeyDynData: TDynamicData;
   SettingDynData: TDynamicData;
+  ShutdownCallbacks: TList;
   MSI: TMSIController;
   AppInactive: Boolean = False;
   mOldHotKey: Integer;
@@ -146,8 +147,10 @@ end;
 procedure QueryShutdown(BS: TBlockShutdown);
 var
   CloseAction: TCloseAction;
+  i: Integer;
 begin
-  BS.CreateReason('Disabling drivers...');
+  BS.CreateReason('Closing MSIControls...');
+  for i := 0 to ShutdownCallbacks.Count-1 do TProcedure(ShutdownCallbacks.Items[i]);
   CloseAction := caNone;
   Form1.FormClose(nil, CloseAction);
   BS.DestroyReason;
@@ -189,6 +192,7 @@ var
 begin
   Form1.Caption := Application.Title;
   MSI := TMSIController.Create;
+  ShutdownCallbacks := TList.Create;
 
   if not MSI.isECLoaded then begin
     ShowMessage('There was an error initializing driver.');
@@ -241,7 +245,7 @@ begin
   TrayIcon1.AddToTray;
 
   LoadRegistryBoolean(Theme, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'THEME');
-  SetQueryShutdown(QueryShutdown);
+  AddShutdownCallback(QueryShutdown);
   ChangeTheme(Theme, Form1);
 end;
 
@@ -557,40 +561,17 @@ end;
 
 
 procedure TForm1.Button1Click(Sender: TObject);
+var
+  i: Integer;
 begin
   Theme := not Theme;
 
-  try
-    ChangeTheme(Theme, Form1);
-  except end;
-
-  try
-    ChangeTheme(Theme, Form2);
-  except end;
-
-  try
-    ChangeTheme(Theme, Form3);
-  except end;
-
-  try
-    ChangeTheme(Theme, Form4);
-  except end;
-
-  try
-    ChangeTheme(Theme, Form5);
-  except end;
-
-  try
-    ChangeTheme(Theme, Form6);
-  except end;
-
-  try
-    ChangeTheme(Theme, Form7);
-  except end;
-
-  try
-    ChangeTheme(Theme, Form8);
-  except end;
+  for i := 0 to Application.ComponentCount-1 do begin
+    try
+      if not (Application.Components[i] is TForm) then Continue;
+      ChangeTheme(Theme, TForm(Application.Components[i]));
+    except end;
+  end;
 end;
 
 
