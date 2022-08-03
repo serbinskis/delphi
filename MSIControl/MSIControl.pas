@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Dialogs, Classes, Forms, Menus, MMSystem, Graphics, ShellAPI,
   ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
   XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, WinXP, MSIThemes,
-  uHotKey, uQueryShutdown, uReadConsole, uDynamicData, MSIController, Functions;
+  uHotKey, uNotify, uReadConsole, uDynamicData, MSIController, Functions;
 
 type
   TForm1 = class(TForm)
@@ -144,16 +144,16 @@ end;
 //HotkeyCallback
 
 
-procedure QueryShutdown(BS: TBlockShutdown);
+procedure QueryShutdown(CreateReason: TShutdownCreateReason; DestroyReason: TShutdownDestroyReason);
 var
   CloseAction: TCloseAction;
   i: Integer;
 begin
-  BS.CreateReason('Closing MSIControls...');
+  CreateReason('Closing MSIControls...');
   for i := 0 to ShutdownCallbacks.Count-1 do TProcedure(ShutdownCallbacks.Items[i]);
   CloseAction := caNone;
   Form1.FormClose(nil, CloseAction);
-  BS.DestroyReason;
+  DestroyReason;
   TerminateProcess(GetCurrentProcess, 0);
 end;
 
