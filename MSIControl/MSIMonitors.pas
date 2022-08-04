@@ -54,6 +54,7 @@ type
 
 const
   DEFAULT_MONITOR_KEY = DEFAULT_KEY + '\Monitors';
+  STARTUP_SECONDS = 300;
 
 var
   Form8: TForm8;
@@ -126,6 +127,7 @@ var
   i, j, HotKey: Integer;
   DeviceID: WideString;
   EnableOnStartup: Boolean;
+  isStartup: Boolean;
 begin
   DDCCI := TDDCCI.Create(True);
   MonDynData := TDynamicData.Create(['DeviceID', 'Operation', 'EnableOnStartup', 'ID', 'HotKey']);
@@ -133,13 +135,14 @@ begin
 
   LoadRegistryBoolean(SettingsMon.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MONITOR_KEY, 'SETTING_HOTKEY_SOUND');
   Form8.CheckBox2.Checked := SettingsMon.HotkeySound;
+  isStartup := STARTUP_SECONDS > (GetTickCount64/1000);
 
   for i := 0 to MonDynData.GetLength-1 do begin
     DeviceID := MonDynData.GetValue(i, 'DeviceID');
     HotKey := MonDynData.GetValue(i, 'HotKey');
     EnableOnStartup := MonDynData.GetValue(i, 'EnableOnStartup');
     j := DDCCI.GetIndexByDeviceID(DeviceID);
-    if (j > -1) and (EnableOnStartup) then DDCCI.PowerOn(DeviceID);
+    if (j > -1) and (EnableOnStartup and isStartup) then DDCCI.PowerOn(DeviceID);
     if (j > -1) and (HotKey > 0) then SetShortCut(MonitorHotKeyCallback, HotKey);
   end;
 
