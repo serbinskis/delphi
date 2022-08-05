@@ -235,7 +235,7 @@ object Form2: TForm2
     DownThumbGradColor = 14120960
     SmoothCorners = False
     ColorScheme = csCustom
-    Position = 10
+    Position = 50
     Min = 0
     Max = 100
     Frequency = 1

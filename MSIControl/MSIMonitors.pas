@@ -23,8 +23,10 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
+    Label5: TLabel;
     Label6: TLabel;
     Label7: TTntLabel;
+    TrackBar1: TXiTrackBar;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -40,6 +42,7 @@ type
     procedure HotKey1Change(Sender: TObject);
     procedure HotKey1Enter(Sender: TObject);
     procedure HotKey1Exit(Sender: TObject);
+    procedure TrackBar1Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -54,7 +57,6 @@ type
 
 const
   DEFAULT_MONITOR_KEY = DEFAULT_KEY + '\Monitors';
-  STARTUP_SECONDS = 300;
 
 var
   Form8: TForm8;
@@ -105,19 +107,23 @@ end;
 
 procedure MonitorHotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
 var
-  DeviceID: String;
-  i: Integer;
+  DeviceID: WideString;
+  i, Value: Integer;
 begin
   i := MonDynData.FindIndex(0, 'HotKey', ShortCut);
   if (i < 0) then Exit;
   DeviceID := MonDynData.GetValue(i, 'DeviceID');
   if (DDCCI.Update.GetIndexByDeviceID(DeviceID) < 0) then Exit;
   if SettingsMon.HotkeySound then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
+  Value := MonDynData.GetValue(i, 'Value');
 
   case MonDynData.GetValue(i, 'Operation') of
     0: DDCCI.PowerOn(DeviceID);
     1: DDCCI.PowerOff(DeviceID);
     2: DDCCI.PowerToggle(DeviceID);
+    3: DDCCI.SetBrightness(DeviceID, Value);
+    4: DDCCI.SetBrightness(DeviceID, DDCCI.GetBrightness(DeviceID)+Value);
+    5: DDCCI.SetBrightness(DeviceID, DDCCI.GetBrightness(DeviceID)-Value);
   else end;
 end;
 
@@ -130,7 +136,7 @@ var
   isStartup: Boolean;
 begin
   DDCCI := TDDCCI.Create(True);
-  MonDynData := TDynamicData.Create(['DeviceID', 'Operation', 'EnableOnStartup', 'ID', 'HotKey']);
+  MonDynData := TDynamicData.Create(['DeviceID', 'EnableOnStartup', 'Operation', 'Value', 'ID', 'HotKey']);
   MonDynData.Load(DEFAULT_ROOT_KEY, DEFAULT_MONITOR_KEY, 'BINARY_MONITORS', [loRemoveUnused, loOFDelete]);
 
   LoadRegistryBoolean(SettingsMon.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MONITOR_KEY, 'SETTING_HOTKEY_SOUND');
@@ -217,6 +223,7 @@ end;
 
 procedure TForm8.FormCreate(Sender: TObject);
 begin
+  TrackBar1.Position := 50;
   LoadMonitorSettings;
   ChangeTheme(Theme, self);
   MSIControl.ShutdownCallbacks.Add(@ShutdownCallback);
@@ -230,7 +237,7 @@ begin
   DDCCI.Update;
 
   ID := Int64(TObject(MilliSecondsBetween(Now, 0)));
-  MonDynData.CreateData(-1, -1, ['DeviceID', 'Operation', 'EnableOnStartup', 'ID', 'HotKey'], [DDCCI.GetDeviceID(0), 0, False, ID, 0]);
+  MonDynData.CreateData(-1, -1, ['DeviceID', 'EnableOnStartup', 'Operation', 'Value', 'ID', 'HotKey'], [DDCCI.GetDeviceID(0), False, 0, -1, ID, 0]);
   GenerateList;
   ComboBox1.ItemIndex := ComboBox1.Items.Count-1;
 end;
@@ -258,7 +265,8 @@ procedure TForm8.ComboBox1Change(Sender: TObject);
 var
   i: Integer;
   ID: Int64;
-  Name, DeviceID: String;
+  Name: String;
+  DeviceID: WideString;
 begin
   if (ComboBox1.ItemIndex < 0) then Exit;
   ID := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
@@ -325,7 +333,7 @@ procedure TForm8.ComboBox2Change(Sender: TObject);
 var
   i: Integer;
   ID: Int64;
-  DeviceID: String;
+  DeviceID: WideString;
 begin
   MSIControl.RemoveFocus(self);
   ID := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
@@ -343,11 +351,24 @@ end;
 procedure TForm8.ComboBox3Change(Sender: TObject);
 var
   ID: Int64;
-  i: Integer;
+  i, Value, Brightness: Integer;
+  DeviceID: WideString;
 begin
   ID := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
   i := MonDynData.FindIndex(0, 'ID', ID);
   MonDynData.SetValue(i, 'Operation', ComboBox3.ItemIndex);
+
+  Value := MonDynData.GetValue(i, 'Value');
+  TrackBar1.Enabled := ((ComboBox3.ItemIndex >= 3) and (ComboBox3.ItemIndex <= 5));
+
+  if (TrackBar1.Enabled) then begin
+    DeviceID := MonDynData.GetValue(i, 'DeviceID');
+    Brightness := DDCCI.GetBrightness(DeviceID);
+
+    if (ComboBox3.ItemIndex = 3) then TrackBar1.Position := Q((Value < 0), Brightness, Value);
+    if (ComboBox3.ItemIndex = 4) then TrackBar1.Position := Q((Value < 0), 5, Value);
+    if (ComboBox3.ItemIndex = 5) then TrackBar1.Position := Q((Value < 0), 5, Value);
+  end;
 end;
 
 
@@ -360,6 +381,20 @@ begin
   ID := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
   i := MonDynData.FindIndex(0, 'ID', ID);
   MonDynData.SetValue(i, 'EnableOnStartup', CheckBox1.Checked);
+end;
+
+
+procedure TForm8.TrackBar1Change(Sender: TObject);
+var
+  ID: Int64;
+  i: Integer;
+begin
+  Label5.Caption := IntToStr(TrackBar1.Position) + '%';
+  if (ComboBox1.ItemIndex < 0) then Exit;
+
+  ID := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
+  i := MonDynData.FindIndex(0, 'ID', ID);
+  MonDynData.SetValue(i, 'Value', TrackBar1.Position);
 end;
 
 

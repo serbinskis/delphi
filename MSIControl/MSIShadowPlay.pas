@@ -169,10 +169,13 @@ end;
 
 procedure TForm3.Timer1Timer(Sender: TObject);
 var
-  isOn: Boolean;
+  isOn, isStartup: Boolean;
+  isAutoEnable: Boolean;
 begin
   Timer1.Enabled := False;
-  if not Boolean(SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_ENABLE_IT', 'Value')) then Exit;
+  isStartup := STARTUP_SECONDS > (GetTickCount64/1000);
+  isAutoEnable := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_ENABLE_IT', 'Value');
+  if ((not isStartup) or (not isAutoEnable)) then Exit;
 
   isOn := ShadowPlay.IsShadowPlayOn;
   if not isOn then ShadowPlay.EnableShadowPlay(True);

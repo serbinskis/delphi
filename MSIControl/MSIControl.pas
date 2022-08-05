@@ -79,6 +79,7 @@ const
   DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
   DEFAULT_KEY = '\Software\WobbyChip\MSIControl';
   INACTIVE_TIMEOUT = 350;
+  STARTUP_SECONDS = 300;
 
 var
   Form1: TForm1;

@@ -3,7 +3,7 @@ object Form8: TForm8
   Top = 125
   BorderStyle = bsDialog
   Caption = 'Monitors'
-  ClientHeight = 310
+  ClientHeight = 350
   ClientWidth = 269
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -81,7 +81,7 @@ object Form8: TForm8
   end
   object Label6: TLabel
     Left = 8
-    Top = 248
+    Top = 288
     Width = 59
     Height = 18
     Caption = 'SETTINGS'
@@ -94,7 +94,7 @@ object Form8: TForm8
   end
   object Bevel2: TCustoBevel
     Left = 3
-    Top = 271
+    Top = 311
     Width = 263
     Height = 1
     Shape = bsFrame
@@ -118,6 +118,21 @@ object Form8: TForm8
     ParentShowHint = False
     ShowHint = True
     Transparent = True
+  end
+  object Label5: TLabel
+    Left = 224
+    Top = 225
+    Width = 33
+    Height = 18
+    Alignment = taCenter
+    AutoSize = False
+    Caption = '50%'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object HotKey1: TCustoHotKey
     Left = 88
@@ -178,7 +193,10 @@ object Form8: TForm8
     Items.Strings = (
       'Turn On'
       'Turn Off'
-      'Toggle On/Off')
+      'Toggle On/Off'
+      'Set Brightness'
+      'Increase Brightness'
+      'Decrease Brightness')
     ParentFont = False
     TabOrder = 2
     ItemIndex = -1
@@ -294,7 +312,7 @@ object Form8: TForm8
   end
   object CheckBox2: TFlatCheckBox
     Left = 8
-    Top = 282
+    Top = 322
     Width = 145
     Height = 17
     Caption = 'Enable Hotkey Sounds'
@@ -317,10 +335,10 @@ object Form8: TForm8
   end
   object CheckBox1: TFlatCheckBox
     Left = 8
-    Top = 218
-    Width = 145
+    Top = 258
+    Width = 193
     Height = 17
-    Caption = 'Turn On On Startup'
+    Caption = 'Turn On On Shutdown  && Startup'
     Color = clLime
     ColorFocused = clBlue
     ColorDown = clAqua
@@ -337,5 +355,45 @@ object Form8: TForm8
     TabOrder = 7
     TabStop = True
     OnMouseUp = CheckBox1MouseUp
+  end
+  object TrackBar1: TXiTrackBar
+    Left = 4
+    Top = 218
+    Width = 213
+    Height = 33
+    BackColor = clWhite
+    TickColor = clBlack
+    DisabledTickColor = clSilver
+    SlideBorderColor = clBlack
+    SlideFaceColor = clWhite
+    SlideGradColor = clWhite
+    DisabledSlideBorderColor = 12500670
+    DisabledSlideFaceColor = 14211288
+    DisabledSlideGradColor = 15263976
+    DisabledThumbBorderColor = 11908533
+    DisabledThumbFaceColor = 15395562
+    DisabledThumbGradColor = 13619151
+    ThumbBorderColor = clBlack
+    ThumbFaceColor = 14120960
+    ThumbGradColor = 14120960
+    OverThumbBorderColor = clBlack
+    OverThumbFaceColor = 14120960
+    OverThumbGradColor = 14120960
+    DownThumbBorderColor = clBlack
+    DownThumbFaceColor = 14120960
+    DownThumbGradColor = 14120960
+    SmoothCorners = False
+    ColorScheme = csCustom
+    Position = 10
+    Min = 0
+    Max = 100
+    Frequency = 1
+    TickStyle = tsNone
+    TickMarks = tmBottomRight
+    Orientation = trHorizontal
+    BorderWidth = 5
+    ParentShowHint = False
+    ShowHint = True
+    OnChange = TrackBar1Change
   end
 end
