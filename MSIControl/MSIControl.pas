@@ -88,6 +88,7 @@ var
   ShutdownCallbacks: TList;
   MSI: TMSIController;
   AppInactive: Boolean = False;
+  Counter: Integer;
   mOldHotKey: Integer;
   mNewHotKey: Integer;
 
@@ -211,6 +212,7 @@ begin
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_CLEAR_CRASH_DUMPS', 'Clear Crash Dumps On Start']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_COOLER_BOOST', 'Enable Cooler Boost']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_WEBCAM', 'Enable MSI Webcam']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_AUTO_DISABLE_WEBCAM', 'Disable MSI Webcam On Startup']);
   SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_OVERHEATING', 'Prevent GPU overheating, enables Cooler Boost']);
 
   for i := 0 to HotkeyDynData.GetLength-1 do begin
@@ -233,6 +235,9 @@ begin
 
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_OVERHEATING', 'Value');
   Timer1.Enabled := (v > 0);
+
+  v := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_DISABLE_WEBCAM', 'Value');
+  if (v > 0) then MSI.SetWebcamEnabled(False);
 
   if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'FAN_MODE') then MSI.SetFanMode(TModeType(v));
 
@@ -262,6 +267,7 @@ begin
     MonitorHeigth := CurrentMonitor.Top + CurrentMonitor.Height;
   except
     Restart1Click(nil);
+    Exit;
   end;
 
   ShowWindow(Application.Handle, SW_HIDE);
@@ -344,7 +350,8 @@ end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
-  if (MSI.GetGPUTemp >= 95) then MSI.SetCoolerBoostEnabled(True);
+  if (MSI.GetGPUTemp >= 95) then Inc(Counter) else Counter := 0;
+  if (Counter >= 3) then MSI.SetCoolerBoostEnabled(True);
 end;
 
 
@@ -488,6 +495,7 @@ begin
   if Name = 'SETTING_COOLER_BOOST' then CheckBox1.Checked := MSI.isCoolerBoostEnabled;
   if Name = 'SETTING_WEBCAM' then CheckBox1.Checked := MSI.isWebcamEnabled;
   if Name = 'SETTING_OVERHEATING' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
+  if Name = 'SETTING_AUTO_DISABLE_WEBCAM' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
 end;
 
 
@@ -504,6 +512,11 @@ begin
   if Name = 'SETTING_CLEAR_CRASH_DUMPS' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
   if Name = 'SETTING_COOLER_BOOST' then MSI.SetCoolerBoostEnabled(CheckBox1.Checked);
   if Name = 'SETTING_WEBCAM' then MSI.SetWebcamEnabled(CheckBox1.Checked);
+
+  if Name = 'SETTING_AUTO_DISABLE_WEBCAM' then begin
+    SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
+    if CheckBox1.Checked then MSI.SetWebcamEnabled(False);
+  end;
 
   if Name = 'SETTING_OVERHEATING' then begin
     SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
