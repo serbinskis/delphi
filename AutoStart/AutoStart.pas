@@ -4,18 +4,19 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, WinXP, StdCtrls, TntStdCtrls, MMSystem, Registry, uKBDynamic, Functions;
+  Dialogs, WinXP, StdCtrls, TNTSystem, TNTSysUtils, TNTStdCtrls, uKBDynamic,
+  uDynamicData, Functions;
 
 const
   COMPONENETS_PER_ROW = 6;
   DEFAULT_COUNTDOWN_TIME = 5;
   WM_REBUILD_CONTROL = WM_USER + 12787;
   DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
-  DEFAULT_KEY = '\Software\AutoStart';
+  DEFAULT_FILENAME = 'AutoStart.bin';
 
 type
   TForm1 = class(TForm)
-    procedure DefaultClick(Sender: TObject);
+    procedure EnableClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure NameChange(Sender: TObject);
     procedure CommandChange(Sender: TObject);
@@ -31,19 +32,9 @@ type
     { Public declarations }
   end;
 
-type
-  TAutorun = record
-    Name: WideString;
-    CommandLine: WideString;
-    Countdown: Integer;
-    Default: Boolean;
-  end;
-
-  TAutorunsList = array of TAutorun;
-
 var
   Form1: TForm1;
-  Autoruns: TAutorunsList;
+  DynamicData: TDynamicData;
 
 implementation
 
@@ -53,147 +44,37 @@ implementation
 //Countdown
 procedure Countdown;
 var
-  Counter: Integer;
+  i, Counter: Integer;
   P1, P2: TPoint;
   CloseAction: TCloseAction;
 begin
-  if (Length(Autoruns) <= 0) or (not Autoruns[0].Default) then Exit;
+  if (DynamicData.GetLength <= 0) or (not DynamicData.GetValue(0, 'Enabled')) then Exit;
   GetCursorPos(P1);
-  Counter := Autoruns[0].Countdown;
+  Counter := DynamicData.GetValue(0, 'Countdown');
 
-  while Counter <> 0 do begin
+  while (Counter <> 0) do begin
     Form1.Caption := 'Starting in ' + IntToStr(Counter) + ' seconds.';
     Wait(1000);
     Dec(Counter);
     GetCursorPos(P2);
-
     if (P1.X <> P2.X) or (P1.Y <> P2.Y) then Break;
-
-    if Counter = 0 then begin
-      CloseAction := caNone;
-      Form1.FormClose(nil, CloseAction);
-      if Autoruns[0].CommandLine <> '' then WideWinExec(Autoruns[0].CommandLine, SW_SHOW);
-      TerminateProcess(OpenProcess(PROCESS_TERMINATE, False, GetCurrentProcessId), 0);
-    end;
   end;
+
+  if (Counter > 0) then Exit;
+  CloseAction := caNone;
+  Form1.FormClose(nil, CloseAction);
+
+  for i := 0 to DynamicData.GetLength-1 do begin
+    if not DynamicData.GetValue(i, 'Enabled') then Continue;
+    if (DynamicData.GetValue(i, 'CommandLine') <> '') then WideWinExec(DynamicData.GetValue(i, 'CommandLine'), SW_SHOW);
+  end;
+
+  TerminateProcess(GetCurrentProcess, 0);
 end;
 //Countdown
 
 
-//SaveSettings
-procedure SaveSettings;
-var
-  MemoryStream: TMemoryStream;
-  lOptions: TKBDynamicOptions;
-  Registry: TRegistry;
-begin
-  lOptions := [
-    kdoAnsiStringCodePage
-
-    {$IFDEF KBDYNAMIC_DEFAULT_UTF8}
-    ,kdoUTF16ToUTF8
-    {$ENDIF}
-
-    {$IFDEF KBDYNAMIC_DEFAULT_CPUARCH}
-    ,kdoCPUArchCompatibility
-    {$ENDIF}
-  ];
-
-  MemoryStream := TMemoryStream.Create;
-  TKBDynamic.WriteTo(MemoryStream, Autoruns, TypeInfo(TAutorunsList), 1, lOptions);
-
-  Registry := TRegistry.Create;
-  Registry.RootKey := DEFAULT_ROOT_KEY;
-  Registry.OpenKey(DEFAULT_KEY, True);
-  Registry.WriteBinaryData('Settings', MemoryStream.Memory^, MemoryStream.Size);
-  Registry.Free;
-
-  MemoryStream.Free;
-end;
-//SaveSettings
-
-
-//LoadSettings
-procedure LoadSettings;
-var
-  MemoryStream: TMemoryStream;
-  Registry: TRegistry;
-begin
-  Registry := TRegistry.Create;
-  Registry.RootKey := DEFAULT_ROOT_KEY;
-  Registry.OpenKey(DEFAULT_KEY, True);
-
-  if Registry.ValueExists('Settings') then begin
-    MemoryStream := TMemoryStream.Create;
-    MemoryStream.SetSize(Registry.GetDataSize('Settings'));
-    Registry.ReadBinaryData('Settings', MemoryStream.Memory^, MemoryStream.Size);
-
-    try
-      TKBDynamic.ReadFrom(MemoryStream, Autoruns, TypeInfo(TAutorunsList), 1);
-      MemoryStream.Free;
-    except
-      PlaySound('SystemExclamation', 0, SND_ASYNC);
-      ShowMessage('There was an error loading settings.' + #13#10 +
-                  'List data may be corrupted or outdated.' + #13#10 +
-                  'The clipboard list will be reset.');
-      ZeroMemory(@Autoruns, SizeOf(Autoruns));
-      SetLength(Autoruns, 0);
-      Registry.DeleteValue('Settings');
-    end;
-  end;
-
-  Registry.Free;
-end;
-//LoadSettings
-
-
-//DeleteFromList
-procedure DeleteFromList(var A: TAutorunsList; const Index: Integer);
-var
-  i, ArrayLength: Integer;
-begin
-  ArrayLength := Length(A);
-
-  if Index = ArrayLength-1 then begin
-    SetLength(A, ArrayLength-1);
-    Exit;
-  end;
-
-  for i := Index to Length(A)-2  do begin
-    A[i].Name := A[i+1].Name;
-    A[i].CommandLine := A[i+1].CommandLine;
-    A[i].Default := A[i+1].Default;
-    A[i].Countdown := A[i+1].Countdown;
-  end;
-
-  SetLength(A, ArrayLength-1);
-end;
-//DeleteFromList
-
-
-//InsertToList
-procedure InsertToList(var A: TAutorunsList; Index: Integer; Default: Boolean; Name, CommandLine: WideString; Countdown: Integer);
-var
-  i: Integer;
-begin
-  SetLength(A, Length(A)+1);
-
-  for i := Length(A)-1 downto Index+1 do begin
-    A[i].Name := A[i-1].Name;
-    A[i].CommandLine := A[i-1].CommandLine;
-    A[i].Default := A[i-1].Default;
-    A[i].Countdown := A[i-1].Countdown;
-  end;
-
-  A[Index].Name := Name;
-  A[Index].CommandLine := CommandLine;
-  A[Index].Default := Default;
-  A[Index].Countdown := Countdown;
-end;
-//InsertToList
-
-
-procedure CreateEntry(Default: Boolean; Name, CommandLine: WideString; Countdown: Integer);
+procedure CreateEntry(Enabled: Boolean; Name, CommandLine: WideString; Countdown: Integer);
 var
   Count: Integer;
   CheckBox: TTNTCheckBox;
@@ -202,11 +83,11 @@ var
 begin
   Count := Form1.ComponentCount div COMPONENETS_PER_ROW;
 
-  //Default
+  //Enabled
   CheckBox := TTNTCheckBox.Create(Form1);
   CheckBox.Parent := Form1;
-  CheckBox.Checked := Default;
-  CheckBox.OnClick := Form1.DefaultClick;
+  CheckBox.Checked := Enabled;
+  CheckBox.OnClick := Form1.EnableClick;
   CheckBox.Width := 15;
   CheckBox.Height := 16;
   CheckBox.Left := 8;
@@ -268,16 +149,22 @@ end;
 
 procedure BuildEntries;
 var
-  i, Count: Integer;
+  i, Countdown: Integer;
   Button: TTNTButton;
+  Name, CommandLine: WideString;
+  Enabled: Boolean;
 begin
-  while Form1.ComponentCount <> 0 do Form1.Components[0].Destroy;
+  while (Form1.ComponentCount <> 0) do Form1.Components[0].Destroy;
 
-  for i := 0 to Length(Autoruns)-1 do begin
-    CreateEntry(Autoruns[i].Default, Autoruns[i].Name, Autoruns[i].CommandLine, Autoruns[i].Countdown);
+  for i := 0 to DynamicData.GetLength-1 do begin
+    Enabled := DynamicData.GetValue(i, 'Enabled');
+    Name := DynamicData.GetValue(i, 'Name');
+    CommandLine := DynamicData.GetValue(i, 'CommandLine');
+    Countdown := DynamicData.GetValue(i, 'Countdown');
+    CreateEntry(Enabled, Name, CommandLine, Countdown);
   end;
 
-  Count := Form1.ComponentCount div COMPONENETS_PER_ROW;
+  i := Form1.ComponentCount div COMPONENETS_PER_ROW;
 
   Button := TTNTButton.Create(Form1);
   Button.Parent := Form1;
@@ -288,7 +175,7 @@ begin
   Button.Width := 23;
   Button.Height := 23;
   Button.Left := 6;
-  Button.Top := 14 + (21*Count + 5*Count);
+  Button.Top := 14 + (21*i + 5*i);
 end;
 
 
@@ -302,89 +189,89 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   id: DWORD;
 begin
-  LoadSettings;
-  BuildEntries;
+  DynamicData := TDynamicData.Create(['Name', 'CommandLine', 'Countdown', 'Enabled']);
+  DynamicData.Load(DEFAULT_FILENAME, [loRemoveUnused, loOFReset]);
 
+  BuildEntries;
   BeginThread(nil, 0, Addr(Countdown), nil, 0, id);
 end;
 
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  SaveSettings;
+  if (DynamicData.GetLength > 0) then begin
+    SaveRegistryWideString(WideParamStr(0), HKEY_CURRENT_USER, 'Software\Microsoft\Windows\CurrentVersion\Run', 'AutoStart');
+    DynamicData.Save(DEFAULT_FILENAME, []);
+    SetFileAttributesW(DEFAULT_FILENAME, faSysFile or faHidden);
+  end else begin
+    DeleteRegistryValue(HKEY_CURRENT_USER, 'Software\Microsoft\Windows\CurrentVersion\Run', 'AutoStart');
+    DeleteFileW(DEFAULT_FILENAME);
+  end
 end;
 
 
-procedure TForm1.DefaultClick(Sender: TObject);
+procedure TForm1.EnableClick(Sender: TObject);
 var
-  Count, Countdown: Integer;
-  Name, CommandLine: WideString;
+  i: Integer;
+  Enabled: Boolean;
 begin
-  Count := (TControl(Sender).ComponentIndex div COMPONENETS_PER_ROW);
-
-  if not TCheckBox(Sender).Checked then begin
-    Autoruns[Count].Default := False;
-    Exit;
-  end;
-
-  Autoruns[0].Default := False;
-  Name := Autoruns[Count].Name;
-  CommandLine := Autoruns[Count].CommandLine;
-  Countdown := Autoruns[Count].Countdown;
-
-  DeleteFromList(Autoruns, Count);
-  InsertToList(Autoruns, 0, True, Name, CommandLine, Countdown);
+  i := (TControl(Sender).ComponentIndex div COMPONENETS_PER_ROW);
+  Enabled := TCheckBox(Sender).Checked;
+  DynamicData.SetValue(i, 'Enabled', Enabled);
+  DynamicData.MoveData(i, Q(Enabled, 0, DynamicData.GetLength-1));
   PostMessage(Form1.WindowHandle, WM_REBUILD_CONTROL, 0, 0);
 end;
 
 
 procedure TForm1.NameChange(Sender: TObject);
 var
-  Count: Integer;
+  i: Integer;
 begin
-  Count := (TControl(Sender).ComponentIndex div COMPONENETS_PER_ROW);
-  Autoruns[Count].Name := TTNTEDit(Sender).Text;
+  i := (TControl(Sender).ComponentIndex div COMPONENETS_PER_ROW);
+  DynamicData.SetValue(i, 'Name', TTNTEDit(Sender).Text);
 end;
 
 
 procedure TForm1.CommandChange(Sender: TObject);
 var
-  Count: Integer;
+  i: Integer;
 begin
-  Count := (TControl(Sender).ComponentIndex div COMPONENETS_PER_ROW);
-  Autoruns[Count].CommandLine := TTNTEDit(Sender).Text
+  i := (TControl(Sender).ComponentIndex div COMPONENETS_PER_ROW);
+  DynamicData.SetValue(i, 'CommandLine', TTNTEDit(Sender).Text);
 end;
 
 
 procedure TForm1.CountdownChange(Sender: TObject);
 var
-  Count: Integer;
+  i: Integer;
 begin
-  Count := (TControl(Sender).ComponentIndex div COMPONENETS_PER_ROW);
+  i := (TControl(Sender).ComponentIndex div COMPONENETS_PER_ROW);
   CheckValue(TTNTEDit(Sender), 1, 999999);
   if TTNTEDit(Sender).Text = '' then TTNTEDit(Sender).Text := '1';
-  Autoruns[Count].Countdown := StrToInt(TTNTEDit(Sender).Text);
+  DynamicData.SetValue(i, 'Countdown', StrToInt(TTNTEDit(Sender).Text));
 end;
 
 
 procedure TForm1.StartButton(Sender: TObject);
 var
+  CloseAction: TCloseAction;
   CommandLine: WideString;
 begin
   CommandLine := TTNTEdit(Form1.Components[TControl(Sender).ComponentIndex-2]).Text;
   if CommandLine = '' then Exit;
   WideWinExec(CommandLine, SW_SHOW);
-  SaveSettings;
-  TerminateProcess(OpenProcess(PROCESS_TERMINATE, False, GetCurrentProcessId), 0);
+  CloseAction := caNone;
+  Form1.FormClose(nil, CloseAction);
+  TerminateProcess(GetCurrentProcess, 0);
 end;
 
 
 procedure TForm1.DeleteButton(Sender: TObject);
 var
-  Count: Integer;
+  i: Integer;
 begin
-  Count := (TTNTEDit(Sender).ComponentIndex div COMPONENETS_PER_ROW);
-  DeleteFromList(Autoruns, Count);
+  i := (TTNTEDit(Sender).ComponentIndex div COMPONENETS_PER_ROW);
+  DynamicData.DeleteData(i);
   PostMessage(Form1.WindowHandle, WM_REBUILD_CONTROL, 0, 0);
 end;
 
@@ -392,8 +279,7 @@ end;
 procedure TForm1.AddButton(Sender: TObject);
 begin
   TControl(Sender).Top := TControl(Sender).Top + 26;
-  SetLength(Autoruns, Length(Autoruns)+1);
-  //Autoruns[Length(Autoruns)-1].Countdown := DEFAULT_COUNTDOWN_TIME;
+  DynamicData.CreateData(-1, -1, ['Name', 'CommandLine', 'Countdown', 'Enabled'], ['', '', DEFAULT_COUNTDOWN_TIME, False]);
   CreateEntry(False, '', '', DEFAULT_COUNTDOWN_TIME);
 end;
 
