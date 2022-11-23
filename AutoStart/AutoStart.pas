@@ -189,6 +189,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   id: DWORD;
 begin
+  SetCurrentDirectoryW(PWideChar(WideExtractFileDir(WideParamStr(0))));
   DynamicData := TDynamicData.Create(['Name', 'CommandLine', 'Countdown', 'Enabled']);
   DynamicData.Load(DEFAULT_FILENAME, [loRemoveUnused, loOFReset]);
 
