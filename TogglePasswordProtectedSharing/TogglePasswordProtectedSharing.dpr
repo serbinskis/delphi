@@ -48,22 +48,23 @@ begin
   end;
 
   bEnable := (ParamStr(1) = '1');
-  advancedSharing := FindWindow(nil, PChar('Advanced sharing settings'));
+  advancedSharing := FindWindow(nil, 'Advanced sharing settings');
   if (advancedSharing <> 0) then TerminateProcess(OpenProcess(PROCESS_TERMINATE, False, GetPIDFromHWND(advancedSharing)), 0);
   WinExec('control.exe /name Microsoft.NetworkAndSharingCenter /page Advanced', SW_SHOW);
 
   repeat
-    advancedSharing := FindWindow(nil, PChar('Advanced sharing settings'));
+    advancedSharing := FindWindow(nil, 'Advanced sharing settings');
     Sleep(1);
   until (advancedSharing <> 0);
 
+  Sleep(100);
   while not IsWindowVisible(advancedSharing) do Sleep(1);
   ShowWindow(advancedSharing, SW_HIDE);
 
-  Sleep(500);
+  Sleep(1000);
   SetForegroundWindow(advancedSharing);
   EnumChildWindows(advancedSharing, @EnumChildren, 0);
 
-  Sleep(500);
+  Sleep(1000);
   TerminateProcess(OpenProcess(PROCESS_TERMINATE, False, GetPIDFromHWND(advancedSharing)), 0);
 end.
