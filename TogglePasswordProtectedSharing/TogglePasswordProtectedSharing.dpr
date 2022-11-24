@@ -39,8 +39,9 @@ end;
 
 
 begin
-  if (ParamStr(1) <> '0') and (ParamStr(1) <> '1') then begin
-    WriteLn('This application will only work with english version of Windows 10.', #10);
+  if (not IsAdminAccount) or ((ParamStr(1) <> '0') and (ParamStr(1) <> '1')) then begin
+    WriteLn('This application will only work with the English version of Windows 10.');
+    WriteLn('This application will only work with an admin account.', #10);
     WriteLn('Usage:');
     WriteLn('  Usage: ', WideExtractFileName(WideParamStr(0)), ' 0 -> Turn off password protected sharing');
     WriteLn('  Usage: ', WideExtractFileName(WideParamStr(0)), ' 1 -> Turn on password protected sharing');
