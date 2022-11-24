@@ -14,5 +14,6 @@
 !Windows XP Horror Edition/*.exe
 !MSIControl/*.exe
 !ClipboardHistory/*.exe
+!TogglePasswordProtectedSharing/*.exe
 MPV/mpv.res
 !MPV/zip/*.exe
