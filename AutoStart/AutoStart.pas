@@ -12,6 +12,7 @@ const
   DEFAULT_COUNTDOWN_TIME = 5;
   WM_REBUILD_CONTROL = WM_USER + 12787;
   DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
+  DEFAULT_KEY = '\Software\WobbyChip\AutoStart';
   DEFAULT_FILENAME = 'AutoStart.bin';
 
 type
@@ -191,7 +192,10 @@ var
 begin
   SetCurrentDirectoryW(PWideChar(WideExtractFileDir(WideParamStr(0))));
   DynamicData := TDynamicData.Create(['Name', 'CommandLine', 'Countdown', 'Enabled']);
-  DynamicData.Load(DEFAULT_FILENAME, [loRemoveUnused, loOFReset]);
+
+  if WideFileExists(DEFAULT_FILENAME)
+    then DynamicData.Load(DEFAULT_FILENAME, [loRemoveUnused, loOFReset])
+    else DynamicData.Load(HKEY_CURRENT_USER, DEFAULT_KEY, 'Autoruns', [loRemoveUnused, loOFReset]);
 
   BuildEntries;
   BeginThread(nil, 0, Addr(Countdown), nil, 0, id);
@@ -203,6 +207,7 @@ begin
   if (DynamicData.GetLength > 0) then begin
     SaveRegistryWideString(WideParamStr(0), HKEY_CURRENT_USER, 'Software\Microsoft\Windows\CurrentVersion\Run', 'AutoStart');
     DynamicData.Save(DEFAULT_FILENAME, []);
+    DynamicData.Save(HKEY_CURRENT_USER, DEFAULT_KEY, 'Autoruns', []);
     SetFileAttributesW(DEFAULT_FILENAME, faSysFile or faHidden);
   end else begin
     DeleteRegistryValue(HKEY_CURRENT_USER, 'Software\Microsoft\Windows\CurrentVersion\Run', 'AutoStart');
