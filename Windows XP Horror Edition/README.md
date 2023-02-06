@@ -16,7 +16,7 @@ To run destructive version just add `-Destructive` parameter to executable at la
 
 ## Easter eggs
 
-Pressing ALT+F4 will get you a dialog.
+Pressing ALT+F4 will get you a dialog.<br>
 Pressing CTRL+SHIFT+ALT+H+L+3 will get you Half Life 3 reference.
 
 ## Download
