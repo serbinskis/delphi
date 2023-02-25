@@ -5,13 +5,11 @@ function hexEncode(s) {
         result += ("000"+s.charCodeAt(i).toString(16)).slice(-4);
     }
 
-    return result
+    return result;
 }
 
-function openCurrent() {
+mp.add_key_binding(null, 'open-current', function() {
     var filename = mp.get_property_native('path');
     if (filename === undefined) return;
     mp.command('run helper.exe -location ' + hexEncode(filename));
-}
-
-mp.add_key_binding(null, 'openCurrent', openCurrent);
+});

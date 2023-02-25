@@ -15,8 +15,6 @@ const
   MPV_UNPAUSE_COMMAND = '{"command": ["set_property", "pause", false]}' + #13#10;
   UPDATE_TIMEOUT = 100;
 
-var
-  hMutex, ProccessHandle: THandle;
 
 //===============================================================================================================================
 //+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
@@ -25,19 +23,25 @@ var
 //ClearWatch
 procedure ClearWatch;
 var
-  srSearch: TSearchRec;
+  srSearch: TWIN32FindDataW;
+  hSearch: THandle;
   FileDate: TDateTime;
-  Path: String;
+  Path: WideString;
 begin
   Path := GetEnvironmentVariable('AppData') + '\mpv\watch_later\';
-  if FindFirst(Path + '*.*', faAnyFile, srSearch) = 0 then begin
+  hSearch := FindFirstFileW(PWideChar(Path + '\*.*'), srSearch);
+
+  if (hSearch <> INVALID_HANDLE_VALUE) then begin
     repeat
-      if ((srSearch.Attr and faDirectory) = 0) then begin
-        FileDate := FileDateToDateTime(FileAge(Path + srSearch.Name));
-        if DaysBetween(Now, FileDate) >= 30 then DeleteFile(Path + srSearch.Name);
+      try
+        if not (((srSearch.dwFileAttributes and faDirectory) = 0)) then Continue;
+        FileDate := FileDateToDateTime(WideFileAge(Path + srSearch.cFileName));
+        if DaysBetween(Now, FileDate) >= 30 then DeleteFileW(PWideChar(Path + srSearch.cFileName));
+      except
+        Continue;
       end;
-    until FindNext(srSearch) <> 0;
-    FindClose(srSearch);
+    until not FindNextFileW(hSearch, srSearch);
+    Windows.FindClose(hSearch);
   end;
 end;
 //ClearWatch
@@ -81,7 +85,7 @@ var
 begin
   ZipForge := TZipForge.Create(nil);
   ZipForge.OpenArchive(TResourceStream.Create(HInstance, 'MPV', RT_RCDATA), False);
-  ZipForge.BaseDir := PChar(GetEnvironmentVariable('TEMP') +'\MPV');
+  ZipForge.BaseDir := GetEnvironmentVariable('TEMP') +'\MPV';
   ZipForge.ExtractFiles('*.*');
   ZipForge.CloseArchive();
   ZipForge.Free;
@@ -97,25 +101,27 @@ end;
 //===============================================================================================================================
 
 
+var
+  hMutex, ProccessHandle: THandle;
 begin
   //Create mutex
   hMutex := CreateMutex(nil, False, 'MPV');
 
   //Check for already running instance
   if not (WaitForSingleObject(hMutex, 0) <> WAIT_TIMEOUT) then begin
-    if WideParamStr(1) <> '' then SendMessage(FormatFile(WideParamStr(1), MPV_REPLACE) + MPV_UNPAUSE_COMMAND);
+    if (WideParamStr(1) <> '') then SendMessage(FormatFile(WideParamStr(1), MPV_REPLACE) + MPV_UNPAUSE_COMMAND);
     Exit;
   end;
 
   //Extract and launch MPV
-  if not FileExists(GetEnvironmentVariable('TEMP') +'\MPV\mpv.exe') then Extract;
+  if not WideFileExists(GetEnvironmentVariable('TEMP') + '\MPV\mpv.exe') then Extract;
   ProccessHandle := ExecuteProcess(GetEnvironmentVariable('TEMP') + '\MPV\mpv.exe', MPV_PARAMETERS, SW_SHOW);
 
   //Wait for window to appear
-  while FindWindowExtd(MPV_STARTTITLE) = 0 do Sleep(UPDATE_TIMEOUT);
+  while (FindWindowExtd(MPV_STARTTITLE) = 0) do Sleep(UPDATE_TIMEOUT);
 
   //Load file if exists
-  if WideParamStr(1) <> '' then SendMessage(FormatFile(WideParamStr(1), MPV_REPLACE) + MPV_UNPAUSE_COMMAND);
+  if (WideParamStr(1) <> '') then SendMessage(FormatFile(WideParamStr(1), MPV_REPLACE) + MPV_UNPAUSE_COMMAND);
 
   WaitForSingleObject(ProccessHandle, INFINITE);
   DeleteDirectory(GetEnvironmentVariable('TEMP') + '\MPV');

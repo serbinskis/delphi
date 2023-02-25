@@ -1,4 +1,4 @@
-function openDialog() {
+mp.add_key_binding(null, 'open-dialog', function() {
     var was_ontop = mp.get_property_native("ontop");
     if (was_ontop) mp.set_property_native("ontop", false);
     
@@ -15,6 +15,4 @@ function openDialog() {
         mp.commandv('loadfile', filenames[i], ((i == 0) ? 'replace' : 'append-play'));
         if (i == 0) mp.set_property("pause", "no");
     }
-}
-
-mp.add_key_binding(null, 'openDialog', openDialog);
+});

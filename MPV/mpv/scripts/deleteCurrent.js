@@ -1,14 +1,14 @@
 function hexEncode(s) {
-    var result = "";
+    var result = '';
 
     for (var i = 0; i < s.length; i++) {
-        result += ("000"+s.charCodeAt(i).toString(16)).slice(-4);
+        result += ('000'+s.charCodeAt(i).toString(16)).slice(-4);
     }
 
-    return result
+    return result;
 }
 
-function deleteCurrent() {
+mp.add_key_binding(null, 'delete-current', function() {
     var playlist = mp.get_property_native('playlist');
     if ((playlist === undefined) || (playlist.length <= 0)) return;
 
@@ -18,7 +18,7 @@ function deleteCurrent() {
             var currentIndex = i;
         }
     }
-    
+
     if (playlist.length == 1) {
         mp.command('run helper.exe -recycle ' + hexEncode(currentItem.filename));
         mp.command('playlist-play-index none');
@@ -26,14 +26,12 @@ function deleteCurrent() {
     } else if (playlist.length-1 == currentIndex) {
         mp.command('playlist-prev');
         mp.command('playlist_remove ' + currentIndex);
-        mp.set_property("pause", "no");
+        mp.set_property('pause', 'no');
         mp.command('run helper.exe -recycle ' + hexEncode(currentItem.filename));
     } else {
         mp.command('playlist-next');
         mp.command('playlist_remove ' + currentIndex);
-        mp.set_property("pause", "no");
+        mp.set_property('pause', 'no');
         mp.command('run helper.exe -recycle ' + hexEncode(currentItem.filename));
     }
-}
-
-mp.add_key_binding(null, 'deleteCurrent', deleteCurrent);
+});
