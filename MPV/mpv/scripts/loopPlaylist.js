@@ -101,6 +101,8 @@ function doPlaylist() {
                 mp.command('playlist-prev');
             }
             break;
+        case 0:
+            return false;
         case 1:
             break;
         case 2:
