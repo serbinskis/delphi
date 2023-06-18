@@ -61,7 +61,6 @@ type
     procedure HotKey1Change(Sender: TObject);
     procedure HotKey1Enter(Sender: TObject);
     procedure HotKey1Exit(Sender: TObject);
-    procedure PopupMenu1Popup(Sender: TObject);
     procedure Restart1Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure ToggleAutoruns1Click(Sender: TObject);
@@ -196,7 +195,7 @@ begin
   MSI := TMSIController.Create;
   ShutdownCallbacks := TList.Create;
 
-  if not MSI.isECLoaded then begin
+  if not MSI.isECLoaded(False) then begin
     ShowMessage('There was an error initializing driver.');
     TerminateProcess(GetCurrentProcess, 0);
   end;
@@ -208,12 +207,12 @@ begin
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_MODE_BASIC', 'Change Mode To Basic']);
 
   SettingDynData := TDynamicData.Create(['Value', 'Name', 'Description']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [True, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_CLEAR_CRASH_DUMPS', 'Clear Crash Dumps On Start']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_COOLER_BOOST', 'Enable Cooler Boost']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_WEBCAM', 'Enable MSI Webcam']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_AUTO_DISABLE_WEBCAM', 'Disable MSI Webcam On Startup']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'Name', 'Description'], [False, 'SETTING_OVERHEATING', 'Prevent GPU overheating, enables Cooler Boost']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [True, False, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, False, 'SETTING_CLEAR_CRASH_DUMPS', 'Clear Crash Dumps On Start']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, True, 'SETTING_COOLER_BOOST', 'Enable Cooler Boost']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, True, 'SETTING_WEBCAM', 'Enable MSI Webcam']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, True, 'SETTING_AUTO_DISABLE_WEBCAM', 'Disable MSI Webcam On Startup']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, True, 'SETTING_OVERHEATING', 'Prevent GPU overheating, enables Cooler Boost']);
 
   for i := 0 to HotkeyDynData.GetLength-1 do begin
     ComboBox1.Items.Add(HotkeyDynData.GetValue(i, 'Description'));
@@ -225,16 +224,17 @@ begin
   end;
 
   for i := 0 to SettingDynData.GetLength-1 do begin
-    ComboBox3.Items.Add(SettingDynData.GetValue(i, 'Description'));
     Name := SettingDynData.GetValue(i, 'Name');
     if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, Name) then SettingDynData.SetValue(i, 'Value', v);
+    if (not MSI.isECLoaded(True)) and SettingDynData.GetValue(i, 'EC') then continue;
+    ComboBox3.Items.Add(SettingDynData.GetValue(i, 'Description'));
   end;
 
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_CLEAR_CRASH_DUMPS', 'Value');
   if (v > 0) then DeleteDirectory(GetEnvironmentVariable('LocalAppData') + '\CrashDumps');
 
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_OVERHEATING', 'Value');
-  Timer1.Enabled := (v > 0);
+  Timer1.Enabled := MSI.isECLoaded(True) and (v > 0);
 
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_DISABLE_WEBCAM', 'Value');
   if (v > 0) then MSI.SetWebcamEnabled(False);
@@ -246,6 +246,7 @@ begin
   ComboBox3.ItemIndex := 0;
   ComboBox3Change(nil);
 
+  PopupMenu1.Items.Find('Toggle').Items[1].Visible := MSI.isECLoaded(True);
   TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
   TrayIcon1.Title := Application.Title;
   TrayIcon1.AddToTray;
@@ -290,6 +291,10 @@ begin
   TrackBar1.Position := MSI.GetBasicValue;
   if ComboBox2.Enabled and (ComboBox2.ItemIndex <> 2) then ComboBox2Change(nil);
 
+  HotKey1.Enabled := MSI.isECLoaded(True);
+  ComboBox1.Enabled := MSI.isECLoaded(True);
+  ComboBox2.Enabled := MSI.isECLoaded(True);
+  TrackBar1.Enabled := MSI.isECLoaded(True);
   ComboBox3Change(nil);
   Form1.Repaint;
 end;
@@ -352,12 +357,6 @@ procedure TForm1.Timer1Timer(Sender: TObject);
 begin
   if (MSI.GetGPUTemp >= 95) then Inc(Counter) else Counter := 0;
   if (Counter >= 3) then MSI.SetCoolerBoostEnabled(True);
-end;
-
-
-procedure TForm1.PopupMenu1Popup(Sender: TObject);
-begin
-  PopupMenu1.Items[1].Enabled := MSIShadowPlay.ShadowPlay.IsLoaded;
 end;
 
 

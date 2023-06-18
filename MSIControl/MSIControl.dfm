@@ -541,7 +541,6 @@ object Form1: TForm1
   end
   object PopupMenu1: TPopupMenu
     AutoHotkeys = maManual
-    OnPopup = PopupMenu1Popup
     Left = 272
     object Toggle1: TMenuItem
       Caption = 'Toggle'
