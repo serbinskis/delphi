@@ -138,8 +138,8 @@ begin
     1: DDCCI.PowerOff(DeviceID);
     2: DDCCI.PowerToggle(DeviceID);
     3: DDCCI.SetBrightness(DeviceID, Value);
-    4: DDCCI.SetBrightness(DeviceID, DDCCI.GetBrightness(DeviceID)+Value);
-    5: DDCCI.SetBrightness(DeviceID, DDCCI.GetBrightness(DeviceID)-Value);
+    4: DDCCI.SetBrightness(DeviceID, DDCCI.GetBrightness(DeviceID)+Integer(Value));
+    5: DDCCI.SetBrightness(DeviceID, DDCCI.GetBrightness(DeviceID)-Integer(Value));
     6: DDCCI.SetValue(DeviceID, MonDynData.GetValue(i, 'Address'), MonDynData.GetValue(i, 'Value1'));
     7: begin
       Address := MonDynData.GetValue(i, 'Address');
