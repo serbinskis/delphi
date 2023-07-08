@@ -27,6 +27,15 @@ type
     Label6: TLabel;
     Label7: TTntLabel;
     TrackBar1: TXiTrackBar;
+    Label8: TLabel;
+    Label9: TLabel;
+    Label10: TLabel;
+    CustoBevel1: TCustoBevel;
+    Edit1: TTntEdit;
+    Edit2: TTntEdit;
+    CustoBevel2: TCustoBevel;
+    Edit3: TTntEdit;
+    CustoBevel3: TCustoBevel;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -43,6 +52,11 @@ type
     procedure HotKey1Enter(Sender: TObject);
     procedure HotKey1Exit(Sender: TObject);
     procedure TrackBar1Change(Sender: TObject);
+    procedure Edit1Exit(Sender: TObject);
+    procedure Edit1KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit2KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit2Exit(Sender: TObject);
+    procedure Edit3Exit(Sender: TObject);
   private
     { Private declarations }
   public
@@ -69,6 +83,7 @@ var
 procedure LoadMonitorSettings;
 procedure GenerateList;
 procedure GetMonitorList(List: TStrings);
+procedure ExecuteMonitor(i: Integer);
 
 implementation
 
@@ -80,15 +95,20 @@ var
   i, j: Integer;
   DeviceID: WideString;
   EnableOnStartup: Boolean;
+  HotkeySound: Boolean;
 begin
   DDCCI.Update;
+  HotkeySound := SettingsMon.HotkeySound;
+  SettingsMon.HotkeySound := False;
 
   for i := 0 to MonDynData.GetLength-1 do begin
     DeviceID := MonDynData.GetValue(i, 'DeviceID');
     EnableOnStartup := MonDynData.GetValue(i, 'EnableOnStartup');
     j := DDCCI.GetIndexByDeviceID(DeviceID);
-    if (j > -1) and (EnableOnStartup) then DDCCI.PowerOn(DeviceID);
+    if (j > -1) and (EnableOnStartup) then ExecuteMonitor(i);
   end;
+
+  SettingsMon.HotkeySound := HotkeySound;
 end;
 
 
@@ -105,16 +125,12 @@ begin
 end;
 
 
-procedure MonitorHotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
+procedure ExecuteMonitor(i: Integer);
 var
   DeviceID: WideString;
-  i, Value: Integer;
+  Value, Address, Value1, Value2: Variant;
 begin
-  i := MonDynData.FindIndex(0, 'HotKey', ShortCut);
-  if (i < 0) then Exit;
   DeviceID := MonDynData.GetValue(i, 'DeviceID');
-  if (DDCCI.Update.GetIndexByDeviceID(DeviceID) < 0) then Exit;
-  if SettingsMon.HotkeySound then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
   Value := MonDynData.GetValue(i, 'Value');
 
   case MonDynData.GetValue(i, 'Operation') of
@@ -124,7 +140,29 @@ begin
     3: DDCCI.SetBrightness(DeviceID, Value);
     4: DDCCI.SetBrightness(DeviceID, DDCCI.GetBrightness(DeviceID)+Value);
     5: DDCCI.SetBrightness(DeviceID, DDCCI.GetBrightness(DeviceID)-Value);
+    6: DDCCI.SetValue(DeviceID, MonDynData.GetValue(i, 'Address'), MonDynData.GetValue(i, 'Value1'));
+    7: begin
+      Address := MonDynData.GetValue(i, 'Address');
+      Value1 := MonDynData.GetValue(i, 'Value1');
+      Value2 := MonDynData.GetValue(i, 'Value2');
+      Value := DDCCI.GetValue(DeviceID, Address);
+      DDCCI.SetValue(DeviceID, Address, Q((Value = Value1), Value2, Value1));
+    end;
   else end;
+end;
+
+
+procedure MonitorHotKeyCallback(Key, ShortCut: Integer; CustomValue: Variant);
+var
+  DeviceID: WideString;
+  i: Integer;
+begin
+  i := MonDynData.FindIndex(0, 'HotKey', ShortCut);
+  if (i < 0) then Exit;
+  DeviceID := MonDynData.GetValue(i, 'DeviceID');
+  if (DDCCI.Update.GetIndexByDeviceID(DeviceID) < 0) then Exit;
+  if SettingsMon.HotkeySound then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
+  ExecuteMonitor(i);
 end;
 
 
@@ -136,7 +174,7 @@ var
   isStartup: Boolean;
 begin
   DDCCI := TDDCCI.Create(True);
-  MonDynData := TDynamicData.Create(['DeviceID', 'EnableOnStartup', 'Operation', 'Value', 'ID', 'HotKey']);
+  MonDynData := TDynamicData.Create(['DeviceID', 'EnableOnStartup', 'Operation', 'Value', 'Address', 'Value1', 'Value2', 'ID', 'HotKey']);
   MonDynData.Load(DEFAULT_ROOT_KEY, DEFAULT_MONITOR_KEY, 'BINARY_MONITORS', [loRemoveUnused, loOFDelete]);
 
   LoadRegistryBoolean(SettingsMon.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MONITOR_KEY, 'SETTING_HOTKEY_SOUND');
@@ -148,7 +186,7 @@ begin
     HotKey := MonDynData.GetValue(i, 'HotKey');
     EnableOnStartup := MonDynData.GetValue(i, 'EnableOnStartup');
     j := DDCCI.GetIndexByDeviceID(DeviceID);
-    if (j > -1) and (EnableOnStartup and isStartup) then DDCCI.PowerOn(DeviceID);
+    if (j > -1) and (EnableOnStartup and isStartup) then ExecuteMonitor(i);
     if (j > -1) and (HotKey > 0) then SetShortCut(MonitorHotKeyCallback, HotKey);
   end;
 
@@ -186,6 +224,25 @@ begin
   if (DDCCI.GetMonitorCount <> 0) and (MonDynData.GetLength = 0) then Form8.Button1Click(nil);
   Form8.ComboBox1.ItemIndex := 0;
   Form8.ComboBox1Change(nil);
+end;
+
+
+function ToHex(S: string): Byte;
+var
+  IsValid: Boolean;
+  i: Integer;
+begin  
+  S := UpperCase(S);
+  IsValid := True;
+
+  for i := 1 to Length(S) do begin
+    if not (S[I] in ['0'..'9', 'A'..'F']) then begin
+      IsValid := False;
+      Break;
+    end;
+  end;
+
+  Result := Q(IsValid, StrToIntDef('$' + S, 0), 0);
 end;
 
 
@@ -351,7 +408,8 @@ end;
 procedure TForm8.ComboBox3Change(Sender: TObject);
 var
   ID: Int64;
-  i, Value, Brightness: Integer;
+  Value: Variant;
+  i, Brightness: Integer;
   DeviceID: WideString;
 begin
   ID := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
@@ -361,6 +419,10 @@ begin
   Value := MonDynData.GetValue(i, 'Value');
   TrackBar1.Enabled := ((ComboBox3.ItemIndex >= 3) and (ComboBox3.ItemIndex <= 5));
 
+  Edit1.Enabled := ((ComboBox3.ItemIndex = 6) or (ComboBox3.ItemIndex = 7));
+  Edit2.Enabled := ((ComboBox3.ItemIndex = 6) or (ComboBox3.ItemIndex = 7));
+  Edit3.Enabled := (ComboBox3.ItemIndex = 7);
+
   if (TrackBar1.Enabled) then begin
     DeviceID := MonDynData.GetValue(i, 'DeviceID');
     Brightness := DDCCI.GetBrightness(DeviceID);
@@ -368,6 +430,18 @@ begin
     if (ComboBox3.ItemIndex = 3) then TrackBar1.Position := Q((Value < 0), Brightness, Value);
     if (ComboBox3.ItemIndex = 4) then TrackBar1.Position := Q((Value < 0), 5, Value);
     if (ComboBox3.ItemIndex = 5) then TrackBar1.Position := Q((Value < 0), 5, Value);
+  end;
+
+  if (Edit1.Enabled) then begin
+     Value := MonDynData.GetValue(i, 'Address');
+     Edit1.Text := IntToHex(Q((Value <> MonDynData.Null), Value, 0), 2);
+     Value := MonDynData.GetValue(i, 'Value1');
+     Edit2.Text := IntToStr(Q((Value <> MonDynData.Null), Value, 0));
+     Value := MonDynData.GetValue(i, 'Value2');
+     Edit3.Text := IntToStr(Q((Value <> MonDynData.Null), Value, 0));
+     Edit1Exit(Form8.Edit1);
+     Edit2Exit(Form8.Edit2);
+     Edit3Exit(Form8.Edit3);
   end;
 end;
 
@@ -409,6 +483,77 @@ begin
   Key := 0;
 end;
 
+
+procedure TForm8.Edit1Exit(Sender: TObject);
+var
+  id: Int64;
+  i: Integer;
+begin
+  TTNTEdit(Sender).Text := IntToHex(ToHex(TTNTEdit(Sender).Text), 2);
+  if (ComboBox1.ItemIndex < 0) then Exit;
+
+  id := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
+  i := MonDynData.FindIndex(0, 'ID', id);
+  MonDynData.SetValue(i, 'Address', ToHex(TTNTEdit(Sender).Text));
+end;
+
+
+procedure TForm8.Edit1KeyPress(Sender: TObject; var Key: Char);
+var
+  b0, b1, b2: Boolean;
+begin
+  b0 := (Length(TTNTEdit(Sender).Text) >= 2);
+  b1 := (Ord(Key) <> 8);
+  b2 := TTNTEdit(Sender).SelLength > 0;
+  Key := UpperCase(String(Key))[1];
+  if not (Key in ['0'..'9', 'A'..'F', #8]) then Key := #0;
+  if (b0 and b1 and (not b2)) then Key := #0;
+end;
+
+
+procedure TForm8.Edit2KeyPress(Sender: TObject; var Key: Char);
+var
+  b0, b1, b2: Boolean;
+begin
+  b0 := (Length(TTNTEdit(Sender).Text) >= 3);
+  b1 := (Ord(Key) <> 8);
+  b2 := TTNTEdit(Sender).SelLength > 0;
+  Key := UpperCase(String(Key))[1];
+  if not (Key in ['0'..'9', #8]) then Key := #0;
+  if (b0 and b1 and (not b2)) then Key := #0;
+end;
+
+
+procedure TForm8.Edit2Exit(Sender: TObject);
+var
+  Value: Integer;
+  id: Int64;
+begin
+  Value := StrToIntDef(TTNTEdit(Sender).Text, 0);
+  if (Value > 255) then Value := 255;
+  if (Value < 0) then Value := 0;
+  TTNTEdit(Sender).Text := IntToStr(Value);
+
+  id := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
+  id := MonDynData.FindIndex(0, 'ID', id);
+  MonDynData.SetValue(id, 'Value1', Value);
+end;
+
+
+procedure TForm8.Edit3Exit(Sender: TObject);
+var
+  Value: Integer;
+  id: Int64;
+begin
+  Value := StrToIntDef(TTNTEdit(Sender).Text, 0);
+  if (Value > 255) then Value := 255;
+  if (Value < 0) then Value := 0;
+  TTNTEdit(Sender).Text := IntToStr(Value);
+
+  id := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
+  id := MonDynData.FindIndex(0, 'ID', id);
+  MonDynData.SetValue(id, 'Value2', Value);
+end;
 
 initialization
   SettingsMon.HotkeySound := True;

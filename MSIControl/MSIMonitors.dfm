@@ -3,7 +3,7 @@ object Form8: TForm8
   Top = 125
   BorderStyle = bsDialog
   Caption = 'Monitors'
-  ClientHeight = 350
+  ClientHeight = 411
   ClientWidth = 269
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -81,7 +81,7 @@ object Form8: TForm8
   end
   object Label6: TLabel
     Left = 8
-    Top = 288
+    Top = 352
     Width = 59
     Height = 18
     Caption = 'SETTINGS'
@@ -94,7 +94,7 @@ object Form8: TForm8
   end
   object Bevel2: TCustoBevel
     Left = 3
-    Top = 311
+    Top = 375
     Width = 263
     Height = 1
     Shape = bsFrame
@@ -133,6 +133,69 @@ object Form8: TForm8
     Font.Name = 'Calibri'
     Font.Style = [fsBold]
     ParentFont = False
+  end
+  object Label8: TLabel
+    Left = 24
+    Top = 312
+    Width = 47
+    Height = 14
+    Caption = 'Address:'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Label9: TLabel
+    Left = 136
+    Top = 296
+    Width = 43
+    Height = 14
+    Caption = 'Value 1:'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Label10: TLabel
+    Left = 136
+    Top = 328
+    Width = 43
+    Height = 14
+    Caption = 'Value 2:'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+  end
+  object CustoBevel1: TCustoBevel
+    Left = 80
+    Top = 307
+    Width = 33
+    Height = 22
+    Shape = bsFrame
+    Color = clBlack
+  end
+  object CustoBevel2: TCustoBevel
+    Left = 192
+    Top = 291
+    Width = 41
+    Height = 22
+    Shape = bsFrame
+    Color = clBlack
+  end
+  object CustoBevel3: TCustoBevel
+    Left = 192
+    Top = 323
+    Width = 41
+    Height = 22
+    Shape = bsFrame
+    Color = clBlack
   end
   object HotKey1: TCustoHotKey
     Left = 88
@@ -196,7 +259,9 @@ object Form8: TForm8
       'Toggle On/Off'
       'Set Brightness'
       'Increase Brightness'
-      'Decrease Brightness')
+      'Decrease Brightness'
+      'Set Value'
+      'Toggle Value')
     ParentFont = False
     TabOrder = 2
     ItemIndex = -1
@@ -312,7 +377,7 @@ object Form8: TForm8
   end
   object CheckBox2: TFlatCheckBox
     Left = 8
-    Top = 322
+    Top = 386
     Width = 145
     Height = 17
     Caption = 'Enable Hotkey Sounds'
@@ -338,7 +403,7 @@ object Form8: TForm8
     Top = 258
     Width = 193
     Height = 17
-    Caption = 'Turn On On Shutdown  && Startup'
+    Caption = 'Execute On Startup'
     Color = clLime
     ColorFocused = clBlue
     ColorDown = clAqua
@@ -395,5 +460,68 @@ object Form8: TForm8
     ParentShowHint = False
     ShowHint = True
     OnChange = TrackBar1Change
+  end
+  object Edit1: TTntEdit
+    Left = 80
+    Top = 307
+    Width = 33
+    Height = 22
+    AutoSize = False
+    Color = clWhite
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    MaxLength = 30
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 9
+    Text = '00'
+    OnExit = Edit1Exit
+    OnKeyPress = Edit1KeyPress
+  end
+  object Edit2: TTntEdit
+    Left = 192
+    Top = 291
+    Width = 41
+    Height = 22
+    AutoSize = False
+    Color = clWhite
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    MaxLength = 30
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 10
+    Text = '0'
+    OnExit = Edit2Exit
+    OnKeyPress = Edit2KeyPress
+  end
+  object Edit3: TTntEdit
+    Left = 192
+    Top = 323
+    Width = 41
+    Height = 22
+    AutoSize = False
+    Color = clWhite
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -12
+    Font.Name = 'Calibri'
+    Font.Style = []
+    MaxLength = 30
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 11
+    Text = '0'
+    OnExit = Edit3Exit
+    OnKeyPress = Edit2KeyPress
   end
 end
