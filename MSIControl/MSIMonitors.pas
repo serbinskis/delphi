@@ -210,6 +210,7 @@ begin
   Form8.Button2.Enabled := ((DDCCI.GetMonitorCount) <> 0);
   Form8.ComboBox1.Enabled := ((DDCCI.GetMonitorCount) <> 0);
   Form8.HotKey1.Enabled := ((DDCCI.GetMonitorCount) <> 0);
+  Form8.ComboBox1.Enabled := ((DDCCI.GetMonitorCount) <> 0);
   Form8.ComboBox2.Enabled := ((DDCCI.GetMonitorCount) <> 0);
   Form8.ComboBox3.Enabled := ((DDCCI.GetMonitorCount) <> 0);
 
