@@ -2,12 +2,12 @@ object Form1: TForm1
   Left = 192
   Top = 125
   BorderStyle = bsNone
-  ClientHeight = 285
-  ClientWidth = 361
+  ClientHeight = 265
+  ClientWidth = 335
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
-  Font.Height = -12
+  Font.Height = -11
   Font.Name = 'Calibri'
   Font.Style = []
   FormStyle = fsStayOnTop
@@ -19,111 +19,111 @@ object Form1: TForm1
   OnHide = FormHide
   OnPaint = FormPaint
   OnShow = FormShow
-  PixelsPerInch = 107
-  TextHeight = 14
+  PixelsPerInch = 96
+  TextHeight = 13
   object Bevel1: TCustoBevel
     Left = 3
-    Top = 32
-    Width = 350
+    Top = 30
+    Width = 325
     Height = 1
     Shape = bsFrame
     Color = clBlack
   end
   object Bevel2: TCustoBevel
     Left = 3
-    Top = 102
-    Width = 350
+    Top = 95
+    Width = 325
     Height = 1
     Shape = bsFrame
     Color = clBlack
   end
   object Bevel3: TCustoBevel
     Left = 3
-    Top = 171
-    Width = 350
+    Top = 159
+    Width = 325
     Height = 1
     Shape = bsFrame
     Color = clBlack
   end
   object Label1: TLabel
-    Left = 9
-    Top = 9
-    Width = 62
-    Height = 19
+    Left = 8
+    Top = 8
+    Width = 56
+    Height = 18
     Caption = 'HOTKEYS'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -16
+    Font.Height = -15
     Font.Name = 'Calibri'
     Font.Style = [fsBold]
     ParentFont = False
   end
   object Label2: TLabel
-    Left = 9
-    Top = 78
-    Width = 74
-    Height = 19
+    Left = 8
+    Top = 72
+    Width = 66
+    Height = 18
     Caption = 'FAN SPEED'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -16
+    Font.Height = -15
     Font.Name = 'Calibri'
     Font.Style = [fsBold]
     ParentFont = False
   end
   object Label3: TLabel
-    Left = 9
-    Top = 113
-    Width = 35
-    Height = 19
+    Left = 8
+    Top = 105
+    Width = 33
+    Height = 18
     Alignment = taCenter
     AutoSize = False
     Caption = '50%'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -16
+    Font.Height = -15
     Font.Name = 'Calibri'
     Font.Style = [fsBold]
     ParentFont = False
   end
   object Label4: TLabel
-    Left = 9
-    Top = 146
-    Width = 65
-    Height = 19
+    Left = 8
+    Top = 136
+    Width = 59
+    Height = 18
     Caption = 'SETTINGS'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -16
+    Font.Height = -15
     Font.Name = 'Calibri'
     Font.Style = [fsBold]
     ParentFont = False
   end
   object ComboBox1: TFlatComboBox
-    Left = 155
-    Top = 42
-    Width = 191
-    Height = 23
+    Left = 144
+    Top = 39
+    Width = 177
+    Height = 22
     Style = csDropDownList
     Color = clWhite
     ColorArrowBackground = clWhite
     ColorBorder = clBlack
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -13
+    Font.Height = -12
     Font.Name = 'Calibri'
     Font.Style = []
-    ItemHeight = 15
+    ItemHeight = 14
     ParentFont = False
     TabOrder = 0
     ItemIndex = -1
     OnChange = ComboBox1Change
   end
   object HotKey1: TCustoHotKey
-    Left = 9
-    Top = 42
-    Width = 139
-    Height = 25
+    Left = 8
+    Top = 39
+    Width = 129
+    Height = 23
     HotKey = 0
     InvalidKeys = []
     Modifiers = []
@@ -134,15 +134,15 @@ object Form1: TForm1
     Color = clWhite
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -13
+    Font.Height = -12
     Font.Name = 'Calibri'
     Font.Style = []
   end
   object TrackBar1: TXiTrackBar
-    Left = 52
-    Top = 106
-    Width = 190
-    Height = 35
+    Left = 48
+    Top = 98
+    Width = 177
+    Height = 33
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -180,10 +180,10 @@ object Form1: TForm1
     OnMouseUp = TrackBar1MouseUp
   end
   object Button1: TXiButton
-    Left = 11
-    Top = 180
-    Width = 78
-    Height = 27
+    Left = 10
+    Top = 167
+    Width = 73
+    Height = 25
     HelpKeyword = 'Theme'
     ColorFace = clBlue
     ColorGrad = clRed
@@ -221,20 +221,20 @@ object Form1: TForm1
     OnClick = Button1Click
   end
   object ComboBox2: TFlatComboBox
-    Left = 250
-    Top = 111
-    Width = 96
-    Height = 23
+    Left = 232
+    Top = 103
+    Width = 89
+    Height = 22
     Style = csDropDownList
     Color = clWhite
     ColorArrowBackground = clWhite
     ColorBorder = clBlack
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -13
+    Font.Height = -12
     Font.Name = 'Calibri'
     Font.Style = []
-    ItemHeight = 15
+    ItemHeight = 14
     Items.Strings = (
       'Auto'
       'Basic'
@@ -246,30 +246,30 @@ object Form1: TForm1
     OnChange = ComboBox2Change
   end
   object ComboBox3: TFlatComboBox
-    Left = 11
-    Top = 251
-    Width = 309
-    Height = 23
+    Left = 10
+    Top = 233
+    Width = 287
+    Height = 22
     Style = csDropDownList
     Color = clWhite
     ColorArrowBackground = clWhite
     ColorBorder = clBlack
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -13
+    Font.Height = -12
     Font.Name = 'Calibri'
     Font.Style = []
-    ItemHeight = 15
+    ItemHeight = 14
     ParentFont = False
     TabOrder = 5
     ItemIndex = -1
     OnChange = ComboBox3Change
   end
   object CheckBox1: TFlatCheckBox
-    Left = 327
-    Top = 253
-    Width = 19
-    Height = 18
+    Left = 304
+    Top = 235
+    Width = 17
+    Height = 17
     Checked = True
     Color = clLime
     ColorFocused = clBlue
@@ -278,7 +278,7 @@ object Form1: TForm1
     ColorBorder = clFuchsia
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
-    Font.Height = -13
+    Font.Height = -12
     Font.Name = 'Calibri'
     Font.Style = []
     ParentColor = False
@@ -288,10 +288,10 @@ object Form1: TForm1
     OnMouseUp = CheckBox1MouseUp
   end
   object Button2: TXiButton
-    Left = 97
-    Top = 180
-    Width = 79
-    Height = 27
+    Left = 90
+    Top = 167
+    Width = 73
+    Height = 25
     HelpType = htKeyword
     ColorFace = clBlue
     ColorGrad = clRed
@@ -330,10 +330,10 @@ object Form1: TForm1
     OnClick = Button2Click
   end
   object Button3: TXiButton
-    Left = 183
-    Top = 180
-    Width = 79
-    Height = 27
+    Left = 170
+    Top = 167
+    Width = 73
+    Height = 25
     HelpType = htKeyword
     ColorFace = clBlue
     ColorGrad = clRed
@@ -372,10 +372,10 @@ object Form1: TForm1
     OnClick = Button3Click
   end
   object Button4: TXiButton
-    Left = 269
-    Top = 180
-    Width = 79
-    Height = 27
+    Left = 250
+    Top = 167
+    Width = 73
+    Height = 25
     HelpType = htKeyword
     ColorFace = clBlue
     ColorGrad = clRed
@@ -414,10 +414,10 @@ object Form1: TForm1
     OnClick = Button4Click
   end
   object Button5: TXiButton
-    Left = 11
-    Top = 214
-    Width = 165
-    Height = 27
+    Left = 10
+    Top = 199
+    Width = 153
+    Height = 25
     HelpType = htKeyword
     ColorFace = clBlue
     ColorGrad = clRed
@@ -456,10 +456,10 @@ object Form1: TForm1
     OnClick = Button5Click
   end
   object Button6: TXiButton
-    Left = 183
-    Top = 214
-    Width = 79
-    Height = 27
+    Left = 170
+    Top = 199
+    Width = 73
+    Height = 25
     HelpType = htKeyword
     ColorFace = clBlue
     ColorGrad = clRed
@@ -498,10 +498,10 @@ object Form1: TForm1
     OnClick = Button6Click
   end
   object Button7: TXiButton
-    Left = 269
-    Top = 214
-    Width = 79
-    Height = 27
+    Left = 250
+    Top = 199
+    Width = 73
+    Height = 25
     HelpType = htKeyword
     ColorFace = clBlue
     ColorGrad = clRed
