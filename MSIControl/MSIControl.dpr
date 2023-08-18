@@ -10,7 +10,8 @@ uses
   MSIWakeOnLan in 'MSIWakeOnLan.pas' {Form6},
   MSIKeyboard in 'MSIKeyboard.pas' {Form7},
   MSIMonitors in 'MSIMonitors.pas' {Form8},
-  MSIPowerPlan in 'MSIPowerPlan.pas' {Form9};
+  MSIPowerPlan in 'MSIPowerPlan.pas' {Form9},
+  MSIAutoSignIn in 'MSIAutoSignIn.pas' {Form10};
 
 {$R MSIControl.res}
 
@@ -38,5 +39,6 @@ begin
   Application.CreateForm(TForm7, Form7);
   Application.CreateForm(TForm8, Form8);
   Application.CreateForm(TForm9, Form9);
+  Application.CreateForm(TForm10, Form10);
   Application.Run;
 end.
