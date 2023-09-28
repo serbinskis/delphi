@@ -33,6 +33,7 @@ uses MSIControl;
 procedure TEventHandler.KeyboardToggleClick(Sender: TObject);
 begin
   kDisabled := not kDisabled;
+  if (kDisabled) then StartKeyboardHook else StopKeyboardHook;
   DisableKeyboard(kDisabled);
 end;
 
@@ -40,8 +41,6 @@ procedure TForm7.FormCreate(Sender: TObject);
 var
   MenuItem: TMenuItem;
 begin
-  StartKeyboardHook;
-
   EventHandler := TEventHandler.Create;
   MenuItem := TMenuItem.Create(nil);
   MenuItem.Caption := 'Toggle Keyboard';

@@ -238,7 +238,6 @@ begin
 
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_DISABLE_WEBCAM', 'Value');
   if (v > 0) then MSI.SetWebcamEnabled(False);
-
   if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'FAN_MODE') then MSI.SetFanMode(TModeType(v));
 
   ComboBox1.ItemIndex := 0;

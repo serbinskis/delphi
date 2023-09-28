@@ -107,7 +107,7 @@ end;
 
 procedure OnDeviceChange(wParam: Integer);
 begin
-  if (wParam <> 7) or not Form2.Visible then Exit;
+  if ((wParam <> 7) or not Form2.Visible) then Exit;
 
   Form2.HotKey1.OnExit := nil;
   Form2.HotKey1.HotKey := mOldHotKey;
@@ -124,7 +124,7 @@ var
   mVolume, Volume, i: Integer;
   Fixed, isDefault: Boolean;
 begin
-  if Msg <> MM_MIXM_CONTROL_CHANGE then Exit;
+  if (Msg <> MM_MIXM_CONTROL_CHANGE) then Exit;
   isDefault := uAudioMixer.isDefault(MxId);
 
   if isDefault
@@ -150,7 +150,7 @@ var
 begin
   MicDynData := TDynamicData.Create(['Name', 'Operation', 'Volume', 'Fixed', 'HotKey']);
   MicDynData.Load(DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'BINARY_MICROPHONES', [loRemoveUnused, loOFDelete]);
-  if (MicDynData.GetLength) = 0 then Form2.Button1Click(nil);
+  if (MicDynData.GetLength = 0) then Form2.Button1Click(nil);
 
   LoadRegistryBoolean(SettingsMic.HotkeySound, DEFAULT_ROOT_KEY, DEFAULT_MICROPHONE_KEY, 'SETTING_HOTKEY_SOUND');
   Form2.CheckBox2.Checked := SettingsMic.HotkeySound;

@@ -204,7 +204,7 @@ var
 begin
   ShadowPlay := TShadowPlay.Create;
   Form1.Button3.Enabled := ShadowPlay.IsLoaded;
-  if not ShadowPlay.IsLoaded then Exit;
+  if (not ShadowPlay.IsLoaded) then Exit;
 
   ShadowDynData := TDynamicData.Create(['Process', 'Type']);
   ShadowDynData.Load(DEFAULT_ROOT_KEY, DEFAULT_SP_KEY, 'BINARY_SHADOWPLAY', [loRemoveUnused, loOFDelete]);

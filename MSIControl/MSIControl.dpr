@@ -22,6 +22,7 @@ begin
   end;
 
   if InstanceExists('MSIControl') then begin
+    if (AnsiLowerCase(ParamStr(1)) = '-silent') then Exit;
     Application.Title := 'MSIControl';
     ShowMessage('MSIControl is already running.');
     Exit;
