@@ -18,4 +18,15 @@ object Form1: TForm1
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
+  object ScrollBar1: TScrollBar
+    Left = 732
+    Top = 0
+    Width = 17
+    Height = 436
+    Align = alRight
+    Kind = sbVertical
+    PageSize = 0
+    TabOrder = 0
+    OnChange = ScrollBar1Change
+  end
 end

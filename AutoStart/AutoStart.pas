@@ -17,6 +17,7 @@ const
 
 type
   TForm1 = class(TForm)
+    ScrollBar1: TScrollBar;
     procedure EnableClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure NameChange(Sender: TObject);
@@ -27,6 +28,7 @@ type
     procedure AddButton(Sender: TObject);
     procedure RebuildEntry(var Msg : TMessage); message WM_REBUILD_CONTROL;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure ScrollBar1Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -36,6 +38,7 @@ type
 var
   Form1: TForm1;
   DynamicData: TDynamicData;
+  BButton: TButton;
 
 implementation
 
@@ -75,14 +78,14 @@ end;
 //Countdown
 
 
-procedure CreateEntry(Enabled: Boolean; Name, CommandLine: WideString; Countdown: Integer);
+procedure CreateEntry(Index: Integer; Enabled: Boolean; Name, CommandLine: WideString; Countdown: Integer);
 var
   Count: Integer;
   CheckBox: TTNTCheckBox;
   Edit: TTNTEdit;
   Button: TTNTButton;
 begin
-  Count := Form1.ComponentCount div COMPONENETS_PER_ROW;
+  Count := Index;
 
   //Enabled
   CheckBox := TTNTCheckBox.Create(Form1);
@@ -145,6 +148,8 @@ begin
   Button.Height := 23;
   Button.Left := 716;
   Button.Top := 9 + (21*Count + 5*Count);
+
+  Form1.ScrollBar1.BringToFront;
 end;
 
 
@@ -154,15 +159,26 @@ var
   Button: TTNTButton;
   Name, CommandLine: WideString;
   Enabled: Boolean;
+  Components: TList;
 begin
-  while (Form1.ComponentCount <> 0) do Form1.Components[0].Destroy;
+  Form1.Visible := False;
+  Components := Tlist.Create;
+
+  for i := 0 to Form1.ComponentCount-1 do begin
+    if (Form1.Components[i].Name = 'ScrollBar1') then continue;
+    Components.Add(Form1.Components[i]);
+  end;
+
+  for i := 0 to Components.Count-1 do begin
+    TComponent(Components.Items[i]).Destroy;
+  end;
 
   for i := 0 to DynamicData.GetLength-1 do begin
     Enabled := DynamicData.GetValue(i, 'Enabled');
     Name := DynamicData.GetValue(i, 'Name');
     CommandLine := DynamicData.GetValue(i, 'CommandLine');
     Countdown := DynamicData.GetValue(i, 'Countdown');
-    CreateEntry(Enabled, Name, CommandLine, Countdown);
+    CreateEntry(i, Enabled, Name, CommandLine, Countdown);
   end;
 
   i := Form1.ComponentCount div COMPONENETS_PER_ROW;
@@ -177,6 +193,12 @@ begin
   Button.Height := 23;
   Button.Left := 6;
   Button.Top := 14 + (21*i + 5*i);
+
+  BButton := Button;
+  Form1.ScrollBar1.Visible := (Button.Top+Button.Height) >= Form1.ClientHeight;
+  Form1.Width := Q(Form1.ScrollBar1.Visible, 770, 755);
+  Form1.ScrollBar1Change(nil);
+  Form1.Visible := True;
 end;
 
 
@@ -276,7 +298,7 @@ procedure TForm1.DeleteButton(Sender: TObject);
 var
   i: Integer;
 begin
-  i := (TTNTEDit(Sender).ComponentIndex div COMPONENETS_PER_ROW);
+  i := (TTNTEDit(Sender).ComponentIndex div COMPONENETS_PER_ROW)-1;
   DynamicData.DeleteData(i);
   PostMessage(Form1.WindowHandle, WM_REBUILD_CONTROL, 0, 0);
 end;
@@ -284,11 +306,24 @@ end;
 
 procedure TForm1.AddButton(Sender: TObject);
 begin
-  TControl(Sender).Top := TControl(Sender).Top + 26;
+  Form1.ScrollBar1.Visible := (TControl(Sender).Top+TControl(Sender).Height) >= Form1.ClientHeight;
   DynamicData.CreateData(-1, -1, ['Name', 'CommandLine', 'Countdown', 'Enabled'], ['', '', DEFAULT_COUNTDOWN_TIME, False]);
-  CreateEntry(False, '', '', DEFAULT_COUNTDOWN_TIME);
+  PostMessage(Form1.WindowHandle, WM_REBUILD_CONTROL, 0, 0);
 end;
 
 
+procedure TForm1.ScrollBar1Change(Sender: TObject);
+var
+  i, x: Integer;
+begin
+  for i := 0 to Form1.ComponentCount-1 do begin
+    if (TControl(Form1.Components[i]).Hint = '') then TControl(Form1.Components[i]).Hint := IntToStr(TControl(Form1.Components[i]).Top);
+  end;
+
+  for i := 0 to Form1.ComponentCount-1 do begin
+     x := (StrToInt(BBUtton.Hint) + BBUtton.Height + 10) - Form1.ClientHeight;
+     TControl(Form1.Components[i]).Top := StrToInt(TControl(Form1.Components[i]).Hint) - Round(x * (ScrollBar1.Position/ScrollBar1.Max));
+  end;
+end;
 
 end.
