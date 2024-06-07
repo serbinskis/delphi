@@ -11,7 +11,8 @@ uses
   MSIKeyboard in 'MSIKeyboard.pas' {Form7},
   MSIMonitors in 'MSIMonitors.pas' {Form8},
   MSIPowerPlan in 'MSIPowerPlan.pas' {Form9},
-  MSIAutoSignIn in 'MSIAutoSignIn.pas' {Form10};
+  MSIAutoSignIn in 'MSIAutoSignIn.pas' {Form10},
+  MSITemporary in 'MSITemporary.pas' {Form11};
 
 {$R MSIControl.res}
 
@@ -41,5 +42,6 @@ begin
   Application.CreateForm(TForm8, Form8);
   Application.CreateForm(TForm9, Form9);
   Application.CreateForm(TForm10, Form10);
+  Application.CreateForm(TForm11, Form11);
   Application.Run;
 end.

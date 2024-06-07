@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Dialogs, Classes, Forms, Menus, MMSystem, Graphics, ShellAPI,
   ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
   XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, WinXP, MSIThemes,
-  uHotKey, uNotify, uReadConsole, uDynamicData, MSIController, Functions;
+  uHotKey, uNotify, uReadConsole, uDynamicData, MSIController, Functions,
+  TntMenus;
 
 type
   TForm1 = class(TForm)
@@ -30,7 +31,7 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
-    PopupMenu1: TPopupMenu;
+    PopupMenu1: TTntPopupMenu;
     Restart1: TMenuItem;
     Timer1: TTimer;
     Toggle1: TMenuItem;
@@ -85,6 +86,7 @@ var
   HotkeyDynData: TDynamicData;
   SettingDynData: TDynamicData;
   ShutdownCallbacks: TList;
+  TrayIconCallbacks: TList;
   MSI: TMSIController;
   AppInactive: Boolean = False;
   Counter: Integer;
@@ -161,11 +163,13 @@ end;
 
 procedure TForm1.TrayIcon1Action(Sender: TObject; Code: Integer);
 var
+  i: Integer;
   Point: TPoint;
 begin
   case Code of
     WM_RBUTTONUP: begin
       if Form1.Visible then Exit;
+      for i := 0 to TrayIconCallbacks.Count-1 do TProcedure(TrayIconCallbacks.Items[i]);
       GetCursorPos(Point);
       SetForegroundWindow(Application.Handle);
       Application.ProcessMessages;
@@ -194,6 +198,7 @@ begin
   Form1.Caption := Application.Title;
   MSI := TMSIController.Create;
   ShutdownCallbacks := TList.Create;
+  TrayIconCallbacks := TList.Create;
 
   if not MSI.isECLoaded(False) then begin
     ShowMessage('There was an error initializing driver.');

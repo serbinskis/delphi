@@ -179,14 +179,14 @@ begin
 
   for j := 0 to Form.ComponentCount-1 do begin
     Name := Form.Components[j].ClassName;
-    if Name = 'TCustoBevel' then ChangeBevelTheme(TCustoBevel(Form.Components[j]), WhiteMode);
-    if Name = 'TLabel' then ChangeLabelTheme(TLabel(Form.Components[j]), WhiteMode);
-    if Name = 'TFlatComboBox' then ChangeComboBoxTheme(TFlatComboBox(Form.Components[j]), WhiteMode);
-    if Name = 'TFlatCheckBox' then ChangeCheckBoxTheme(TFlatCheckBox(Form.Components[j]), WhiteMode);
-    if Name = 'TCustoHotKey' then ChangeHotKeyTheme(TCustoHotKey(Form.Components[j]), WhiteMode);
-    if Name = 'TXiTrackBar' then ChangeTrackBarTheme(TXiTrackBar(Form.Components[j]), WhiteMode);
-    if Name = 'TXiButton' then ChangeButtonTheme(TXiButton(Form.Components[j]), WhiteMode);
-    if Name = 'TTntEdit' then ChangeEditTheme(TTntEdit(Form.Components[j]), WhiteMode);
+    if (Name = 'TCustoBevel') then ChangeBevelTheme(TCustoBevel(Form.Components[j]), WhiteMode);
+    if (Name = 'TLabel') then ChangeLabelTheme(TLabel(Form.Components[j]), WhiteMode);
+    if (Name = 'TFlatComboBox') then ChangeComboBoxTheme(TFlatComboBox(Form.Components[j]), WhiteMode);
+    if (Name = 'TFlatCheckBox') then ChangeCheckBoxTheme(TFlatCheckBox(Form.Components[j]), WhiteMode);
+    if (Name = 'TCustoHotKey') then ChangeHotKeyTheme(TCustoHotKey(Form.Components[j]), WhiteMode);
+    if (Name = 'TXiTrackBar') then ChangeTrackBarTheme(TXiTrackBar(Form.Components[j]), WhiteMode);
+    if (Name = 'TXiButton') then ChangeButtonTheme(TXiButton(Form.Components[j]), WhiteMode);
+    if (Name = 'TTntEdit') then ChangeEditTheme(TTntEdit(Form.Components[j]), WhiteMode);
     if (Name = 'TXiButton') and (TButton(Form.Components[j]).HelpKeyword = 'Theme') then TButton(Form.Components[j]).Caption := ThemeCaption[Integer(Theme)] + ' Theme';
   end;
 end;

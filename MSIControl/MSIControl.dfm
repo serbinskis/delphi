@@ -539,7 +539,7 @@ object Form1: TForm1
     TabOrder = 12
     OnClick = Button7Click
   end
-  object PopupMenu1: TPopupMenu
+  object PopupMenu1: TTntPopupMenu
     AutoHotkeys = maManual
     Left = 272
     object Toggle1: TMenuItem

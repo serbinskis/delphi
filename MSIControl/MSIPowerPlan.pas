@@ -71,7 +71,7 @@ var
 begin
   PowerPlan := TPowerPlan.Create;
   EventHandler := TEventHandler.Create;
-  Form1.TrayIcon1.OnRightDown := Form9.TrayIcon1RightDown;
+  MSIControl.TrayIconCallbacks.Add(@TForm9.TrayIcon1RightDown);
 
   MenuItem := TMenuItem.Create(nil);
   MenuItem.Caption := 'Power Plan';
