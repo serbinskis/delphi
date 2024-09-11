@@ -129,7 +129,7 @@ end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-  ShellExecute(0, 'open', PChar('https://wobbychip.github.io/'), nil, nil, SW_SHOWMAXIMIZED);
+  ShellExecute(0, 'open', PChar('https://serbinskis.github.io/'), nil, nil, SW_SHOWMAXIMIZED);
 end;
 
 
