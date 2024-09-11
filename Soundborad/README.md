@@ -4,13 +4,16 @@ This is the source code of Soundboard. Soundboard is an application that will pl
 
 <p align="center"><img width="352" height="579" src="https://i.imgur.com/nv3h5Zn.png"></p>
 
+## Story
+
+One day I was playing with friends and decided to do a little joke, but every single soundboard I downloaded would either be complicated or would require additional setup, so I decided to make my soundboard that could be fully controlled only using numpad, so that I would not be limited by about of shortcuts.
+
 ## Features
 
 - Portable.
 - Hotkeys are configurable.
 - Resizable window height.
 - Supports only WAV and MP3.
-- Download audio from YouTube.
 - Ability to select favorite sound.
 - Save sound in memory.
 - Loop sound.
