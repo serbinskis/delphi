@@ -1,4 +1,4 @@
-program MBR_UEFI_Note_Builder_Created_By_WobbyChip;
+program MBR_UEFI_Note_Builder_Created_By_Serbinskis;
 
 uses
   Forms,

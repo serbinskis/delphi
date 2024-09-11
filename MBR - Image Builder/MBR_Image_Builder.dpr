@@ -1,4 +1,4 @@
-program MBRImageBuilder_Created_By_WobbyChip;
+program MBRImageBuilder_Created_By_Serbinskis;
 
 uses
   Windows, Forms,
