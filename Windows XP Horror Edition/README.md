@@ -21,4 +21,4 @@ Pressing CTRL+SHIFT+ALT+H+L+3 will get you Half Life 3 reference.
 
 ## Download
 
-You can download the malware [here](https://github.com/WobbyChip/Delphi/raw/master/Windows%20XP%20Horror%20Edition/WindowsXPHorrorEdition.exe).
+You can download the malware [here](https://github.com/serbinskis/delphi/raw/master/Windows%20XP%20Horror%20Edition/WindowsXPHorrorEdition.exe).
