@@ -262,19 +262,11 @@ object Form1: TForm1
       Caption = 'Settings'
       OnClick = Settings1Click
     end
-    object About1: TMenuItem
-      Caption = 'About'
-      OnClick = About1Click
-    end
     object Tools1: TMenuItem
       Caption = 'Tools'
       object SaveInArchive1: TMenuItem
         Caption = 'Save Audio In Archive'
         OnClick = SaveInArchive1Click
-      end
-      object AddFromYouTube1: TMenuItem
-        Caption = 'Add Audio From YouTube'
-        OnClick = AddFromYouTube1Click
       end
       object SaveCurrentState1: TMenuItem
         Caption = 'Save Current State'
@@ -284,6 +276,10 @@ object Form1: TForm1
         Caption = 'Exit Without Save'
         OnClick = ExitWithoutSave1Click
       end
+    end
+    object About1: TMenuItem
+      Caption = 'About'
+      OnClick = About1Click
     end
   end
   object PopupMenu1: TPopupMenu

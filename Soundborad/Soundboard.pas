@@ -10,7 +10,6 @@ uses
 type
   TForm1 = class(TForm)
     About1: TMenuItem;
-    AddFromYouTube1: TMenuItem;
     ChangeName1: TMenuItem;
     CheckBox1: TFlatCheckBox;
     ConvertToFile1: TMenuItem;
@@ -48,7 +47,6 @@ type
     TrackBar1: TXiTrackBar;
     TrackBar2: TXiTrackBar;
     procedure About1Click(Sender: TObject);
-    procedure AddFromYouTube1Click(Sender: TObject);
     procedure ChangeName1Click(Sender: TObject);
     procedure ChangeVertical(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
@@ -182,7 +180,7 @@ procedure BuildList;
 
 implementation
 
-uses Settings, Archiving, YouTube;
+uses Settings, Archiving;
 
 {$R *.dfm}
 
@@ -496,7 +494,7 @@ end;
 
 procedure TForm1.About1Click(Sender: TObject);
 begin
-  ShellExecute(0, 'open', 'https://wobbychip.github.io/', nil, nil, SW_SHOWMAXIMIZED);
+  ShellExecute(0, 'open', 'https://serbinskis.github.io/', nil, nil, SW_SHOWMAXIMIZED);
 end;
 
 
@@ -620,12 +618,6 @@ begin
     Form1.Enabled := True;
     ZipArchive.CloseArchive;
   end;
-end;
-
-
-procedure TForm1.AddFromYouTube1Click(Sender: TObject);
-begin
-  Form4.ShowModal;
 end;
 
 
