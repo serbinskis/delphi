@@ -14,4 +14,4 @@ This is the source code of Clipboard History. Clipboard History is an applicatio
 - Set maximum number of items.
 
 ## Download
-You can download the MSIControl [here](https://github.com/serbinskis/delphi/raw/master/ClipboardHistory/ClipboardHistory.exe).
+You can download the Clipboard History [here](https://github.com/serbinskis/delphi/raw/master/ClipboardHistory/ClipboardHistory.exe).
