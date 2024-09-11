@@ -15,4 +15,4 @@ This is the source code of builder MBR/UEFI - Note Builder. MBR/UEFI - Note Buil
 
 ## Download
 
-You can download the builder [here](https://github.com/WobbyChip/Delphi/raw/master/MBR%20UEFI%20-%20Note%20Builder/MBR_UEFI_Note_Builder.exe).
+You can download the builder [here](https://github.com/serbinskis/delphi/raw/master/MBR%20UEFI%20-%20Note%20Builder/MBR_UEFI_Note_Builder.exe).
