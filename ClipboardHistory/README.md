@@ -7,6 +7,7 @@ This is the source code of Clipboard History. Clipboard History is an applicatio
 ## Features
 
 - Portable.
+- Tray popup.
 - Prevent duplicates.
 - Remove items Older Than.
 - Prevent texts bigger than.
