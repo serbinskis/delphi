@@ -116,7 +116,7 @@ end;
 
 procedure TForm1.Button6Click(Sender: TObject);
 begin
-  ShellExecute(0, 'open', PChar('https://wobbychip.github.io/'), nil, nil, SW_SHOWMAXIMIZED);
+  ShellExecute(0, 'open', PChar('https://serbinskis.github.io/'), nil, nil, SW_SHOWMAXIMIZED);
 end;
 
 
@@ -307,7 +307,7 @@ begin
   end;
 
   //Save byte array to disk.img to test with QEMU
-  SaveByteArray(ArrayOfByte, GetEnvironmentVariable('TEMP') + '\QEMU\disk.img');
+  SaveByteArray_var(ArrayOfByte, GetEnvironmentVariable('TEMP') + '\QEMU\disk.img');
 
   //Execute QEMU for image test
   hProcess := ExecuteProcess(GetEnvironmentVariable('TEMP') + '\QEMU\qemu.exe', '-fda ' + GetEnvironmentVariable('TEMP') + '\QEMU\disk.img', SW_HIDE);

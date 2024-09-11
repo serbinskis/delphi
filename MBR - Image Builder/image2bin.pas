@@ -77,7 +77,7 @@ begin
   for y := 0 to Bitmap.Height-1 do begin
     for x := 0 to Bitmap.Width-1 do begin
       color := Bitmap.Canvas.Pixels[x, y];
-      i := DynamicData.FindIndex('color', color);
+      i := DynamicData.FindIndex(0, 'color', color);
 
       if i > -1 then begin
         c := DynamicData.GetValue(i, 'amount');
