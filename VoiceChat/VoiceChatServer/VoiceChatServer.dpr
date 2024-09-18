@@ -1,4 +1,4 @@
-program VoiceChatServer_Created_By_WobbyChip;
+program VoiceChatServer;
 
 uses
   Forms,

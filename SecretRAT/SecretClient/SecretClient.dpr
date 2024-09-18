@@ -1,4 +1,4 @@
-program SecretClient_Created_By_WobbyChip;
+program SecretClient;
 
 uses
   Windows, Forms,

@@ -1,4 +1,4 @@
-program CustomUtility_Created_By_WobbyChip;
+program CustomUtility_Created_By_Serbinskis;
 
 uses
   Forms, SysUtils, Windows, Dialogs, TNTSystem, Functions,

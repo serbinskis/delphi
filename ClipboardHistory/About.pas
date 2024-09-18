@@ -41,7 +41,7 @@ end;
 
 procedure TForm3.Label1Click(Sender: TObject);
 begin
-  ShellExecute(0, 'open', 'https://wobbychip.github.io', nil, nil, SW_SHOWMAXIMIZED);
+  ShellExecute(0, 'open', 'https://serbinskis.github.io', nil, nil, SW_SHOWMAXIMIZED);
 end;
 
 

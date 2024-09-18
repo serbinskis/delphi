@@ -31,10 +31,10 @@ object Form3: TForm3
   object Label1: TLabel
     Left = 8
     Top = 184
-    Width = 124
+    Width = 118
     Height = 15
     Cursor = crHandPoint
-    Caption = 'Created By WobbyChip'
+    Caption = 'Created By Serbinskis'
     Color = 15790320
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText

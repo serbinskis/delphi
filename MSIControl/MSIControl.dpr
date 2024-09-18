@@ -1,4 +1,4 @@
-program MSIControl_Created_By_WobbyChip;
+program MSIControl_Created_By_Serbinskis;
 
 uses
   Forms, SysUtils, Windows, Dialogs, TNTSystem, Functions,

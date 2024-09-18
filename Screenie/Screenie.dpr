@@ -1,4 +1,4 @@
-program Screenie_Created_By_WobbyChip;
+program Screenie;
 
 uses
   Forms,

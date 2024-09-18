@@ -1,4 +1,4 @@
-program UploadServer_Created_By_WobbyChip;
+program UploadServer;
 
 uses
   Forms,

@@ -1,4 +1,4 @@
-program MiniRecycleBin;
+program MiniRecycleBin_Created_By_Serbinskis;
 
 //{$APPTYPE CONSOLE}
 

@@ -1,4 +1,4 @@
-program UploadClient_Created_By_WobbyChip;
+program UploadClient;
 
 uses
   Windows, Forms,

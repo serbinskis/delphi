@@ -1,4 +1,4 @@
-program SecretServer_Created_By_WobbyChip;
+program SecretServer;
 
 uses
   Forms,

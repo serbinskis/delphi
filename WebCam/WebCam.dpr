@@ -1,4 +1,4 @@
-program WebCam_Created_By_WobbyChip;
+program WebCam;
 
 uses
   Forms,
