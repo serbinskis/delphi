@@ -3,16 +3,15 @@ unit AutoStart;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, WinXP, StdCtrls, TNTSystem, TNTSysUtils, TNTStdCtrls, uKBDynamic,
-  uDynamicData, Functions;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
+  WinXP, StdCtrls, TNTSystem, TNTSysUtils, TNTStdCtrls, uKBDynamic, uDynamicData, Functions;
 
 const
   COMPONENETS_PER_ROW = 6;
   DEFAULT_COUNTDOWN_TIME = 5;
   WM_REBUILD_CONTROL = WM_USER + 12787;
   DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
-  DEFAULT_KEY = '\Software\WobbyChip\AutoStart';
+  DEFAULT_KEY = '\Software\Serbinskis\AutoStart';
   DEFAULT_FILENAME = 'AutoStart.bin';
 
 type

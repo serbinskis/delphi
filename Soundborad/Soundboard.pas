@@ -127,8 +127,8 @@ const
   MAXIMUM_SIZE = 1024*1024*300;
   MINIMUM_FORM_HEIGHT = 300;
   DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
-  DEFAULT_KEY = '\Software\WobbyChip\Soundboard';
-  DEFAULT_HOTKEY_KEY = '\Software\WobbyChip\Soundboard\HotKeys';
+  DEFAULT_KEY = '\Software\Serbinskis\Soundboard';
+  DEFAULT_HOTKEY_KEY = '\Software\Serbinskis\Soundboard\HotKeys';
   SOUNDBOARD_EXTSENSION = '.snb';
   COLS: array[0..1] of Integer = (30, 310);
   SCROLL_BY = 3;

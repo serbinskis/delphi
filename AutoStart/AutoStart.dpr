@@ -1,4 +1,4 @@
-program AutoStart_Created_By_WobbyChip;
+program AutoStart_Created_By_Serbinskis;
 
 uses
   Forms,

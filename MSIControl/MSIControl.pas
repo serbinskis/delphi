@@ -5,9 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Dialogs, Classes, Forms, Menus, MMSystem, Graphics, ShellAPI,
   ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
-  XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, WinXP, MSIThemes,
-  uHotKey, uNotify, uReadConsole, uDynamicData, MSIController, Functions,
-  TntMenus;
+  XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, TNTMenus, WinXP,
+  MSIThemes, uHotKey, uNotify, uReadConsole, uDynamicData, MSIController, Functions;
 
 type
   TForm1 = class(TForm)
@@ -77,7 +76,7 @@ type
 
 const
   DEFAULT_ROOT_KEY = HKEY_CURRENT_USER;
-  DEFAULT_KEY = '\Software\WobbyChip\MSIControl';
+  DEFAULT_KEY = '\Software\Serbinskis\MSIControl';
   INACTIVE_TIMEOUT = 350;
   STARTUP_SECONDS = 300;
 

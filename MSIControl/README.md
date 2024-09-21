@@ -23,4 +23,4 @@ This is the source code of MSIControl. MSIControl is an application that will al
 - Set custom hotkey to change keyboard language.
 
 ## Download
-You can download the MSIControl [here](https://github.com/WobbyChip/Delphi/raw/master/MSIControl/MSIControl.exe).
+You can download the MSIControl [here](https://github.com/serbinskis/Delphi/raw/master/MSIControl/MSIControl.exe).

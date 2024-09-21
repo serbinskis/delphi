@@ -1,4 +1,4 @@
-program WindowsXPHorrorEdition_Created_By_WobbyChip;
+program WindowsXPHorrorEdition;
 
 uses
   Forms,
