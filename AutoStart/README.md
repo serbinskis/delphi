@@ -11,4 +11,4 @@ This is the source code of AutoStart. AutoStart is an easy to manage auto start 
 - Stop auto start on mouse movement.
 
 ## Download
-You can download the AutoStart [here](https://github.com/WobbyChip/Delphi/raw/master/AutoStart/AutoStart.exe).
+You can download the AutoStart [here](https://github.com/serbinskis/Delphi/raw/master/AutoStart/AutoStart.exe).
