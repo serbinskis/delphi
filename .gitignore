@@ -21,4 +21,4 @@
 
 MPV/mpv.res
 MPV/mpv.zip
-!MPV/mpv/*.exe
+!MPV/*/*.exe
