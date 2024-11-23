@@ -17,6 +17,7 @@
 !MSIControl/*.exe
 !ClipboardHistory/*.exe
 !TogglePasswordProtectedSharing/*.exe
+!MPV/*.exe
 
 MPV/mpv.res
 MPV/mpv.zip
