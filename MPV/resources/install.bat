@@ -1,5 +1,4 @@
 @echo off
-echo Installing MPV...
 set "dest=%SystemDrive%\Program Files\MPV"
 if not exist "%dest%" mkdir "%dest%"
 if not exist "%dest%" exit
