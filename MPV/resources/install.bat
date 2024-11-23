@@ -8,7 +8,7 @@ powershell -Command "Invoke-WebRequest -Uri 'https://github.com/serbinskis/delph
 set "menu=%SystemDrive%\ProgramData\Microsoft\Windows\Start Menu\Programs\MPV"
 if not exist "%menu%" mkdir "%menu%"
 
-echo linkFile = "%menu%\mpv.exe" >> createShortcut.vbs
+echo linkFile = "%menu%\mpv.lnk" >> createShortcut.vbs
 echo Set objectLink = WScript.CreateObject("WScript.Shell").CreateShortcut(linkFile) >> createShortcut.vbs
 echo objectLink.TargetPath = "%SystemDrive%\Program Files\MPV\mpv.exe" >> createShortcut.vbs
 echo objectLink.Save >> createShortcut.vbs
@@ -16,8 +16,8 @@ cscript createShortcut.vbs
 del createShortcut.vbs
 
 powershell -Command "Invoke-WebRequest -Uri 'https://github.com/serbinskis/delphi/raw/refs/heads/master/MPV/resources/mpv.reg' -OutFile 'mpv.reg'"
-reg import mpv.reg
-del mpv.reg
+reg import "%dest%\mpv.reg"
+del "%dest%\mpv.reg"
 
 powershell -Command "Invoke-WebRequest -Uri 'https://github.com/serbinskis/delphi/raw/refs/heads/master/MPV/resources/association.exe' -OutFile 'association.exe'"
 start /WAIT association.exe "io.mpv.it" ".it"
