@@ -13,6 +13,7 @@ const
   MPV_PARAMETERS = '--input-ipc-server=\\.\pipe\mpvsocket --idle';
   MPV_STARTTITLE = 'No file - mpv';
   MPV_UNPAUSE_COMMAND = '{"command": ["set_property", "pause", false]}' + #13#10;
+  MPV_DIRECTORY_NAME = 'mpv.io';
   UPDATE_TIMEOUT = 100;
 
 
@@ -85,13 +86,13 @@ var
 begin
   ZipForge := TZipForge.Create(nil);
   ZipForge.OpenArchive(TResourceStream.Create(HInstance, 'MPV', RT_RCDATA), False);
-  ZipForge.BaseDir := GetEnvironmentVariable('TEMP') +'\MPV';
+  ZipForge.BaseDir := GetEnvironmentVariable('TEMP') +'\' + MPV_DIRECTORY_NAME;
   ZipForge.ExtractFiles('*.*');
   ZipForge.CloseArchive();
   ZipForge.Free;
 
-  SaveResource(GetEnvironmentVariable('TEMP') +'\MPV\input.conf', 'INPUT', RT_RCDATA);
-  SaveResource(GetEnvironmentVariable('TEMP') +'\MPV\mpv.conf', 'CONF', RT_RCDATA);
+  SaveResource(GetEnvironmentVariable('TEMP') +'\' + MPV_DIRECTORY_NAME + '\input.conf', 'INPUT', RT_RCDATA);
+  SaveResource(GetEnvironmentVariable('TEMP') +'\' + MPV_DIRECTORY_NAME + '\mpv.conf', 'CONF', RT_RCDATA);
   ClearWatch;
 end;
 //Extract
@@ -105,7 +106,7 @@ var
   hMutex, ProccessHandle: THandle;
 begin
   //Create mutex
-  hMutex := CreateMutex(nil, False, 'MPV');
+  hMutex := CreateMutex(nil, False, MPV_DIRECTORY_NAME);
 
   //Check for already running instance
   if not (WaitForSingleObject(hMutex, 0) <> WAIT_TIMEOUT) then begin
@@ -114,8 +115,8 @@ begin
   end;
 
   //Extract and launch MPV
-  if not WideFileExists(GetEnvironmentVariable('TEMP') + '\MPV\mpv.exe') then Extract;
-  ProccessHandle := ExecuteProcess(GetEnvironmentVariable('TEMP') + '\MPV\mpv.exe', MPV_PARAMETERS, SW_SHOW);
+  if not WideFileExists(GetEnvironmentVariable('TEMP') + '\' + MPV_DIRECTORY_NAME + '\mpv.exe') then Extract;
+  ProccessHandle := ExecuteProcess(GetEnvironmentVariable('TEMP') + '\' + MPV_DIRECTORY_NAME + '\mpv.exe', MPV_PARAMETERS, SW_SHOW);
 
   //Wait for window to appear
   while (FindWindowExtd(MPV_STARTTITLE) = 0) do Sleep(UPDATE_TIMEOUT);
@@ -124,5 +125,5 @@ begin
   if (WideParamStr(1) <> '') then SendMessage(FormatFile(WideParamStr(1), MPV_REPLACE) + MPV_UNPAUSE_COMMAND);
 
   WaitForSingleObject(ProccessHandle, INFINITE);
-  DeleteDirectory(GetEnvironmentVariable('TEMP') + '\MPV');
+  DeleteDirectory(GetEnvironmentVariable('TEMP') + '\' + MPV_DIRECTORY_NAME);
 end.
