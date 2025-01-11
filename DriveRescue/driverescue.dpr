@@ -292,8 +292,8 @@ begin
 
   if (ParamCount < 5) then begin
     WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' <input_path> <output_file> <max_retry_copy> <max_retry_repair> <eject_drive>');
-    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' E: C:\Drive.img 5 50 0');
-    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' PhysicalDrive1 C:\Drive.img 3 30 1');
+    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' E: C:\Drive.img 5 50 1');
+    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' PhysicalDrive1 C:\Drive.img 3 30 0');
     Exit;
   end;
 
