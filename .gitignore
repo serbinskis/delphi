@@ -10,6 +10,7 @@
 
 !AutoStart/*.exe
 !MiniRecycleBin/*.exe
+!DriveRescue/*.exe
 !MBR - Image Builder/*.exe
 !MBR UEFI - Note Builder/*.exe
 !Soundborad/*.exe
