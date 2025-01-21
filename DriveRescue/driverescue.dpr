@@ -159,7 +159,7 @@ begin
 end;
 
 
-procedure CopyDisk(InputPath, OutputPath: WideString; MaxRetry: Integer);
+procedure CopyDisk(InputPath, OutputPath: WideString; SectorCount, MaxRetry: Integer);
 var
   DiskInfo: TDiskInfo;
   hOut, nw: THandle;
@@ -184,7 +184,7 @@ begin
     DiskInfo := InitializeInputDisk(InputPath); //Initialize disk info
 
     while (TotalRead < DiskInfo.DiskSize) do begin //While have bytes to read, then read them
-      Buffer := ReadDiskBytes(DiskInfo.DiskHandle, TotalRead, DiskInfo.SectorSize, MaxRetry); //Read sector of specified size into buffer
+      Buffer := ReadDiskBytes(DiskInfo.DiskHandle, TotalRead, DiskInfo.SectorSize * SectorCount, MaxRetry); //Read sector of specified size into buffer
       if (not IsDiskInitialized(DiskInfo.DiskHandle)) then Break; //Reinitialize disk (maybe disk was discconected)
       TotalRead := TotalRead + Length(Buffer); //Update total read bytes
       WriteFile(hOut, Buffer[0], Length(Buffer), nw, nil); //Write current buffer to output file
@@ -209,7 +209,7 @@ function RepairDisk(InputPath, OutputPath: WideString; MaxRetry: Integer): Boole
 var
   DiskInfo: TDiskInfo;
   hOut, nw: THandle;
-  TotalRead: Int64;
+  TotalRead, TotalFixed, TotalErrors: Int64;
   SavedTime: TDateTime;
   Buffer: TByteArray;
 begin
@@ -217,6 +217,8 @@ begin
   Result := True;
   SavedTime := Now; //Save current time for logging
   TotalRead := 0;
+  TotalFixed := 0;
+  TotalErrors := 0;
 
   while (true) do begin
     WriteLn('Initializing disk: ', InputPath);
@@ -230,6 +232,8 @@ begin
         Buffer := ReadDiskBytes(DiskInfo.DiskHandle, TotalRead, DiskInfo.SectorSize, MaxRetry); //Read sector of specified size into buffer
         if (not IsDiskInitialized(DiskInfo.DiskHandle)) then Break; //Reinitialize disk (maybe disk was discconected)
         if (IsDamagedBuffer(Buffer)) then Result := False; //If failed to read sector, try again in next iteration
+        TotalFixed := TotalFixed + Q(IsDamagedBuffer(Buffer), 0, 1); //If sector fixed increase fixed sector statistic
+        TotalErrors := TotalErrors + Q(IsDamagedBuffer(Buffer), 1, 0); //If sector not fixed increase error sector statistic
         SetFilePointer(hOut, TotalRead, FILE_BEGIN); //Set pointer to write at damaged sector location in file
         WriteFile(hOut, Buffer[0], Length(Buffer), nw, nil); //Write current buffer to output file
         WriteLn(Q(IsDamagedBuffer(Buffer), 'Failled', 'Succeeded') + ' repairing data at ', TotalRead);
@@ -240,7 +244,7 @@ begin
       //Write total bytes progress to console with some interval
       if (MillisecondsBetween(SavedTime, Now) < UPDATE_INTERVAL) then Continue;
       SavedTime := Now; //Update time, so that we don't spam console
-      WriteLn(Format('Reading and repairing: %s/%s', [FormatSize(TotalRead, 4), FormatSize(DiskInfo.DiskSize, 4)]));
+      WriteLn(Format('Reading and repairing: %s/%s | (F: %d, E: %d)', [FormatSize(TotalRead, 4), FormatSize(DiskInfo.DiskSize, 4), TotalFixed, TotalErrors]));
     end;
 
     if (TotalRead >= DiskInfo.DiskSize) then Break;
@@ -248,7 +252,8 @@ begin
 
   CloseHandle(hOut); //Close output file
   CloseHandle(DiskInfo.DiskHandle); //Close input file
-  WriteLn(Format('Repaired: %s', [FormatSize(TotalRead, 4)]));
+  WriteLn(Format('Repaired: %s | (F: %d, E: %d)', [FormatSize(TotalRead, 4), TotalFixed, TotalErrors]));
+  SetConsoleTitle(PChar(Format('Repaired: %s | (F: %d, E: %d)', [FormatSize(TotalRead, 4), TotalFixed, TotalErrors])));
 end;
 
 
@@ -290,14 +295,14 @@ begin
     Exit;
   end;
 
-  if (ParamCount < 5) then begin
-    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' <input_path> <output_file> <max_retry_copy> <max_retry_repair> <eject_drive>');
-    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' E: C:\Drive.img 5 50 1');
-    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' PhysicalDrive1 C:\Drive.img 3 30 0');
+  if (ParamCount < 6) then begin
+    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' <input_path> <output_file> <sector_count_copy> <max_retry_copy> <max_retry_repair> <eject_drive>');
+    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' E: C:\Drive.img 1 5 50 1');
+    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' PhysicalDrive1 C:\Drive.img 128 3 30 0');
     Exit;
   end;
 
-  CopyDisk(WideParamStr(1), WideParamStr(2), StrToIntDef(ParamStr(3), 5));
-  while not RepairDisk(WideParamStr(1), WideParamStr(2), StrToIntDef(ParamStr(4), 50)) do;
-  if (StrToIntDef(ParamStr(5), 0) = 1) then SetMediaEjected(WideParamStr(1), True);
+  CopyDisk(WideParamStr(1), WideParamStr(2), StrToIntDef(ParamStr(3), 1), StrToIntDef(ParamStr(4), 5));
+  while not RepairDisk(WideParamStr(1), WideParamStr(2), StrToIntDef(ParamStr(5), 50)) do;
+  if (StrToIntDef(ParamStr(6), 0) = 1) then SetMediaEjected(WideParamStr(1), True);
 end.
