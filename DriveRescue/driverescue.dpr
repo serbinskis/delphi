@@ -105,16 +105,6 @@ begin
 end;
 
 
-function IsDamagedSector(hIn: THandle; Address: Longint; SectorSize: Integer): Boolean;
-var
-  nr: DWORD;
-  Buffer: TByteArray;
-begin
-  ReadFile(hIn, Buffer, SectorSize, nr, nil);
-  Result := IsDamagedBuffer(Buffer);
-end;
-
-
 function InitializeInputDisk(InputDrive: WideString): TDiskInfo;
 var
   nr: DWORD;
@@ -153,9 +143,20 @@ begin
     //WriteLn(SysErrorMessage(GetLastError));
     WriteLn('Error reading data at ', IntToStr(Address), ' (CurrentRetry: ', CurrentRetry, '/', MaxRetry, ' | SectorSize: ', IntToStr(SectorSize), ')');
     Inc(CurrentRetry);
+    if (CurrentRetry = 100) then Sleep(90 * 1000); //Let the CD-ROM slow down
+    if (CurrentRetry = 300) then Sleep(180 * 1000); //Again, but longer
   until (CurrentRetry >= MaxRetry);
 
   Result := InitializeDamagedBuffer(SectorSize);
+end;
+
+
+function IsDamagedSector(hIn: THandle; Address: Int64; SectorSize: Integer; MaxRetry: Integer): Boolean;
+var
+  Buffer: TByteArray;
+begin
+  Buffer := ReadDiskBytes(hIn, Address, SectorSize, MaxRetry);
+  Result := IsDamagedBuffer(Buffer);
 end;
 
 
@@ -205,7 +206,7 @@ begin
 end;
 
 
-function RepairDisk(InputPath, OutputPath: WideString; MaxRetry: Integer): Boolean;
+function RepairDisk(InputPath, OutputPath: WideString; MaxRetry, TotalAttempts: Integer; Recursive: Boolean): Boolean;
 var
   DiskInfo: TDiskInfo;
   hOut, nw: THandle;
@@ -225,12 +226,9 @@ begin
     DiskInfo := InitializeInputDisk(InputPath); //Initialize disk info
 
     while (TotalRead < DiskInfo.DiskSize) do begin //While have bytes to read, then read them
-      Buffer := ReadDiskBytes(hOut, TotalRead, DiskInfo.SectorSize, 1); //Read sector from output of specified size into buffer
-
-      //If buffer is damaged in output file try to recover it
-      if (IsDamagedBuffer(Buffer)) then begin
+      if (IsDamagedSector(hOut, TotalRead, DiskInfo.SectorSize, 5)) then begin //If sector is damaged in output file try to recover it
         Buffer := ReadDiskBytes(DiskInfo.DiskHandle, TotalRead, DiskInfo.SectorSize, MaxRetry); //Read sector of specified size into buffer
-        if (not IsDiskInitialized(DiskInfo.DiskHandle)) then Break; //Reinitialize disk (maybe disk was discconected)
+        if (not IsDiskInitialized(DiskInfo.DiskHandle)) then Break; //Reinitialize disk (Maybe disk was discconected)
         if (IsDamagedBuffer(Buffer)) then Result := False; //If failed to read sector, try again in next iteration
         TotalFixed := TotalFixed + Q(IsDamagedBuffer(Buffer), 0, 1); //If sector fixed increase fixed sector statistic
         TotalErrors := TotalErrors + Q(IsDamagedBuffer(Buffer), 1, 0); //If sector not fixed increase error sector statistic
@@ -239,7 +237,7 @@ begin
         WriteLn(Q(IsDamagedBuffer(Buffer), 'Failled', 'Succeeded') + ' repairing data at ', TotalRead);
       end;
 
-      TotalRead := TotalRead + Length(Buffer); //Update total read bytes
+      TotalRead := TotalRead + DiskInfo.SectorSize; //Update total read bytes
 
       //Write total bytes progress to console with some interval
       if (MillisecondsBetween(SavedTime, Now) < UPDATE_INTERVAL) then Continue;
@@ -253,7 +251,8 @@ begin
   CloseHandle(hOut); //Close output file
   CloseHandle(DiskInfo.DiskHandle); //Close input file
   WriteLn(Format('Repaired: %s | (F: %d, E: %d)', [FormatSize(TotalRead, 4), TotalFixed, TotalErrors]));
-  SetConsoleTitle(PChar(Format('Repaired: %s | (F: %d, E: %d)', [FormatSize(TotalRead, 4), TotalFixed, TotalErrors])));
+  SetConsoleTitle(PChar(Format('Repaired: %s | (F: %d, E: %d, A: %d)', [FormatSize(TotalRead, 4), TotalFixed, TotalErrors, TotalAttempts])));
+  if (Recursive) then Result := RepairDisk(InputPath, OutputPath, MaxRetry, TotalAttempts+1, True);
 end;
 
 
@@ -289,6 +288,8 @@ begin
 end;
 
 
+var
+  TotalAttempts: Integer = 1;
 begin
   if (not IsAdmin) then begin
     WriteLn('You must run this as an administrator.');
@@ -303,6 +304,6 @@ begin
   end;
 
   CopyDisk(WideParamStr(1), WideParamStr(2), StrToIntDef(ParamStr(3), 1), StrToIntDef(ParamStr(4), 5));
-  while not RepairDisk(WideParamStr(1), WideParamStr(2), StrToIntDef(ParamStr(5), 50)) do;
+  while not RepairDisk(WideParamStr(1), WideParamStr(2), StrToIntDef(ParamStr(5), 50), TotalAttempts, False) do Inc(TotalAttempts);
   if (StrToIntDef(ParamStr(6), 0) = 1) then SetMediaEjected(WideParamStr(1), True);
 end.
