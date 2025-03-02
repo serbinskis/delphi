@@ -3,7 +3,7 @@ program driverescue;
 {$APPTYPE CONSOLE}
 
 uses
-  Windows, Classes, SysUtils, TNTSystem, TNTSysUtils, Functions, DateUtils;
+  Windows, Classes, SysUtils, TNTSystem, TNTSysUtils, Functions, DateUtils, Variants, uDynamicData;
 
 
 function GetDiskSectorSize(hDisk: THandle): DWORD;
@@ -57,6 +57,8 @@ type
     DiskHandle: THandle;
     DiskSize: Int64;
     SectorSize: DWORD;
+    IsDVD: Boolean;
+    IsRepair: Boolean;
   end;
 
 const
@@ -116,6 +118,7 @@ begin
     if (Result.DiskSize < 0) then Result.DiskHandle := INVALID_HANDLE_VALUE;
     if (Result.DiskSize < 0) then WriteLn('Drive (', InputDrive, ') is not connected.');
     if (Result.DiskSize < 0) then Sleep(1000);
+    if (Result.SectorSize = 2048) then Result.IsDVD := True;
   until (Result.DiskHandle <> INVALID_HANDLE_VALUE);
 
   //Allow to read final bytes
@@ -129,33 +132,60 @@ begin
 end;
 
 
-function ReadDiskBytes(hIn: THandle; Address: Int64; SectorSize: Integer; MaxRetry: Integer): TByteArray;
+function SetDVDSpeed(DeviceHandle: THandle; Speed: WORD): Boolean;
+const
+  IOCTL_CDROM_SET_SPEED = $24060;
+type
+  TCDRomSetSpeed = record
+    RequestType: DWORD;
+    ReadSpeed: WORD;
+    WriteSpeed: WORD;
+    RotationControl: DWORD;
+  end;
+var
+  dvdSetSpeed: TCDRomSetSpeed;
+  BytesReturned: DWORD;
+begin
+  FillChar(dvdSetSpeed, SizeOf(dvdSetSpeed), 0);
+  dvdSetSpeed.RequestType := 0;
+  dvdSetSpeed.ReadSpeed := Speed;
+  dvdSetSpeed.WriteSpeed := Speed;
+  dvdSetSpeed.RotationControl := 0;
+  Result := DeviceIoControl(DeviceHandle, IOCTL_CDROM_SET_SPEED, @dvdSetSpeed, SizeOf(dvdSetSpeed), nil, 0, BytesReturned, nil);
+end;
+
+
+function ReadDiskBytes(DiskInfo: TDiskInfo; Address: Int64; SectorSize: Integer; MaxRetry: Integer): TByteArray;
 var
   nr: DWORD;
   CurrentRetry: DWORD;
 begin
   SetLength(Result, SectorSize);
-  SetFilePointer(hIn, Address, FILE_BEGIN);
+  SetFilePointer(DiskInfo.DiskHandle, Address, FILE_BEGIN);
   CurrentRetry := 0;
 
   repeat
-    if (ReadFile(hIn, Result[0], SectorSize, nr, nil)) then Exit;
-    //WriteLn(SysErrorMessage(GetLastError));
-    WriteLn('Error reading data at ', IntToStr(Address), ' (CurrentRetry: ', CurrentRetry, '/', MaxRetry, ' | SectorSize: ', IntToStr(SectorSize), ')');
-    Inc(CurrentRetry);
-    if (CurrentRetry = 100) then Sleep(90 * 1000); //Let the CD-ROM slow down
-    if (CurrentRetry = 300) then Sleep(180 * 1000); //Again, but longer
+    if (DiskInfo.IsDVD and (CurrentRetry > 1)) then SetDVDSpeed(DiskInfo.DiskHandle, (SectorSize div 1024) + 1);
+    if (ReadFile(DiskInfo.DiskHandle, Result[0], SectorSize, nr, nil)) then Exit else Inc(CurrentRetry);
+    nr := DWORD(DiskInfo.IsDVD and ((CurrentRetry = 10) or (CurrentRetry = 20) or (MaxRetry = -1)));
+    WriteLn('Error reading data at $', IntToHex(Address, 1), ' (CurrentRetry: ', CurrentRetry, '/', MaxRetry, ' | SectorSize: ', IntToStr(SectorSize), Q((nr = 1), ' | Status: WAITING)', ')'));
+    if ((not DiskInfo.IsRepair) and DiskInfo.IsDVD and (CurrentRetry = 10)) then Sleep(90 * 1000); //Let the DVD-ROM slow down
+    if (DiskInfo.IsDVD and ((CurrentRetry = 20) or (MaxRetry = -1))) then Sleep(180 * 1000); //Again, but longer
   until (CurrentRetry >= MaxRetry);
 
   Result := InitializeDamagedBuffer(SectorSize);
+  if (DiskInfo.IsDVD and not IsDiskInitialized(DiskInfo.DiskHandle)) then Exit;
+  if (MaxRetry = -1) then Result := ReadDiskBytes(DiskInfo, Address, SectorSize, MaxRetry);
 end;
 
 
 function IsDamagedSector(hIn: THandle; Address: Int64; SectorSize: Integer; MaxRetry: Integer): Boolean;
 var
   Buffer: TByteArray;
+  DiskInfo: TDiskInfo;
 begin
-  Buffer := ReadDiskBytes(hIn, Address, SectorSize, MaxRetry);
+  DiskInfo.DiskHandle := hIn;
+  Buffer := ReadDiskBytes(DiskInfo, Address, SectorSize, MaxRetry);
   Result := IsDamagedBuffer(Buffer);
 end;
 
@@ -183,9 +213,10 @@ begin
   while (true) do begin
     WriteLn('Initializing disk: ', InputPath);
     DiskInfo := InitializeInputDisk(InputPath); //Initialize disk info
+    DiskInfo.IsRepair := False;
 
     while (TotalRead < DiskInfo.DiskSize) do begin //While have bytes to read, then read them
-      Buffer := ReadDiskBytes(DiskInfo.DiskHandle, TotalRead, DiskInfo.SectorSize * SectorCount, MaxRetry); //Read sector of specified size into buffer
+      Buffer := ReadDiskBytes(DiskInfo, TotalRead, DiskInfo.SectorSize * SectorCount, MaxRetry); //Read sector of specified size into buffer
       if (not IsDiskInitialized(DiskInfo.DiskHandle)) then Break; //Reinitialize disk (maybe disk was discconected)
       TotalRead := TotalRead + Length(Buffer); //Update total read bytes
       WriteFile(hOut, Buffer[0], Length(Buffer), nw, nil); //Write current buffer to output file
@@ -194,7 +225,7 @@ begin
       //Write total bytes progress to console with some interval
       if (MillisecondsBetween(SavedTime, Now) < UPDATE_INTERVAL) then Continue;
       SavedTime := Now; //Update time, so that we don't spam console
-      WriteLn(Format('Read: %s/%s | Errors: %s (%d) %.1f%%', [FormatSize(TotalRead, 4), FormatSize(DiskInfo.DiskSize, 4), FormatSize(TotalErros, 4), (TotalErros div DiskInfo.SectorSize), (TotalErros/TotalRead*100)]));
+      WriteLn(Format(Q(IsDamagedBuffer(Buffer), 'Error', 'Read') + ': %s/%s | Errors: %s (%d) %.1f%%', [FormatSize(TotalRead, 4), FormatSize(DiskInfo.DiskSize, 4), FormatSize(TotalErros, 4), (TotalErros div DiskInfo.SectorSize), (TotalErros/TotalRead*100)]));
     end;
 
     if (TotalRead >= DiskInfo.DiskSize) then Break;
@@ -206,7 +237,7 @@ begin
 end;
 
 
-function RepairDisk(InputPath, OutputPath: WideString; MaxRetry, TotalAttempts: Integer; Recursive: Boolean): Boolean;
+function RepairDisk(InputPath, OutputPath: WideString; SectorCount, MaxRetry, TotalAttempts: Integer; Recursive: Boolean): Boolean;
 var
   DiskInfo: TDiskInfo;
   hOut, nw: THandle;
@@ -223,18 +254,19 @@ begin
 
   while (true) do begin
     WriteLn('Initializing disk: ', InputPath);
-    DiskInfo := InitializeInputDisk(InputPath); //Initialize disk info
+    DiskInfo := InitializeInputDisk(InputPath); //Initialize disk info    \
+    DiskInfo.IsRepair := True;
 
     while (TotalRead < DiskInfo.DiskSize) do begin //While have bytes to read, then read them
       if (IsDamagedSector(hOut, TotalRead, DiskInfo.SectorSize, 5)) then begin //If sector is damaged in output file try to recover it
-        Buffer := ReadDiskBytes(DiskInfo.DiskHandle, TotalRead, DiskInfo.SectorSize, MaxRetry); //Read sector of specified size into buffer
+        Buffer := ReadDiskBytes(DiskInfo, TotalRead, DiskInfo.SectorSize * SectorCount, MaxRetry); //Read sector of specified size into buffer
         if (not IsDiskInitialized(DiskInfo.DiskHandle)) then Break; //Reinitialize disk (Maybe disk was discconected)
         if (IsDamagedBuffer(Buffer)) then Result := False; //If failed to read sector, try again in next iteration
         TotalFixed := TotalFixed + Q(IsDamagedBuffer(Buffer), 0, 1); //If sector fixed increase fixed sector statistic
         TotalErrors := TotalErrors + Q(IsDamagedBuffer(Buffer), 1, 0); //If sector not fixed increase error sector statistic
         SetFilePointer(hOut, TotalRead, FILE_BEGIN); //Set pointer to write at damaged sector location in file
         WriteFile(hOut, Buffer[0], Length(Buffer), nw, nil); //Write current buffer to output file
-        WriteLn(Q(IsDamagedBuffer(Buffer), 'Failled', 'Succeeded') + ' repairing data at ', TotalRead);
+        WriteLn(Q(IsDamagedBuffer(Buffer), 'Failled', 'Succeeded') + ' repairing data at $', IntToHex(TotalRead, 1));
       end;
 
       TotalRead := TotalRead + DiskInfo.SectorSize; //Update total read bytes
@@ -242,7 +274,7 @@ begin
       //Write total bytes progress to console with some interval
       if (MillisecondsBetween(SavedTime, Now) < UPDATE_INTERVAL) then Continue;
       SavedTime := Now; //Update time, so that we don't spam console
-      WriteLn(Format('Reading and repairing: %s/%s | (F: %d, E: %d)', [FormatSize(TotalRead, 4), FormatSize(DiskInfo.DiskSize, 4), TotalFixed, TotalErrors]));
+      WriteLn(Format('Reading and repairing: %s/%s | (F: %d (%s), E: %d (%s))', [FormatSize(TotalRead, 4), FormatSize(DiskInfo.DiskSize, 4), TotalFixed, FormatSize(TotalFixed * DiskInfo.SectorSize, 2), TotalErrors, FormatSize(TotalErrors * DiskInfo.SectorSize, 2)]));
     end;
 
     if (TotalRead >= DiskInfo.DiskSize) then Break;
@@ -252,7 +284,7 @@ begin
   CloseHandle(DiskInfo.DiskHandle); //Close input file
   WriteLn(Format('Repaired: %s | (F: %d, E: %d)', [FormatSize(TotalRead, 4), TotalFixed, TotalErrors]));
   SetConsoleTitle(PChar(Format('Repaired: %s | (F: %d, E: %d, A: %d)', [FormatSize(TotalRead, 4), TotalFixed, TotalErrors, TotalAttempts])));
-  if (Recursive) then Result := RepairDisk(InputPath, OutputPath, MaxRetry, TotalAttempts+1, True);
+  if (Recursive) then Result := RepairDisk(InputPath, OutputPath, SectorCount, MaxRetry, TotalAttempts+1, True);
 end;
 
 
@@ -288,22 +320,62 @@ begin
 end;
 
 
+function ValidateParams(DynamicData: TDynamicData): Boolean;
+var
+  i, j: Integer;
+  Params: WideString;
+  Value: Variant;
+begin
+  Result := True;
+
+  for i := 0 to DynamicData.GetLength-1 do begin
+    for j := 0 to WideParamCount-1 do begin
+      Params := DynamicData.GetValue(i, 'param');
+      if (AnsiLowerCase(Params) <> AnsiLowerCase(WideParamStr(j))) then Continue;
+
+      Value := DynamicData.GetValue(i, 'default_value');
+      if ((VarType(Value) and VarTypeMask) <> varInteger) then Value := WideParamStr(j+1);
+      if ((VarType(Value) and VarTypeMask) = varInteger) then Value := Integer(StrToIntDef(WideParamStr(j+1), Value));
+      DynamicData.SetValue(i, 'value', Value);
+    end;
+  end;
+
+  for i := 0 to DynamicData.GetLength-1 do begin
+    if (not DynamicData.GetValue(i, 'required')) then Continue;
+    if (DynamicData.GetValue(i, 'value') = '') then Result := False;
+    if not Result then Break;
+  end;
+
+  for i := 0 to DynamicData.GetLength-1 do begin
+    if (i = 0) then Params := WideExtractFileName(WideParamStr(0));
+    Value := Q((VarType(DynamicData.GetValue(i, Q(Result, 'value', 'default_value'))) and VarTypeMask) = varInteger, '', '"');
+    Params := Params + ' ' + DynamicData.GetValue(i, 'param') + ' ' + Value + String(DynamicData.GetValue(i, Q(Result, 'value', 'default_value'))) + Value;
+  end;
+
+  WriteLn(Q(Result, 'Params: ', 'Usage: ') + Params);
+end;
+
+
 var
   TotalAttempts: Integer = 1;
+  DynamicData: TDynamicData;
 begin
   if (not IsAdmin) then begin
     WriteLn('You must run this as an administrator.');
     Exit;
   end;
 
-  if (ParamCount < 6) then begin
-    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' <input_path> <output_file> <sector_count_copy> <max_retry_copy> <max_retry_repair> <eject_drive>');
-    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' E: C:\Drive.img 1 5 50 1');
-    WriteLn('Usage: ' + WideExtractFileName(WideParamStr(0)) + ' PhysicalDrive1 C:\Drive.img 128 3 30 0');
-    Exit;
-  end;
+  DynamicData := TDynamicData.Create([]);
+  DynamicData.CreateData(-1, -1, ['param', 'default_value', 'value', 'required'], ['-in', 'E: | PhysicalDrive1', '', True]);
+  DynamicData.CreateData(-1, -1, ['param', 'default_value', 'value', 'required'], ['-out', 'C:\Drive.img', '', True]);
+  DynamicData.CreateData(-1, -1, ['param', 'default_value', 'value', 'required'], ['-sector_count_copy', Integer(1), '', False]);
+  DynamicData.CreateData(-1, -1, ['param', 'default_value', 'value', 'required'], ['-max_retry_copy', Integer(5), '', False]);
+  DynamicData.CreateData(-1, -1, ['param', 'default_value', 'value', 'required'], ['-sector_count_repair', Integer(1), '', False]);
+  DynamicData.CreateData(-1, -1, ['param', 'default_value', 'value', 'required'], ['-max_retry_repair', Integer(50), '', False]);
+  DynamicData.CreateData(-1, -1, ['param', 'default_value', 'value', 'required'], ['-eject_drive', Integer(0), '', False]);
+  if (not ValidateParams(DynamicData)) then Exit;
 
-  CopyDisk(WideParamStr(1), WideParamStr(2), StrToIntDef(ParamStr(3), 1), StrToIntDef(ParamStr(4), 5));
-  while not RepairDisk(WideParamStr(1), WideParamStr(2), StrToIntDef(ParamStr(5), 50), TotalAttempts, False) do Inc(TotalAttempts);
-  if (StrToIntDef(ParamStr(6), 0) = 1) then SetMediaEjected(WideParamStr(1), True);
+  CopyDisk(DynamicData.FindValue(0, 'param', '-in', 'value'), DynamicData.FindValue(0, 'param', '-out', 'value'), DynamicData.FindValue(0, 'param', '-sector_count_copy', 'value'), DynamicData.FindValue(0, 'param', '-max_retry_copy', 'value'));
+  while not RepairDisk(DynamicData.FindValue(0, 'param', '-in', 'value'), DynamicData.FindValue(0, 'param', '-out', 'value'), DynamicData.FindValue(0, 'param', '-sector_count_repair', 'value'), DynamicData.FindValue(0, 'param', '-max_retry_repair', 'value'), TotalAttempts, False) do Inc(TotalAttempts);
+  if (DynamicData.FindValue(0, 'param', '-eject_drive', 'value') = 1) then SetMediaEjected(DynamicData.FindValue(0, 'param', '-in', 'value'), True);
 end.
