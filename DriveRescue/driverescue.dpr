@@ -70,16 +70,6 @@ const
   FSCTL_ALLOW_EXTENDED_DASD_IO = ((FILE_DEVICE_FILE_SYSTEM shl 16) or (FILE_ANY_ACCESS shl 14) or (32 shl 2) or METHOD_NEITHER);
 
 
-function SetFilePointer(hFile: THandle; lDistanceToMove: Int64; dwMoveMethod: DWORD): DWORD;
-var
-  DistanceLow, DistanceHigh: Longint;
-begin
-  DistanceLow := lDistanceToMove and $FFFFFFFF;   // Lower 32 bits
-  DistanceHigh := lDistanceToMove shr 32;         // Upper 32 bits
-  Result := Windows.SetFilePointer(hFile, DistanceLow, @DistanceHigh, dwMoveMethod);
-end;
-
-
 function InitializeDamagedBuffer(SectorSize: Integer): TByteArray;
 var
   i: Integer;
@@ -161,7 +151,7 @@ var
   CurrentRetry: DWORD;
 begin
   SetLength(Result, SectorSize);
-  SetFilePointer(DiskInfo.DiskHandle, Address, FILE_BEGIN);
+  Functions.SetFilePointer(DiskInfo.DiskHandle, Address, FILE_BEGIN);
   CurrentRetry := 0;
 
   repeat
@@ -200,7 +190,7 @@ var
 begin
   hOut := CreateFileW(PWideChar(OutputPath), GENERIC_WRITE, FILE_SHARE_WRITE + FILE_SHARE_READ, nil, OPEN_ALWAYS, 0,0); //Create ouput file
   TotalRead := Q(WideFileExists(OutputPath), GetFileSize(OutputPath), 0); //Get output file size or, just initialize as 0
-  SetFilePointer(hOut, TotalRead, FILE_BEGIN); //Set pointer to continue to write at the end of file
+  Functions.SetFilePointer(hOut, TotalRead, FILE_BEGIN); //Set pointer to continue to write at the end of file
   SavedTime := Now; //Save current time for logging
   TotalErros := 0;
 
@@ -233,6 +223,7 @@ begin
 
   CloseHandle(hOut); //Close output file
   CloseHandle(DiskInfo.DiskHandle); //Close input file
+  SetFileSize(OutputPath, DiskInfo.DiskSize); //Set correct file size
   WriteLn(Format('Finished: %s | Errors: %s (%d) %.1f%%', [FormatSize(TotalRead, 4), FormatSize(TotalErros, 4), (TotalErros div DiskInfo.SectorSize), (TotalErros/TotalRead*100)]));
 end;
 
@@ -262,14 +253,14 @@ begin
         Buffer := ReadDiskBytes(DiskInfo, TotalRead, DiskInfo.SectorSize * SectorCount, MaxRetry); //Read sector of specified size into buffer
         if (not IsDiskInitialized(DiskInfo.DiskHandle)) then Break; //Reinitialize disk (Maybe disk was discconected)
         if (IsDamagedBuffer(Buffer)) then Result := False; //If failed to read sector, try again in next iteration
-        TotalFixed := TotalFixed + Q(IsDamagedBuffer(Buffer), 0, 1); //If sector fixed increase fixed sector statistic
-        TotalErrors := TotalErrors + Q(IsDamagedBuffer(Buffer), 1, 0); //If sector not fixed increase error sector statistic
-        SetFilePointer(hOut, TotalRead, FILE_BEGIN); //Set pointer to write at damaged sector location in file
+        TotalFixed := TotalFixed + Q(IsDamagedBuffer(Buffer), 0, SectorCount); //If sector fixed increase fixed sector statistic
+        TotalErrors := TotalErrors + Q(IsDamagedBuffer(Buffer), SectorCount, 0); //If sector not fixed increase error sector statistic
+        Functions.SetFilePointer(hOut, TotalRead, FILE_BEGIN); //Set pointer to write at damaged sector location in file
         WriteFile(hOut, Buffer[0], Length(Buffer), nw, nil); //Write current buffer to output file
         WriteLn(Q(IsDamagedBuffer(Buffer), 'Failled', 'Succeeded') + ' repairing data at $', IntToHex(TotalRead, 1));
       end;
 
-      TotalRead := TotalRead + DiskInfo.SectorSize; //Update total read bytes
+      TotalRead := TotalRead + DiskInfo.SectorSize * SectorCount; //Update total read bytes
 
       //Write total bytes progress to console with some interval
       if (MillisecondsBetween(SavedTime, Now) < UPDATE_INTERVAL) then Continue;
@@ -376,6 +367,10 @@ begin
   if (not ValidateParams(DynamicData)) then Exit;
 
   CopyDisk(DynamicData.FindValue(0, 'param', '-in', 'value'), DynamicData.FindValue(0, 'param', '-out', 'value'), DynamicData.FindValue(0, 'param', '-sector_count_copy', 'value'), DynamicData.FindValue(0, 'param', '-max_retry_copy', 'value'));
-  while not RepairDisk(DynamicData.FindValue(0, 'param', '-in', 'value'), DynamicData.FindValue(0, 'param', '-out', 'value'), DynamicData.FindValue(0, 'param', '-sector_count_repair', 'value'), DynamicData.FindValue(0, 'param', '-max_retry_repair', 'value'), TotalAttempts, False) do Inc(TotalAttempts);
+
+  if (DynamicData.FindValue(0, 'param', '-sector_count_repair', 'value') > 0) then begin
+    while not RepairDisk(DynamicData.FindValue(0, 'param', '-in', 'value'), DynamicData.FindValue(0, 'param', '-out', 'value'), DynamicData.FindValue(0, 'param', '-sector_count_repair', 'value'), DynamicData.FindValue(0, 'param', '-max_retry_repair', 'value'), TotalAttempts, False) do Inc(TotalAttempts);
+  end;
+
   if (DynamicData.FindValue(0, 'param', '-eject_drive', 'value') = 1) then SetMediaEjected(DynamicData.FindValue(0, 'param', '-in', 'value'), True);
 end.
