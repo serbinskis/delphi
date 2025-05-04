@@ -15,7 +15,7 @@ cscript "%TEMP%\createShortcut.vbs" >nul
 del "%TEMP%\createShortcut.vbs"
 
 powershell -Command "Invoke-WebRequest -Uri 'https://github.com/serbinskis/delphi/raw/refs/heads/master/MPV/resources/mpv.reg' -OutFile '%dest%\mpv.reg'"
-reg import "%dest%\mpv.reg" >nul
+reg import "%dest%\mpv.reg" >nul 2>nul
 del "%dest%\mpv.reg"
 
 powershell -Command "Invoke-WebRequest -Uri 'https://github.com/serbinskis/delphi/raw/refs/heads/master/MPV/resources/association.exe' -OutFile '%dest%\association.exe'"
