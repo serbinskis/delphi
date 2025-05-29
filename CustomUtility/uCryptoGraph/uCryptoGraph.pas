@@ -101,7 +101,7 @@ var
   MemoryStream: TMemoryStream;
 begin
   MemoryStream := TMemoryStream.Create;
-  URLDownloadToStream(URL, MemoryStream);
+  URLDownloadToStream(URL, MemoryStream, nil);
   Result := StreamToString(MemoryStream);
   MemoryStream.Free;
 end;
