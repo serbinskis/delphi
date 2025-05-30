@@ -4,7 +4,7 @@ This is the source code of MSIControl. MSIControl is an application that will al
 
 <p align="center">
   <img width="335" height="295" src="-(RES)-/Example1.png">
-  <img width="435" height="560" src="-(RES)-/Example2.png">
+  <img width="220" height="280" src="-(RES)-/Example2.png">
   <img width="270" height="440" src="-(RES)-/Example3.png">
 </p>
 
