@@ -126,9 +126,6 @@ begin
   i := SettingDynData.FindIndex(0, 'Name', 'SETTING_HOTKEY_SOUND');
   if (i > -1) and SettingDynData.GetValue(i, 'Value') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
 
-  if (CustomValue = 'HOTKEY_TOGGLE_CB') then MSI.ToggleCoolerBoost;
-  if (CustomValue = 'HOTKEY_TOGGLE_WEBCAM') then MSI.ToggleWebcam;
-
   if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_ECO') then begin
     Form1.ComboBox2.ItemIndex := 0;
     Form1.ComboBox2Change(nil);
@@ -247,16 +244,12 @@ begin
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_CLEAR_CRASH_DUMPS', 'Value');
   if (v > 0) then DeleteDirectory(GetEnvironmentVariable('LocalAppData') + '\CrashDumps');
 
-  //v := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_DISABLE_WEBCAM', 'Value');
-  //if (v > 0) then MSI.SetWebcamEnabled(False);
-  //if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'FAN_MODE') then MSI.SetFanMode(TModeType(v));
-
   ComboBox1.ItemIndex := 0;
   ComboBox1Change(nil);
   ComboBox3.ItemIndex := 0;
   ComboBox3Change(nil);
 
-  PopupMenu1.Items.Find('Toggle').Items[1].Visible := False; //MSI.isECLoaded(True);
+  PopupMenu1.Items.Find('Toggle').Items[1].Visible := False;
   TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
   TrayIcon1.Title := Application.Title;
   TrayIcon1.AddToTray;
@@ -297,7 +290,7 @@ begin
     scenarioAdvanced: begin ComboBox2.ItemIndex := 4; TrackBar1.Enabled := True; end;
   end;
 
-  //TrackBar1.Position := MSI.GetBasicValue;
+  TrackBar1.Position := GetAvarageFanSpeed;
   //if ComboBox2.Enabled and (ComboBox2.ItemIndex <> 2) then ComboBox2Change(nil);
 
   HotKey1.Enabled := MSI.isECLoaded(True);
@@ -369,10 +362,10 @@ begin
   S := ReadOutput('schtasks.exe /query /tn MSIControl');
 
   if AnsiContainsText(S, 'ERROR') then begin
-    ExecuteProcessAsAdmin('schtasks', '/create /sc ONLOGON /rl HIGHEST /tn MSIControl /tr "' + WideParamStr(0) + '" /f', SW_HIDE);
+    ExecuteProcessAsAdmin('schtasks.exe', '/create /sc onlogon /rl highest /tn MSIControl /tr "' + WideParamStr(0) + '" /f', SW_HIDE);
     ShowMessage('Application added to autoruns.');
   end else begin
-    ExecuteProcessAsAdmin('schtasks', '/delete /tn MSIControl /f', SW_HIDE);
+    ExecuteProcessAsAdmin('schtasks.exe', '/delete /tn MSIControl /f', SW_HIDE);
     ShowMessage('Application removed from autoruns.');
   end;
 end;
@@ -439,15 +432,17 @@ end;
 
 procedure TForm1.ComboBox2Change(Sender: TObject);
 var
-  FansSpeed: TFanSpeedArray;
+  CpuFansSpeed: TFanSpeedArray;
+  GpuFansSpeed: TFanSpeedArray;
+  FansResetValue: Integer;
 begin
   RemoveFocus(Form1);
 
   case ComboBox2.ItemIndex of
     0: begin
       TrackBar1.Enabled := False;
-      FillChar(FansSpeed, SizeOf(FansSpeed), 0);
-      MSI.SetScenario(scenarioSilent, @FansSpeed, @FansSpeed);
+      FillChar(CpuFansSpeed, SizeOf(CpuFansSpeed), 0);
+      MSI.SetScenario(scenarioSilent, 0, 0, @CpuFansSpeed, @CpuFansSpeed);
     end;
     1: begin
       TrackBar1.Enabled := False;
@@ -459,17 +454,19 @@ begin
     end;
     3: begin
       TrackBar1.Enabled := False;
-      FillChar(FansSpeed, SizeOf(FansSpeed), 150);
-      MSI.SetScenario(scenarioCoolerBoost, @FansSpeed, @FansSpeed);
+      TrackBar1.Position := 150;
+      FillChar(CpuFansSpeed, SizeOf(CpuFansSpeed), 150);
+      MSI.SetScenario(scenarioCoolerBoost, 150, 150, @CpuFansSpeed, @CpuFansSpeed);
     end;
     4: begin
       TrackBar1.Enabled := True;
-      TrackBar1.Position := MSI.GetBasicValue;
-      MSI.SetScenario(scenarioAdvanced, nil, nil);
+      TrackBar1.Position := GetAvarageFanSpeed;
+      FansResetValue := Q((TrackBar1.Position = 0), 0, -1);
+      CpuFansSpeed := GetCPUFansSpeed;
+      GpuFansSpeed := GetGPUFansSpeed;
+      MSI.SetScenario(scenarioAdvanced, FansResetValue, FansResetValue, @CpuFansSpeed, @GpuFansSpeed);
     end;
   end;
-
-  //SaveRegistryInteger(ComboBox2.ItemIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'FAN_MODE');
 end;
 
 
@@ -480,8 +477,16 @@ end;
 
 
 procedure TForm1.TrackBar1MouseUp(Sender: TObject);
+var
+  CpuFansSpeed: TFanSpeedArray;
+  GpuFansSpeed: TFanSpeedArray;
+  FansResetValue: Integer;
 begin
-  MSI.SetBasicMode(TrackBar1.Position);
+  FansResetValue := Q((TrackBar1.Position = 0), 0, -1);
+  SetAllFanSpeed(TrackBar1.Position);
+  CpuFansSpeed := GetCPUFansSpeed;
+  GpuFansSpeed := GetGPUFansSpeed;
+  MSI.SetScenario(scenarioAdvanced, FansResetValue, FansResetValue, @CpuFansSpeed, @GpuFansSpeed);
 end;
 
 
@@ -498,8 +503,6 @@ begin
 
   if Name = 'SETTING_HOTKEY_SOUND' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
   if Name = 'SETTING_CLEAR_CRASH_DUMPS' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
-  if Name = 'SETTING_WEBCAM' then CheckBox1.Checked := MSI.isWebcamEnabled;
-  if Name = 'SETTING_AUTO_DISABLE_WEBCAM' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
 end;
 
 
@@ -514,12 +517,6 @@ begin
 
   if Name = 'SETTING_HOTKEY_SOUND' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
   if Name = 'SETTING_CLEAR_CRASH_DUMPS' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
-  if Name = 'SETTING_WEBCAM' then MSI.SetWebcamEnabled(CheckBox1.Checked);
-
-  if Name = 'SETTING_AUTO_DISABLE_WEBCAM' then begin
-    SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
-    if CheckBox1.Checked then MSI.SetWebcamEnabled(False);
-  end;
 end;
 
 

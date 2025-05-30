@@ -5,7 +5,7 @@ interface
 uses
   Windows, Classes, Controls, Forms, ExtCtrls, ComCtrls, StdCtrls, MMSystem, CustoBevel, CustoHotKey,
   TFlatComboBoxUnit, TFlatCheckBoxUnit, MSIControl, MSIThemes, uHotKey, uDynamicData, Functions,
-  XiTrackBar, TntStdCtrls, SysUtils, jpeg, TntExtCtrls, XiPanel, XiButton;
+  XiTrackBar, TntStdCtrls, SysUtils, jpeg, TntExtCtrls, XiPanel, XiButton, MSIController;
 
 type
   TForm4 = class(TForm)
@@ -148,9 +148,74 @@ var
   Form4: TForm4;
   AdvancedDynData: TDynamicData;
 
+function GetAvarageFanSpeed: Integer;
+procedure SetAllFanSpeed(Speed: Integer);
+function GetCPUFansSpeed: TFanSpeedArray;
+function GetGPUFansSpeed: TFanSpeedArray;
+
 implementation
 
 {$R *.dfm}
+
+function GetAvarageFanSpeed: Integer;
+var
+  i: Integer;
+begin
+  Result := 0;
+
+  for i := 0 to AdvancedDynData.GetLength-1 do begin
+    Result := Result + AdvancedDynData.GetValue(i, 'Value');
+  end;
+
+  Result := Round(Result/AdvancedDynData.GetLength);
+end;
+
+
+procedure SetAllFanSpeed(Speed: Integer);
+var
+  i: Integer;
+  CloseAction: TCloseAction;
+begin
+  if (Speed < 0) then Speed := 0;
+  if (Speed > 150) then Speed := 150;
+
+  for i := 0 to AdvancedDynData.GetLength-1 do begin
+    AdvancedDynData.SetValue(i, 'Value', Speed);
+  end;
+
+  CloseAction := caNone;
+  Form4.FormClose(nil, CloseAction);
+  Form4.FormCreate(nil);
+end;
+
+
+function GetCPUFansSpeed: TFanSpeedArray;
+var
+  FansSpeed: TFanSpeedArray;
+begin
+  FansSpeed[0] := AdvancedDynData.FindValue(0, 'Name', 'FAN_1_1', 'Value');
+  FansSpeed[1] := AdvancedDynData.FindValue(0, 'Name', 'FAN_1_2', 'Value');
+  FansSpeed[2] := AdvancedDynData.FindValue(0, 'Name', 'FAN_1_3', 'Value');
+  FansSpeed[3] := AdvancedDynData.FindValue(0, 'Name', 'FAN_1_4', 'Value');
+  FansSpeed[4] := AdvancedDynData.FindValue(0, 'Name', 'FAN_1_5', 'Value');
+  FansSpeed[5] := AdvancedDynData.FindValue(0, 'Name', 'FAN_1_6', 'Value');
+  Result := FansSpeed;
+end;
+
+
+function GetGPUFansSpeed: TFanSpeedArray;
+var
+  FansSpeed: TFanSpeedArray;
+begin
+  FansSpeed[0] := AdvancedDynData.FindValue(0, 'Name', 'FAN_2_1', 'Value');
+  FansSpeed[1] := AdvancedDynData.FindValue(0, 'Name', 'FAN_2_2', 'Value');
+  FansSpeed[2] := AdvancedDynData.FindValue(0, 'Name', 'FAN_2_3', 'Value');
+  FansSpeed[3] := AdvancedDynData.FindValue(0, 'Name', 'FAN_2_4', 'Value');
+  FansSpeed[4] := AdvancedDynData.FindValue(0, 'Name', 'FAN_2_5', 'Value');
+  FansSpeed[5] := AdvancedDynData.FindValue(0, 'Name', 'FAN_2_6', 'Value');
+  Result := FansSpeed;
+end;
+
 
 procedure TForm4.FormCreate(Sender: TObject);
 var
@@ -179,6 +244,12 @@ begin
     if not LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_ADVANCED_KEY, Name) then continue;
     AdvancedDynData.SetValue(i, 'Value', v);
   end;
+end;
+
+
+procedure TForm4.FormShow(Sender: TObject);
+begin
+  MSIControl.RemoveFocus(self);
 
   TrackBar1.Position := TrackBar1.Max - AdvancedDynData.FindValue(0, 'Name', 'FAN_1_1', 'Value');
   TrackBar2.Position := TrackBar2.Max - AdvancedDynData.FindValue(0, 'Name', 'FAN_1_2', 'Value');
@@ -193,12 +264,6 @@ begin
   TrackBar10.Position := TrackBar10.Max - AdvancedDynData.FindValue(0, 'Name', 'FAN_2_4', 'Value');
   TrackBar11.Position := TrackBar11.Max - AdvancedDynData.FindValue(0, 'Name', 'FAN_2_5', 'Value');
   TrackBar12.Position := TrackBar12.Max - AdvancedDynData.FindValue(0, 'Name', 'FAN_2_6', 'Value');
-end;
-
-
-procedure TForm4.FormShow(Sender: TObject);
-begin
-  MSIControl.RemoveFocus(self);
 end;
 
 
@@ -227,6 +292,9 @@ begin
   end;
 
   Form4.OnCreate(nil);
+  Form4.FormShow(nil);
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 
@@ -296,6 +364,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_1_1');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar1.Max - TrackBar1.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar2MouseUp(Sender: TObject);
@@ -304,6 +374,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_1_2');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar2.Max - TrackBar2.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar3MouseUp(Sender: TObject);
@@ -312,6 +384,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_1_3');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar3.Max - TrackBar3.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar4MouseUp(Sender: TObject);
@@ -320,6 +394,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_1_4');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar4.Max - TrackBar4.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar5MouseUp(Sender: TObject);
@@ -328,6 +404,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_1_5');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar5.Max - TrackBar5.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar6MouseUp(Sender: TObject);
@@ -336,6 +414,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_1_6');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar6.Max - TrackBar6.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar7MouseUp(Sender: TObject);
@@ -344,6 +424,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_2_1');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar7.Max - TrackBar7.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar8MouseUp(Sender: TObject);
@@ -352,6 +434,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_2_2');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar8.Max - TrackBar8.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar9MouseUp(Sender: TObject);
@@ -360,6 +444,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_2_3');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar9.Max - TrackBar9.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar10MouseUp(Sender: TObject);
@@ -368,6 +454,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_2_4');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar10.Max - TrackBar10.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar11MouseUp(Sender: TObject);
@@ -376,6 +464,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_2_5');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar11.Max - TrackBar11.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 procedure TForm4.TrackBar12MouseUp(Sender: TObject);
@@ -384,6 +474,8 @@ var
 begin
   i := AdvancedDynData.FindIndex(0, 'Name', 'FAN_2_6');
   AdvancedDynData.SetValue(i, 'Value', (TrackBar12.Max - TrackBar12.Position));
+  Form1.TrackBar1.Position := GetAvarageFanSpeed;
+  if (Form1.ComboBox2.ItemIndex = 4) then Form1.ComboBox2Change(nil);
 end;
 
 end.

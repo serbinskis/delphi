@@ -3,24 +3,21 @@
 This is the source code of MSIControl. MSIControl is an application that will allow you to control fans of your MSI computer and other stuff. You probably will not be able to compile this project because it depends on other packages and units, which are not included.
 
 <p align="center"><img width="335" height="295" src="-(RES)-/Example.png"></p>
+<p align="center"><img width="435" height="560" src="-(RES)-/Example2.png"></p>
 
 ## Features
 
 - Portable.
-- Hotkeys are configurable.
-- Sound notify on hotkey.
-- Toggle inbuilt MSI webcam.
-- Toggle ethernet adapter.
-- Toggle Cooler Boost.
-- Toggle keyboard.
+- Hotkeys Are Configurable.
+- Sound Notify On Hotkey.
+- Toggle Ethernet Adapter.
+- Toggle Keyboard.
 - Control Shadow Play.
-- Control fan speed.
-- Control microphone volume and mute.
-- Control bluetooth.
-- Control monitors.
-- Wake On Lan
-- Set fixed volume on microphone.
-- Set custom hotkey to change keyboard language.
+- Control Fan Speed.
+- Control Microphone Volume And Mute.
+- Control Bluetooth.
+- Control Monitors.
+- Set Fixed Volume On Microphone.
 
 ## Download
 You can download the MSIControl [here](https://github.com/serbinskis/Delphi/raw/master/MSIControl/MSIControl.exe).

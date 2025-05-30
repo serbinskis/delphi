@@ -185,9 +185,9 @@ object Form1: TForm1
     DownThumbGradColor = 14120960
     SmoothCorners = False
     ColorScheme = csCustom
-    Position = 0
-    Min = -15
-    Max = 15
+    Position = 75
+    Min = 0
+    Max = 150
     Frequency = 1
     TickStyle = tsNone
     TickMarks = tmBottomRight
