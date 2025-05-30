@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Forms, StdCtrls, XiButton, XiTrackBar, TFlatComboBoxUnit, TFlatCheckBoxUnit,
-  TNTStdCtrls, CustoBevel, CustoHotKey, Functions;
+  TNTStdCtrls, CustoBevel, CustoHotKey, XiPanel, Functions;
 
 type
   TRGB = record
@@ -137,7 +137,28 @@ begin
 end;
 
 
+procedure ChangePanelTheme(Panel: TXiPanel; WhitMode: Boolean);
+var
+  i: Integer;
+begin
+  i := Integer(WhitMode);
+  Panel.ColorDark := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+  Panel.ColorFace := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+  Panel.ColorGrad := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+  Panel.ColorLight := RGB(BEVEL_COLOR[i].R, BEVEL_COLOR[i].G, BEVEL_COLOR[i].B);
+end;
+
+
 procedure ChangeLabelTheme(cLabel: TLabel; WhitMode: Boolean);
+var
+  i: Integer;
+begin
+  i := Integer(WhitMode);
+  cLabel.Font.Color := RGB(BLACK_WHITE_COLOR[i].R, BLACK_WHITE_COLOR[i].G, BLACK_WHITE_COLOR[i].B);
+end;
+
+
+procedure ChangeTntLabelTheme(cLabel: TTNTLabel; WhitMode: Boolean);
 var
   i: Integer;
 begin
@@ -181,6 +202,8 @@ begin
     Name := Form.Components[j].ClassName;
     if (Name = 'TCustoBevel') then ChangeBevelTheme(TCustoBevel(Form.Components[j]), WhiteMode);
     if (Name = 'TLabel') then ChangeLabelTheme(TLabel(Form.Components[j]), WhiteMode);
+    if (Name = 'TXiPanel') then ChangePanelTheme(TXiPanel(Form.Components[j]), WhiteMode);
+    if (Name = 'TTntLabel') then ChangeTntLabelTheme(TTntLabel(Form.Components[j]), WhiteMode);
     if (Name = 'TFlatComboBox') then ChangeComboBoxTheme(TFlatComboBox(Form.Components[j]), WhiteMode);
     if (Name = 'TFlatCheckBox') then ChangeCheckBoxTheme(TFlatCheckBox(Form.Components[j]), WhiteMode);
     if (Name = 'TCustoHotKey') then ChangeHotKeyTheme(TCustoHotKey(Form.Components[j]), WhiteMode);

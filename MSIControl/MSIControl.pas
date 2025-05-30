@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Dialogs, Classes, Forms, Menus, MMSystem, Graphics, ShellAPI,
   ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
   XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, TNTMenus, WinXP,
-  MSIThemes, uHotKey, uNotify, uReadConsole, uDynamicData, MSIController, Functions;
+  MSIThemes, uHotKey, uNotify, uReadConsole, uDynamicData, MSIController, Functions,
+  Buttons, TntButtons, TntStdCtrls;
 
 type
   TForm1 = class(TForm)
@@ -16,9 +17,7 @@ type
     Button1: TXiButton;
     Button2: TXiButton;
     Button3: TXiButton;
-    Button4: TXiButton;
     Button5: TXiButton;
-    Button6: TXiButton;
     Button7: TXiButton;
     CheckBox1: TFlatCheckBox;
     ComboBox1: TFlatComboBox;
@@ -32,16 +31,15 @@ type
     Label4: TLabel;
     PopupMenu1: TTntPopupMenu;
     Restart1: TMenuItem;
-    Timer1: TTimer;
     Toggle1: TMenuItem;
     ToggleAutoruns1: TMenuItem;
     ToggleCoolerBoost1: TMenuItem;
     TrackBar1: TXiTrackBar;
     TrayIcon1: TTrayIcon;
+    Label5: TTntLabel;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
@@ -62,12 +60,13 @@ type
     procedure HotKey1Enter(Sender: TObject);
     procedure HotKey1Exit(Sender: TObject);
     procedure Restart1Click(Sender: TObject);
-    procedure Timer1Timer(Sender: TObject);
     procedure ToggleAutoruns1Click(Sender: TObject);
-    procedure ToggleCoolerBoost1Click(Sender: TObject);
     procedure TrackBar1Change(Sender: TObject);
     procedure TrackBar1MouseUp(Sender: TObject);
     procedure TrayIcon1Action(Sender: TObject; Code: Integer);
+    procedure Label5Click(Sender: TObject);
+    procedure Label5MouseEnter(Sender: TObject);
+    procedure Label5MouseLeave(Sender: TObject);
   private
     { Private declarations }
   public
@@ -88,7 +87,6 @@ var
   TrayIconCallbacks: TList;
   MSI: TMSIController;
   AppInactive: Boolean = False;
-  Counter: Integer;
   mOldHotKey: Integer;
   mNewHotKey: Integer;
 
@@ -98,7 +96,7 @@ procedure RemoveFocus(Form: TForm);
 implementation
 
 uses
-  MSIMicrophones, MSIShadowPlay, MSILanguages, MSIConnections, MSIWakeOnLan,
+  MSIMicrophones, MSIShadowPlay, MSIAdvanced, MSIConnections, MSIWakeOnLan,
   MSIKeyboard, MSIMonitors;
 
 {$R *.dfm}
@@ -131,13 +129,28 @@ begin
   if (CustomValue = 'HOTKEY_TOGGLE_CB') then MSI.ToggleCoolerBoost;
   if (CustomValue = 'HOTKEY_TOGGLE_WEBCAM') then MSI.ToggleWebcam;
 
-  if (CustomValue = 'HOTKEY_CHANGE_MODE_AUTO') then begin
+  if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_ECO') then begin
     Form1.ComboBox2.ItemIndex := 0;
     Form1.ComboBox2Change(nil);
   end;
 
-  if (CustomValue = 'HOTKEY_CHANGE_MODE_BASIC') then begin
+  if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_BALANCED') then begin
     Form1.ComboBox2.ItemIndex := 1;
+    Form1.ComboBox2Change(nil);
+  end;
+
+  if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_AUTO') then begin
+    Form1.ComboBox2.ItemIndex := 2;
+    Form1.ComboBox2Change(nil);
+  end;
+
+  if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_COOLERBOOST') then begin
+    Form1.ComboBox2.ItemIndex := 3;
+    Form1.ComboBox2Change(nil);
+  end;
+
+  if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_ADVANCED') then begin
+    Form1.ComboBox2.ItemIndex := 4;
     Form1.ComboBox2Change(nil);
   end;
 
@@ -205,18 +218,15 @@ begin
   end;
 
   HotkeyDynData := TDynamicData.Create(['Hotkey', 'Name', 'Description']);
-  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_CB', 'Toggle Cooler Boost']);
-  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_WEBCAM', 'Toggle Webcam']);
-  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_MODE_AUTO', 'Change Mode To Auto']);
-  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_MODE_BASIC', 'Change Mode To Basic']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_ECO', 'Change Scenario To ECO-silent']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_BALANCED', 'Change Scenario To Balanced']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_AUTO', 'Change Scenario To Auto']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_COOLERBOOST', 'Change Scenario To Cooler Boost']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_ADVANCED', 'Change Scenario To Advanced']);
 
   SettingDynData := TDynamicData.Create(['Value', 'Name', 'Description']);
   SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [True, False, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
   SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, False, 'SETTING_CLEAR_CRASH_DUMPS', 'Clear Crash Dumps On Start']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, True, 'SETTING_COOLER_BOOST', 'Enable Cooler Boost']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, True, 'SETTING_WEBCAM', 'Enable MSI Webcam']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, True, 'SETTING_AUTO_DISABLE_WEBCAM', 'Disable MSI Webcam On Startup']);
-  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, True, 'SETTING_OVERHEATING', 'Prevent GPU overheating, enables Cooler Boost']);
 
   for i := 0 to HotkeyDynData.GetLength-1 do begin
     ComboBox1.Items.Add(HotkeyDynData.GetValue(i, 'Description'));
@@ -237,19 +247,16 @@ begin
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_CLEAR_CRASH_DUMPS', 'Value');
   if (v > 0) then DeleteDirectory(GetEnvironmentVariable('LocalAppData') + '\CrashDumps');
 
-  v := SettingDynData.FindValue(0, 'Name', 'SETTING_OVERHEATING', 'Value');
-  Timer1.Enabled := MSI.isECLoaded(True) and (v > 0);
-
-  v := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_DISABLE_WEBCAM', 'Value');
-  if (v > 0) then MSI.SetWebcamEnabled(False);
-  if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'FAN_MODE') then MSI.SetFanMode(TModeType(v));
+  //v := SettingDynData.FindValue(0, 'Name', 'SETTING_AUTO_DISABLE_WEBCAM', 'Value');
+  //if (v > 0) then MSI.SetWebcamEnabled(False);
+  //if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'FAN_MODE') then MSI.SetFanMode(TModeType(v));
 
   ComboBox1.ItemIndex := 0;
   ComboBox1Change(nil);
   ComboBox3.ItemIndex := 0;
   ComboBox3Change(nil);
 
-  PopupMenu1.Items.Find('Toggle').Items[1].Visible := MSI.isECLoaded(True);
+  PopupMenu1.Items.Find('Toggle').Items[1].Visible := False; //MSI.isECLoaded(True);
   TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
   TrayIcon1.Title := Application.Title;
   TrayIcon1.AddToTray;
@@ -282,22 +289,22 @@ begin
   Form1.Top := MonitorHeigth - Form1.Height - (MonitorHeigth - CurrentMonitor.WorkareaRect.Bottom);
   ComboBox1Change(nil);
 
-  case MSI.GetFanMode of
-    modeAuto: ComboBox2.ItemIndex := 0;
-    modeBasic: ComboBox2.ItemIndex := 1;
-    modeAdvanced: begin
-      ComboBox2.ItemIndex := 2;
-      TrackBar1.Enabled := False;
-    end;
+  case MSI.GetScenario of
+    scenarioSilent: begin ComboBox2.ItemIndex := 0; TrackBar1.Enabled := False; end;
+    scenarioBalanced: begin ComboBox2.ItemIndex := 1; TrackBar1.Enabled := False; end;
+    scenarioAuto: begin ComboBox2.ItemIndex := 2; TrackBar1.Enabled := False; end;
+    scenarioCoolerBoost: begin ComboBox2.ItemIndex := 3; TrackBar1.Enabled := False; end;
+    scenarioAdvanced: begin ComboBox2.ItemIndex := 4; TrackBar1.Enabled := True; end;
   end;
 
-  TrackBar1.Position := MSI.GetBasicValue;
-  if ComboBox2.Enabled and (ComboBox2.ItemIndex <> 2) then ComboBox2Change(nil);
+  //TrackBar1.Position := MSI.GetBasicValue;
+  //if ComboBox2.Enabled and (ComboBox2.ItemIndex <> 2) then ComboBox2Change(nil);
 
   HotKey1.Enabled := MSI.isECLoaded(True);
   ComboBox1.Enabled := MSI.isECLoaded(True);
   ComboBox2.Enabled := MSI.isECLoaded(True);
-  TrackBar1.Enabled := MSI.isECLoaded(True);
+  TrackBar1.Enabled := MSI.isECLoaded(True) and TrackBar1.Enabled;
+  Label5.Enabled := MSI.isECLoaded(True);
   ComboBox3Change(nil);
   Form1.Repaint;
 end;
@@ -328,7 +335,6 @@ begin
     SaveRegistryBoolean(SettingDynData.GetValue(i, 'Value'), DEFAULT_ROOT_KEY, DEFAULT_KEY, SettingDynData.GetValue(i, 'Name'));
   end;
 
-  Timer1.Enabled := False;
   MSI.Destroy;
   TrayIcon1.Destroy;
 end;
@@ -356,30 +362,17 @@ begin
 end;
 
 
-procedure TForm1.Timer1Timer(Sender: TObject);
-begin
-  if (MSI.GetGPUTemp >= 95) then Inc(Counter) else Counter := 0;
-  if (Counter >= 3) then MSI.SetCoolerBoostEnabled(True);
-end;
-
-
-procedure TForm1.ToggleCoolerBoost1Click(Sender: TObject);
-begin
-  MSI.ToggleCoolerBoost;
-end;
-
-
 procedure TForm1.ToggleAutoruns1Click(Sender: TObject);
 var
   S: WideString;
 begin
-  S := ReadOutput('schtasks.exe /QUERY /TN MSIControl');
+  S := ReadOutput('schtasks.exe /query /tn MSIControl');
 
   if AnsiContainsText(S, 'ERROR') then begin
-    ExecuteProcessAsAdmin('SchTasks', '/Create /SC ONLOGON /RL HIGHEST /TN MSIControl /TR "' + WideParamStr(0) + '" /F', SW_HIDE);
+    ExecuteProcessAsAdmin('schtasks', '/create /sc ONLOGON /rl HIGHEST /tn MSIControl /tr "' + WideParamStr(0) + '" /f', SW_HIDE);
     ShowMessage('Application added to autoruns.');
   end else begin
-    ExecuteProcessAsAdmin('SchTasks', '/Delete /TN MSIControl /F', SW_HIDE);
+    ExecuteProcessAsAdmin('schtasks', '/delete /tn MSIControl /f', SW_HIDE);
     ShowMessage('Application removed from autoruns.');
   end;
 end;
@@ -445,27 +438,38 @@ end;
 
 
 procedure TForm1.ComboBox2Change(Sender: TObject);
+var
+  FansSpeed: TFanSpeedArray;
 begin
   RemoveFocus(Form1);
 
   case ComboBox2.ItemIndex of
     0: begin
       TrackBar1.Enabled := False;
-      MSI.SetFanMode(modeAuto);
+      FillChar(FansSpeed, SizeOf(FansSpeed), 0);
+      MSI.SetScenario(scenarioSilent, @FansSpeed, @FansSpeed);
     end;
     1: begin
-      TrackBar1.Enabled := True;
-      TrackBar1.Position := MSI.GetBasicValue;
-      MSI.SetBasicMode(TrackBar1.Position);
+      TrackBar1.Enabled := False;
+      MSI.SetScenario(scenarioBalanced, nil, nil);
     end;
     2: begin
-      ComboBox2.ItemIndex := 0;
       TrackBar1.Enabled := False;
-      MSI.SetFanMode(modeAuto);
+      MSI.SetScenario(scenarioAuto, nil, nil);
+    end;
+    3: begin
+      TrackBar1.Enabled := False;
+      FillChar(FansSpeed, SizeOf(FansSpeed), 150);
+      MSI.SetScenario(scenarioCoolerBoost, @FansSpeed, @FansSpeed);
+    end;
+    4: begin
+      TrackBar1.Enabled := True;
+      TrackBar1.Position := MSI.GetBasicValue;
+      MSI.SetScenario(scenarioAdvanced, nil, nil);
     end;
   end;
 
-  SaveRegistryInteger(ComboBox2.ItemIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'FAN_MODE');
+  //SaveRegistryInteger(ComboBox2.ItemIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'FAN_MODE');
 end;
 
 
@@ -494,9 +498,7 @@ begin
 
   if Name = 'SETTING_HOTKEY_SOUND' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
   if Name = 'SETTING_CLEAR_CRASH_DUMPS' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
-  if Name = 'SETTING_COOLER_BOOST' then CheckBox1.Checked := MSI.isCoolerBoostEnabled;
   if Name = 'SETTING_WEBCAM' then CheckBox1.Checked := MSI.isWebcamEnabled;
-  if Name = 'SETTING_OVERHEATING' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
   if Name = 'SETTING_AUTO_DISABLE_WEBCAM' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
 end;
 
@@ -512,17 +514,11 @@ begin
 
   if Name = 'SETTING_HOTKEY_SOUND' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
   if Name = 'SETTING_CLEAR_CRASH_DUMPS' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
-  if Name = 'SETTING_COOLER_BOOST' then MSI.SetCoolerBoostEnabled(CheckBox1.Checked);
   if Name = 'SETTING_WEBCAM' then MSI.SetWebcamEnabled(CheckBox1.Checked);
 
   if Name = 'SETTING_AUTO_DISABLE_WEBCAM' then begin
     SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
     if CheckBox1.Checked then MSI.SetWebcamEnabled(False);
-  end;
-
-  if Name = 'SETTING_OVERHEATING' then begin
-    SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
-    Timer1.Enabled := CheckBox1.Checked;
   end;
 end;
 
@@ -543,7 +539,7 @@ begin
 end;
 
 
-procedure TForm1.Button4Click(Sender: TObject);
+procedure TForm1.Label5Click(Sender: TObject);
 begin
   Application.OnDeactivate := nil;
   Form4.ShowModal;
@@ -594,6 +590,30 @@ end;
 procedure TForm1.HotKey1Change(Sender: TObject);
 begin
   mNewHotKey := HotKey1.HotKey;
+end;
+
+procedure TForm1.Label5MouseEnter(Sender: TObject);
+var
+  R, G, B: Byte;
+  C: TColor;
+begin
+  Label5.Tag := 100;
+  C := ColorToRGB(Label5.Font.Color);
+  R := GetRValue(C);
+  G := GetGValue(C);
+  B := GetBValue(C);
+
+  if (R > Label5.Tag) then R := R - Label5.Tag else R := 0;
+  if (G > Label5.Tag) then G := G - Label5.Tag else G := 0;
+  if (B > Label5.Tag) then B := B - Label5.Tag else B := 0;
+
+  Label5.Color := Label5.Font.Color;
+  Label5.Font.Color := RGB(R, G, B);
+end;
+
+procedure TForm1.Label5MouseLeave(Sender: TObject);
+begin
+  Label5.Font.Color := Label5.Color;
 end;
 
 end.

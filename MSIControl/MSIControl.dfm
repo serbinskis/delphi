@@ -99,6 +99,25 @@ object Form1: TForm1
     Font.Style = [fsBold]
     ParentFont = False
   end
+  object Label5: TTntLabel
+    Left = 304
+    Top = 103
+    Width = 22
+    Height = 22
+    Hint = 'Advanced Fan Control'
+    Alignment = taCenter
+    AutoSize = False
+    Caption = #9881#65039
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Calibri'
+    Font.Style = []
+    ParentFont = False
+    OnClick = Label5Click
+    OnMouseEnter = Label5MouseEnter
+    OnMouseLeave = Label5MouseLeave
+  end
   object ComboBox1: TFlatComboBox
     Left = 144
     Top = 39
@@ -141,7 +160,7 @@ object Form1: TForm1
   object TrackBar1: TXiTrackBar
     Left = 48
     Top = 98
-    Width = 177
+    Width = 153
     Height = 33
     BackColor = clWhite
     TickColor = clBlack
@@ -221,7 +240,7 @@ object Form1: TForm1
     OnClick = Button1Click
   end
   object ComboBox2: TFlatComboBox
-    Left = 232
+    Left = 208
     Top = 103
     Width = 89
     Height = 22
@@ -236,13 +255,15 @@ object Form1: TForm1
     Font.Style = []
     ItemHeight = 14
     Items.Strings = (
+      'ECO-silent'
+      'Balanced'
       'Auto'
-      'Basic'
+      'Cooler Boost'
       'Advanced')
     ParentFont = False
     TabOrder = 4
-    Text = 'Auto'
-    ItemIndex = 0
+    Text = 'Balanced'
+    ItemIndex = 1
     OnChange = ComboBox2Change
   end
   object ComboBox3: TFlatComboBox
@@ -371,52 +392,10 @@ object Form1: TForm1
     TabOrder = 8
     OnClick = Button3Click
   end
-  object Button4: TXiButton
-    Left = 250
-    Top = 167
-    Width = 73
-    Height = 25
-    HelpType = htKeyword
-    ColorFace = clBlue
-    ColorGrad = clRed
-    ColorDark = clLime
-    ColorLight = clYellow
-    ColorBorder = clBlack
-    ColorText = clBlack
-    OverColorFace = clWhite
-    OverColorGrad = clWhite
-    OverColorDark = clWhite
-    OverColorLight = clWhite
-    OverColorBorder = 14120960
-    OverColorText = clBlack
-    DownColorFace = 15790320
-    DownColorGrad = 15790320
-    DownColorDark = 15790320
-    DownColorLight = 15790320
-    DownColorBorder = 10048512
-    DownColorText = clBlack
-    DisabledColorFace = clSilver
-    DisabledColorGrad = clSilver
-    DisabledColorDark = clSilver
-    DisabledColorLight = clSilver
-    DisabledColorBorder = clBlack
-    DisabledColorText = clBlack
-    ColorFocusRect = clNone
-    ColorScheme = csCustom
-    Ctl3D = True
-    Layout = blGlyphLeft
-    Spacing = 4
-    TransparentGlyph = True
-    Gradient = False
-    HotTrack = True
-    Caption = 'Languages'
-    TabOrder = 9
-    OnClick = Button4Click
-  end
   object Button5: TXiButton
     Left = 10
     Top = 199
-    Width = 153
+    Width = 313
     Height = 25
     HelpType = htKeyword
     ColorFace = clBlue
@@ -452,55 +431,13 @@ object Form1: TForm1
     Gradient = False
     HotTrack = True
     Caption = 'Bluetooth && Ethernet'
-    TabOrder = 10
+    TabOrder = 9
     OnClick = Button5Click
   end
-  object Button6: TXiButton
-    Left = 170
-    Top = 199
-    Width = 73
-    Height = 25
-    HelpType = htKeyword
-    ColorFace = clBlue
-    ColorGrad = clRed
-    ColorDark = clLime
-    ColorLight = clYellow
-    ColorBorder = clBlack
-    ColorText = clBlack
-    OverColorFace = clWhite
-    OverColorGrad = clWhite
-    OverColorDark = clWhite
-    OverColorLight = clWhite
-    OverColorBorder = 14120960
-    OverColorText = clBlack
-    DownColorFace = 15790320
-    DownColorGrad = 15790320
-    DownColorDark = 15790320
-    DownColorLight = 15790320
-    DownColorBorder = 10048512
-    DownColorText = clBlack
-    DisabledColorFace = clSilver
-    DisabledColorGrad = clSilver
-    DisabledColorDark = clSilver
-    DisabledColorLight = clSilver
-    DisabledColorBorder = clBlack
-    DisabledColorText = clBlack
-    ColorFocusRect = clNone
-    ColorScheme = csCustom
-    Ctl3D = True
-    Layout = blGlyphLeft
-    Spacing = 4
-    TransparentGlyph = True
-    Gradient = False
-    HotTrack = True
-    Caption = 'Wake On Lan'
-    TabOrder = 11
-    OnClick = Button6Click
-  end
   object Button7: TXiButton
-    Left = 250
-    Top = 199
-    Width = 73
+    Left = 248
+    Top = 167
+    Width = 75
     Height = 25
     HelpType = htKeyword
     ColorFace = clBlue
@@ -536,7 +473,7 @@ object Form1: TForm1
     Gradient = False
     HotTrack = True
     Caption = 'Monitors'
-    TabOrder = 12
+    TabOrder = 10
     OnClick = Button7Click
   end
   object PopupMenu1: TTntPopupMenu
@@ -550,7 +487,6 @@ object Form1: TForm1
       end
       object ToggleCoolerBoost1: TMenuItem
         Caption = 'Toggle Cooler Boost'
-        OnClick = ToggleCoolerBoost1Click
       end
     end
     object Restart1: TMenuItem
@@ -565,10 +501,5 @@ object Form1: TForm1
   object TrayIcon1: TTrayIcon
     OnAction = TrayIcon1Action
     Left = 304
-  end
-  object Timer1: TTimer
-    Enabled = False
-    OnTimer = Timer1Timer
-    Left = 240
   end
 end
