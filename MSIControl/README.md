@@ -1,4 +1,4 @@
-# MSI Control (GL65 9SE)
+# MSI Control (Vector 16 HX A14VHG)
 
 This is the source code of MSIControl. MSIControl is an application that will allow you to control fans of your MSI computer and other stuff. You probably will not be able to compile this project because it depends on other packages and units, which are not included.
 
