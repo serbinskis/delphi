@@ -152,6 +152,7 @@ function GetAvarageFanSpeed: Integer;
 procedure SetAllFanSpeed(Speed: Integer);
 function GetCPUFansSpeed: TFanSpeedArray;
 function GetGPUFansSpeed: TFanSpeedArray;
+procedure LoadSettings;
 
 implementation
 
@@ -162,6 +163,7 @@ var
   i: Integer;
 begin
   Result := 0;
+  if (not Assigned(AdvancedDynData)) then LoadSettings;
 
   for i := 0 to AdvancedDynData.GetLength-1 do begin
     Result := Result + AdvancedDynData.GetValue(i, 'Value');
@@ -178,6 +180,7 @@ var
 begin
   if (Speed < 0) then Speed := 0;
   if (Speed > 150) then Speed := 150;
+  if (not Assigned(AdvancedDynData)) then LoadSettings;
 
   for i := 0 to AdvancedDynData.GetLength-1 do begin
     AdvancedDynData.SetValue(i, 'Value', Speed);
@@ -193,6 +196,7 @@ function GetCPUFansSpeed: TFanSpeedArray;
 var
   FansSpeed: TFanSpeedArray;
 begin
+  if (not Assigned(AdvancedDynData)) then LoadSettings;
   FansSpeed[0] := AdvancedDynData.FindValue(0, 'Name', 'FAN_1_1', 'Value');
   FansSpeed[1] := AdvancedDynData.FindValue(0, 'Name', 'FAN_1_2', 'Value');
   FansSpeed[2] := AdvancedDynData.FindValue(0, 'Name', 'FAN_1_3', 'Value');
@@ -207,6 +211,7 @@ function GetGPUFansSpeed: TFanSpeedArray;
 var
   FansSpeed: TFanSpeedArray;
 begin
+  if (not Assigned(AdvancedDynData)) then LoadSettings;
   FansSpeed[0] := AdvancedDynData.FindValue(0, 'Name', 'FAN_2_1', 'Value');
   FansSpeed[1] := AdvancedDynData.FindValue(0, 'Name', 'FAN_2_2', 'Value');
   FansSpeed[2] := AdvancedDynData.FindValue(0, 'Name', 'FAN_2_3', 'Value');
@@ -217,14 +222,12 @@ begin
 end;
 
 
-procedure TForm4.FormCreate(Sender: TObject);
+procedure LoadSettings;
 var
   Name: WideString;
   i, v: Integer;
 begin
-  ChangeTheme(Theme, self);
   AdvancedDynData := TDynamicData.Create(['Value', 'Name']);
-
   AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [0, 'FAN_1_1']);
   AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [40, 'FAN_1_2']);
   AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [50, 'FAN_1_3']);
@@ -244,6 +247,13 @@ begin
     if not LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_ADVANCED_KEY, Name) then continue;
     AdvancedDynData.SetValue(i, 'Value', v);
   end;
+end;
+
+
+procedure TForm4.FormCreate(Sender: TObject);
+begin
+  ChangeTheme(Theme, self);
+  LoadSettings;
 end;
 
 

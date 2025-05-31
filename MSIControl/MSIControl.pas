@@ -201,6 +201,8 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 var
+  CpuFansSpeed: TFanSpeedArray;
+  GpuFansSpeed: TFanSpeedArray;
   Name: WideString;
   i, v: Integer;
 begin
@@ -243,6 +245,11 @@ begin
 
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_CLEAR_CRASH_DUMPS', 'Value');
   if (v > 0) then DeleteDirectory(GetEnvironmentVariable('LocalAppData') + '\CrashDumps');
+
+  if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SCENARIO_MODE') then begin
+    ComboBox2.ItemIndex := v;
+    ComboBox2Change(nil);
+  end;
 
   ComboBox1.ItemIndex := 0;
   ComboBox1Change(nil);
@@ -467,6 +474,8 @@ begin
       MSI.SetScenario(scenarioAdvanced, FansResetValue, FansResetValue, @CpuFansSpeed, @GpuFansSpeed);
     end;
   end;
+
+  SaveRegistryInteger(ComboBox2.ItemIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SCENARIO_MODE');
 end;
 
 

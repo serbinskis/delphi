@@ -306,6 +306,7 @@ var
   i, HotKey, Key: Integer;
   ID: Int64;
 begin
+  if (ComboBox1.Items.Count = 0) then Exit;
   ID := Int64(ComboBox1.Items.Objects[ComboBox1.ItemIndex]);
   i := MonDynData.FindIndex(0, 'ID', ID);
   HotKey := MonDynData.GetValue(i, 'HotKey');

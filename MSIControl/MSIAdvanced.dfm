@@ -387,7 +387,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -428,7 +428,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -469,7 +469,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -510,7 +510,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -611,7 +611,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -652,7 +652,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -1098,7 +1098,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -1139,7 +1139,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -1180,7 +1180,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -1221,7 +1221,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -1322,7 +1322,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
@@ -1363,7 +1363,7 @@ object Form4: TForm4
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = -3
+    Position = 0
     Min = 0
     Max = 150
     Frequency = 1
