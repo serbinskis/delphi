@@ -201,8 +201,6 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 var
-  CpuFansSpeed: TFanSpeedArray;
-  GpuFansSpeed: TFanSpeedArray;
   Name: WideString;
   i, v: Integer;
 begin
