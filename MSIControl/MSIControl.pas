@@ -369,7 +369,7 @@ begin
   S := ReadOutput('schtasks.exe /query /tn MSIControl');
 
   if AnsiContainsText(S, 'ERROR') then begin
-    ExecuteProcessAsAdmin('schtasks.exe', '/create /sc onlogon /rl highest /tn MSIControl /tr "' + WideParamStr(0) + '" /f', SW_HIDE);
+    ExecuteProcessAsAdmin('schtasks.exe', '/create /sc onlogon /rl highest /tn MSIControl /tr "\"' + WideParamStr(0) + '\"" /f', SW_HIDE);
     ShowMessage('Application added to autoruns.');
   end else begin
     ExecuteProcessAsAdmin('schtasks.exe', '/delete /tn MSIControl /f', SW_HIDE);
