@@ -124,7 +124,8 @@ var
   i: Integer;
 begin
   i := SettingDynData.FindIndex(0, 'Name', 'SETTING_HOTKEY_SOUND');
-  if (i > -1) and SettingDynData.GetValue(i, 'Value') then PlaySound('HOTKEY', 0, SND_RESOURCE or SND_ASYNC);
+  if (i > -1) and SettingDynData.GetValue(i, 'Value') then PlaySound('HOTKEY', 0, SND_ASYNC or SND_RESOURCE); // TSoundThread.Play('HOTKEY', SND_RESOURCE);
+  Sleep(10); // Small pause to allow the thread to start playing the sound; otherwise, it might be skipped (still bugged)
 
   if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_ECO') then begin
     Form1.ComboBox2.ItemIndex := 0;
@@ -446,8 +447,7 @@ begin
   case ComboBox2.ItemIndex of
     0: begin
       TrackBar1.Enabled := False;
-      FillChar(CpuFansSpeed, SizeOf(CpuFansSpeed), 0);
-      MSI.SetScenario(scenarioSilent, 0, 0, @CpuFansSpeed, @CpuFansSpeed);
+      MSI.SetScenario(scenarioSilent, 0, 0, nil, nil);
     end;
     1: begin
       TrackBar1.Enabled := False;
@@ -479,7 +479,7 @@ end;
 
 procedure TForm1.TrackBar1Change(Sender: TObject);
 begin
-  Label3.Caption := IntToStr(Round(((TrackBar1.Position - TrackBar1.Min) * 100) / (TrackBar1.Max - TrackBar1.Min))) + '%';
+  Label3.Caption := IntToStr(TrackBar1.Position) + '%';
 end;
 
 

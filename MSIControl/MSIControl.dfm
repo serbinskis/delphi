@@ -78,7 +78,7 @@ object Form1: TForm1
     Height = 18
     Alignment = taCenter
     AutoSize = False
-    Caption = '50%'
+    Caption = '75%'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -15
