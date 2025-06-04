@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Dialogs, Classes, Forms, Menus, MMSystem, Graphics, ShellAPI,
   ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
   XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, TNTMenus, WinXP,
-  MSIThemes, uHotKey, uNotify, uReadConsole, uDynamicData, MSIController, Functions,
+  MSIThemes, uHotKey, uNotify, uReadConsole, uSoundThread, uDynamicData, MSIController, Functions,
   Buttons, TntButtons, TntStdCtrls;
 
 type
@@ -126,8 +126,7 @@ var
   i: Integer;
 begin
   i := SettingDynData.FindIndex(0, 'Name', 'SETTING_HOTKEY_SOUND');
-  if (i > -1) and SettingDynData.GetValue(i, 'Value') then PlaySound('HOTKEY', 0, SND_ASYNC or SND_RESOURCE); // TSoundThread.Play('HOTKEY', SND_RESOURCE);
-  Sleep(10); // Small pause to allow the thread to start playing the sound; otherwise, it might be skipped (still bugged)
+  if (i > -1) and SettingDynData.GetValue(i, 'Value') then TSoundThread.PlayResource('HOTKEY', 'WAVE', 1);
 
   if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_ECO') then begin
     Form1.ComboBox2.ItemIndex := 0;
