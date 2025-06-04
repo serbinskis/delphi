@@ -33,10 +33,10 @@ type
     Restart1: TMenuItem;
     Toggle1: TMenuItem;
     ToggleAutoruns1: TMenuItem;
-    ToggleCoolerBoost1: TMenuItem;
     TrackBar1: TXiTrackBar;
     TrayIcon1: TTrayIcon;
     Label5: TTntLabel;
+    Timer1: TTimer;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -67,6 +67,7 @@ type
     procedure Label5Click(Sender: TObject);
     procedure Label5MouseEnter(Sender: TObject);
     procedure Label5MouseLeave(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
   private
     { Private declarations }
   public
@@ -86,6 +87,7 @@ var
   ShutdownCallbacks: TList;
   TrayIconCallbacks: TList;
   MSI: TMSIController;
+  CurrentScenario: TScenarioType = scenarioUnknown;
   AppInactive: Boolean = False;
   mOldHotKey: Integer;
   mNewHotKey: Integer;
@@ -245,6 +247,11 @@ begin
   v := SettingDynData.FindValue(0, 'Name', 'SETTING_CLEAR_CRASH_DUMPS', 'Value');
   if (v > 0) then DeleteDirectory(GetEnvironmentVariable('LocalAppData') + '\CrashDumps');
 
+  Timer1.Enabled := MSI.isECLoaded(True);
+  TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
+  TrayIcon1.Title := Application.Title;
+  TrayIcon1.AddToTray;
+
   if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SCENARIO_MODE') then begin
     ComboBox2.ItemIndex := v;
     ComboBox2Change(nil);
@@ -254,11 +261,7 @@ begin
   ComboBox1Change(nil);
   ComboBox3.ItemIndex := 0;
   ComboBox3Change(nil);
-
-  PopupMenu1.Items.Find('Toggle').Items[1].Visible := False;
-  TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
-  TrayIcon1.Title := Application.Title;
-  TrayIcon1.AddToTray;
+  Timer1Timer(nil);
 
   LoadRegistryBoolean(Theme, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'THEME');
   AddShutdownCallback(QueryShutdown);
@@ -473,6 +476,7 @@ begin
     end;
   end;
 
+  Timer1Timer(nil);
   SaveRegistryInteger(ComboBox2.ItemIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SCENARIO_MODE');
 end;
 
@@ -618,6 +622,20 @@ end;
 procedure TForm1.Label5MouseLeave(Sender: TObject);
 begin
   Label5.Font.Color := Label5.Color;
+end;
+
+procedure TForm1.Timer1Timer(Sender: TObject);
+begin
+  if (not Timer1.Enabled) then Exit;
+  if (CurrentScenario = MSI.GetScenario()) then Exit;
+  CurrentScenario := MSI.GetScenario();
+
+  if (CurrentScenario = scenarioSilent) then TrayIcon1.Icon := LoadIcon(HInstance, '_ECO_SILENT');
+  if (CurrentScenario = scenarioBalanced) then TrayIcon1.Icon := LoadIcon(HInstance, '_BALANCED');
+  if (CurrentScenario = scenarioAuto) then TrayIcon1.Icon := LoadIcon(HInstance, '_AUTO');
+  if (CurrentScenario = scenarioCoolerBoost) then TrayIcon1.Icon := LoadIcon(HInstance, '_TURBO');
+  if (CurrentScenario = scenarioAdvanced) then TrayIcon1.Icon := LoadIcon(HInstance, '_ADVANCED');
+  TrayIcon1.Update;
 end;
 
 end.

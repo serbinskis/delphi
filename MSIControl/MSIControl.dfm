@@ -185,7 +185,7 @@ object Form1: TForm1
     DownThumbGradColor = 14120960
     SmoothCorners = False
     ColorScheme = csCustom
-    Position = 75
+    Position = 10
     Min = 0
     Max = 150
     Frequency = 1
@@ -485,9 +485,6 @@ object Form1: TForm1
         Caption = 'Toggle Autoruns'
         OnClick = ToggleAutoruns1Click
       end
-      object ToggleCoolerBoost1: TMenuItem
-        Caption = 'Toggle Cooler Boost'
-      end
     end
     object Restart1: TMenuItem
       Caption = 'Restart'
@@ -501,5 +498,11 @@ object Form1: TForm1
   object TrayIcon1: TTrayIcon
     OnAction = TrayIcon1Action
     Left = 304
+  end
+  object Timer1: TTimer
+    Enabled = False
+    Interval = 5000
+    OnTimer = Timer1Timer
+    Left = 240
   end
 end

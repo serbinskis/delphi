@@ -228,19 +228,19 @@ var
   i, v: Integer;
 begin
   AdvancedDynData := TDynamicData.Create(['Value', 'Name']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [0, 'FAN_1_1']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [40, 'FAN_1_2']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [50, 'FAN_1_3']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [60, 'FAN_1_4']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [80, 'FAN_1_5']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [90, 'FAN_1_6']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_CPU_FAN_SPEED[0], 'FAN_1_1']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_CPU_FAN_SPEED[1], 'FAN_1_2']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_CPU_FAN_SPEED[2], 'FAN_1_3']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_CPU_FAN_SPEED[3], 'FAN_1_4']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_CPU_FAN_SPEED[4], 'FAN_1_5']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_CPU_FAN_SPEED[5], 'FAN_1_6']);
 
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [0, 'FAN_2_1']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [50, 'FAN_2_2']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [60, 'FAN_2_3']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [70, 'FAN_2_4']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [85, 'FAN_2_5']);
-  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [95, 'FAN_2_6']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_GPU_FAN_SPEED[0], 'FAN_2_1']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_GPU_FAN_SPEED[1], 'FAN_2_2']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_GPU_FAN_SPEED[2], 'FAN_2_3']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_GPU_FAN_SPEED[3], 'FAN_2_4']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_GPU_FAN_SPEED[4], 'FAN_2_5']);
+  AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [EC_DEFAULT_GPU_FAN_SPEED[5], 'FAN_2_6']);
 
   for i := 0 to AdvancedDynData.GetLength-1 do begin
     Name := AdvancedDynData.GetValue(i, 'Name');
