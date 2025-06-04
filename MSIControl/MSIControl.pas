@@ -224,8 +224,9 @@ begin
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_COOLERBOOST', 'Change Scenario To Cooler Boost']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_ADVANCED', 'Change Scenario To Advanced']);
 
-  SettingDynData := TDynamicData.Create(['Value', 'Name', 'Description']);
+  SettingDynData := TDynamicData.Create(['Value', 'EC', 'Name', 'Description']);
   SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [True, False, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [True, False, 'SETTING_TRAY_STATUS', 'Enable Scenario Tray Status']);
   SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, False, 'SETTING_CLEAR_CRASH_DUMPS', 'Clear Crash Dumps On Start']);
 
   for i := 0 to HotkeyDynData.GetLength-1 do begin
@@ -300,8 +301,6 @@ begin
   end;
 
   TrackBar1.Position := GetAvarageFanSpeed;
-  //if ComboBox2.Enabled and (ComboBox2.ItemIndex <> 2) then ComboBox2Change(nil);
-
   HotKey1.Enabled := MSI.isECLoaded(True);
   ComboBox1.Enabled := MSI.isECLoaded(True);
   ComboBox2.Enabled := MSI.isECLoaded(True);
@@ -504,30 +503,24 @@ end;
 procedure TForm1.ComboBox3Change(Sender: TObject);
 var
   i: Integer;
-  Name: WideString;
 begin
   RemoveFocus(Form1);
-
   i := SettingDynData.FindIndex(0, 'Description', ComboBox3.Text);
-  if (i < 0) then Exit;
-  Name := SettingDynData.GetValue(i, 'Name');
-
-  if Name = 'SETTING_HOTKEY_SOUND' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
-  if Name = 'SETTING_CLEAR_CRASH_DUMPS' then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
+  if (i >= 0) then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
 end;
 
 
 procedure TForm1.CheckBox1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   i: Integer;
-  Name: WideString;
 begin
   i := SettingDynData.FindIndex(0, 'Description', ComboBox3.Text);
-  if (i < 0) then Exit;
-  Name := SettingDynData.GetValue(i, 'Name');
+  if (i >= 0) then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
 
-  if Name = 'SETTING_HOTKEY_SOUND' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
-  if Name = 'SETTING_CLEAR_CRASH_DUMPS' then SettingDynData.SetValue(i, 'Value', CheckBox1.Checked);
+  if (SettingDynData.GetValue(i, 'Name') = 'SETTING_TRAY_STATUS') then begin
+    CurrentScenario := scenarioUnknown;
+    Timer1Timer(nil);
+  end;
 end;
 
 
@@ -635,6 +628,7 @@ begin
   if (CurrentScenario = scenarioAuto) then TrayIcon1.Icon := LoadIcon(HInstance, '_AUTO');
   if (CurrentScenario = scenarioCoolerBoost) then TrayIcon1.Icon := LoadIcon(HInstance, '_TURBO');
   if (CurrentScenario = scenarioAdvanced) then TrayIcon1.Icon := LoadIcon(HInstance, '_ADVANCED');
+  if (SettingDynData.FindValue(0, 'Name', 'SETTING_TRAY_STATUS', 'Value') = 0) then TrayIcon1.Icon := LoadIcon(HInstance, 'MAINICON');
   TrayIcon1.Update;
 end;
 
