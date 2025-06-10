@@ -249,6 +249,7 @@ object Form2: TForm2
   end
   object ComboBox1: TFlatComboBox
     Left = 47
+    Left = 50
     Top = 80
     Width = 170
     Height = 22
@@ -270,7 +271,7 @@ object Form2: TForm2
     OnKeyUp = ComboBoxKey
   end
   object Button1: TXiButton
-    Left = 47
+    Left = 50
     Top = 47
     Width = 81
     Height = 25
@@ -312,7 +313,7 @@ object Form2: TForm2
     OnClick = Button1Click
   end
   object Button2: TXiButton
-    Left = 136
+    Left = 139
     Top = 47
     Width = 81
     Height = 25
