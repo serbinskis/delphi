@@ -248,7 +248,6 @@ object Form2: TForm2
     OnChange = TrackBar1Change
   end
   object ComboBox1: TFlatComboBox
-    Left = 47
     Left = 50
     Top = 80
     Width = 170
