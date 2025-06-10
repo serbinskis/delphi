@@ -291,7 +291,7 @@ begin
   Form1.Top := MonitorHeigth - Form1.Height - (MonitorHeigth - CurrentMonitor.WorkareaRect.Bottom);
   ComboBox1Change(nil);
 
-  ComboBox2.ItemIndex := Ord(MSI.GetScenario)-1;
+  if (MSI.isECLoaded(True)) then ComboBox2.ItemIndex := Ord(MSI.GetScenario)-1;
   TrackBar1.Position := GetAvarageFanSpeed(TScenarioType(ComboBox2.ItemIndex+1));
 
   HotKey1.Enabled := MSI.isECLoaded(True);
@@ -439,6 +439,8 @@ var
   FansResetValue: Integer;
 begin
   RemoveFocus(Form1);
+  if (not MSI.isECLoaded(True)) then Exit;
+
   Scenario := TScenarioType(ComboBox2.ItemIndex+1);
   CpuFansSpeed := GetCPUFansSpeed(Scenario);
   GpuFansSpeed := GetGPUFansSpeed(Scenario);
