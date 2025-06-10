@@ -291,15 +291,9 @@ begin
   Form1.Top := MonitorHeigth - Form1.Height - (MonitorHeigth - CurrentMonitor.WorkareaRect.Bottom);
   ComboBox1Change(nil);
 
-  case MSI.GetScenario of
-    scenarioSilent: begin ComboBox2.ItemIndex := 0; TrackBar1.Enabled := False; end;
-    scenarioBalanced: begin ComboBox2.ItemIndex := 1; TrackBar1.Enabled := False; end;
-    scenarioAuto: begin ComboBox2.ItemIndex := 2; TrackBar1.Enabled := False; end;
-    scenarioCoolerBoost: begin ComboBox2.ItemIndex := 3; TrackBar1.Enabled := False; end;
-    scenarioAdvanced: begin ComboBox2.ItemIndex := 4; TrackBar1.Enabled := True; end;
-  end;
+  ComboBox2.ItemIndex := Ord(MSI.GetScenario)-1;
+  TrackBar1.Position := GetAvarageFanSpeed(TScenarioType(ComboBox2.ItemIndex+1));
 
-  TrackBar1.Position := GetAvarageFanSpeed;
   HotKey1.Enabled := MSI.isECLoaded(True);
   ComboBox1.Enabled := MSI.isECLoaded(True);
   ComboBox2.Enabled := MSI.isECLoaded(True);
@@ -439,43 +433,22 @@ end;
 
 procedure TForm1.ComboBox2Change(Sender: TObject);
 var
+  Scenario: TScenarioType;
   CpuFansSpeed: TFanSpeedArray;
   GpuFansSpeed: TFanSpeedArray;
   FansResetValue: Integer;
 begin
   RemoveFocus(Form1);
-
-  case ComboBox2.ItemIndex of
-    0: begin
-      TrackBar1.Enabled := False;
-      MSI.SetScenario(scenarioSilent, 0, 0, nil, nil);
-    end;
-    1: begin
-      TrackBar1.Enabled := False;
-      MSI.SetScenario(scenarioBalanced, nil, nil);
-    end;
-    2: begin
-      TrackBar1.Enabled := False;
-      MSI.SetScenario(scenarioAuto, nil, nil);
-    end;
-    3: begin
-      TrackBar1.Enabled := False;
-      TrackBar1.Position := 150;
-      FillChar(CpuFansSpeed, SizeOf(CpuFansSpeed), 150);
-      MSI.SetScenario(scenarioCoolerBoost, 150, 150, @CpuFansSpeed, @CpuFansSpeed);
-    end;
-    4: begin
-      TrackBar1.Enabled := True;
-      TrackBar1.Position := GetAvarageFanSpeed;
-      FansResetValue := Q((TrackBar1.Position = 0), 0, -1);
-      CpuFansSpeed := GetCPUFansSpeed;
-      GpuFansSpeed := GetGPUFansSpeed;
-      MSI.SetScenario(scenarioAdvanced, FansResetValue, FansResetValue, @CpuFansSpeed, @GpuFansSpeed);
-    end;
-  end;
+  Scenario := TScenarioType(ComboBox2.ItemIndex+1);
+  CpuFansSpeed := GetCPUFansSpeed(Scenario);
+  GpuFansSpeed := GetGPUFansSpeed(Scenario);
+  TrackBar1.Position := GetAvarageFanSpeed(Scenario);
+  FansResetValue := Q((Scenario = scenarioSilent), 0, -1);
+  MSI.SetScenario(Scenario, FansResetValue, FansResetValue, @CpuFansSpeed, @GpuFansSpeed);
 
   Timer1Timer(nil);
   SaveRegistryInteger(ComboBox2.ItemIndex, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SCENARIO_MODE');
+  if (Assigned(Form4) and Form4.Visible) then Form4.FormShow(nil);
 end;
 
 
@@ -487,15 +460,17 @@ end;
 
 procedure TForm1.TrackBar1MouseUp(Sender: TObject);
 var
+  Scenario: TScenarioType;
   CpuFansSpeed: TFanSpeedArray;
   GpuFansSpeed: TFanSpeedArray;
   FansResetValue: Integer;
 begin
+  Scenario := TScenarioType(ComboBox2.ItemIndex+1);
   FansResetValue := Q((TrackBar1.Position = 0), 0, -1);
-  SetAllFanSpeed(TrackBar1.Position);
-  CpuFansSpeed := GetCPUFansSpeed;
-  GpuFansSpeed := GetGPUFansSpeed;
-  MSI.SetScenario(scenarioAdvanced, FansResetValue, FansResetValue, @CpuFansSpeed, @GpuFansSpeed);
+  SetAllFanSpeed(TrackBar1.Position, Scenario);
+  CpuFansSpeed := GetCPUFansSpeed(Scenario);
+  GpuFansSpeed := GetGPUFansSpeed(Scenario);
+  MSI.SetScenario(Scenario, FansResetValue, FansResetValue, @CpuFansSpeed, @GpuFansSpeed);
 end;
 
 

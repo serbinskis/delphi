@@ -364,6 +364,7 @@ object Form4: TForm4
     Top = 72
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_1_1'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -396,15 +397,16 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar1Change
-    OnMouseUp = TrackBar1MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object TrackBar4: TXiTrackBar
     Left = 240
     Top = 72
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_1_4'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -437,15 +439,16 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar4Change
-    OnMouseUp = TrackBar4MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object TrackBar5: TXiTrackBar
     Left = 272
     Top = 72
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_1_5'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -478,15 +481,16 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar5Change
-    OnMouseUp = TrackBar5MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object TrackBar6: TXiTrackBar
     Left = 304
     Top = 72
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_1_6'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -519,9 +523,9 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar6Change
-    OnMouseUp = TrackBar6MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object XiPanel1: TXiPanel
     Left = 16
@@ -588,6 +592,7 @@ object Form4: TForm4
     Top = 72
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_1_2'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -620,15 +625,16 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar2Change
-    OnMouseUp = TrackBar2MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object TrackBar3: TXiTrackBar
     Left = 208
     Top = 72
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_1_3'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -661,9 +667,9 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar3Change
-    OnMouseUp = TrackBar3MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object XiPanel5: TXiPanel
     Left = 47
@@ -1075,6 +1081,7 @@ object Form4: TForm4
     Top = 336
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_2_1'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -1107,15 +1114,16 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar7Change
-    OnMouseUp = TrackBar7MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object TrackBar10: TXiTrackBar
     Left = 240
     Top = 336
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_2_4'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -1148,15 +1156,16 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar10Change
-    OnMouseUp = TrackBar10MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object TrackBar11: TXiTrackBar
     Left = 272
     Top = 336
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_2_5'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -1189,15 +1198,16 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar11Change
-    OnMouseUp = TrackBar11MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object TrackBar12: TXiTrackBar
     Left = 304
     Top = 336
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_2_6'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -1230,9 +1240,9 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar12Change
-    OnMouseUp = TrackBar12MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object XiPanel32: TXiPanel
     Left = 16
@@ -1299,6 +1309,7 @@ object Form4: TForm4
     Top = 336
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_2_2'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -1331,15 +1342,16 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar8Change
-    OnMouseUp = TrackBar8MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object TrackBar9: TXiTrackBar
     Left = 208
     Top = 336
     Width = 33
     Height = 150
+    Hint = 'FAN_%s_2_3'
     BackColor = clWhite
     TickColor = clBlack
     DisabledTickColor = clSilver
@@ -1372,9 +1384,9 @@ object Form4: TForm4
     Orientation = trVertical
     BorderWidth = 7
     ParentShowHint = False
-    ShowHint = True
+    ShowHint = False
     OnChange = TrackBar9Change
-    OnMouseUp = TrackBar9MouseUp
+    OnMouseUp = TrackBarMouseUp
   end
   object XiPanel36: TXiPanel
     Left = 47
