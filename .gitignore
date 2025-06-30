@@ -20,6 +20,7 @@
 !TogglePasswordProtectedSharing/*.exe
 !MPV/*.exe
 
+MSIControl/**/*.dll
 MPV/mpv.res
 MPV/mpv.zip
 !MPV/*/*.exe
