@@ -124,6 +124,7 @@ type
     procedure TrackBar12Change(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure TrackBarMouseUp(Sender: TObject);
+    procedure TrackBarKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
   public
@@ -136,6 +137,7 @@ const
 var
   Form4: TForm4;
   AdvancedDynData: TDynamicData;
+  PowerLimitDynData: TDynamicData;
 
 function GetAvarageFanSpeed(Scenario: TScenarioType): Integer;
 procedure SetAllFanSpeed(Speed: Integer; Scenario: TScenarioType);
@@ -239,9 +241,16 @@ begin
     end;
   end;
 
+  for Scenario := Succ(Low(TScenarioType)) to High(TScenarioType) do begin
+    Name := Format('TDP_1_%s', [UpperCase(GetEnumName(TypeInfo(TScenarioType), Ord(Scenario)))]);
+    AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [300, Name]);
+    Name := Format('TDP_2_%s', [UpperCase(GetEnumName(TypeInfo(TScenarioType), Ord(Scenario)))]);
+    AdvancedDynData.CreateData(-1, -1, ['Value', 'Name'], [300, Name]);
+  end;
+
   for i := 0 to AdvancedDynData.GetLength-1 do begin
     Name := AdvancedDynData.GetValue(i, 'Name');
-    if not LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_ADVANCED_KEY, Name) then continue;
+    if not LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_ADVANCED_KEY, Name) then Continue;
     AdvancedDynData.SetValue(i, 'Value', v);
   end;
 end;
@@ -321,6 +330,13 @@ begin
   AdvancedDynData.SetValue(i, 'Value', (TXiTrackBar(Sender).Max - TXiTrackBar(Sender).Position));
   Form1.TrackBar1.Position := GetAvarageFanSpeed(TScenarioType(Form1.ComboBox2.ItemIndex+1));
   Form1.ComboBox2Change(nil);
+  TXiTrackBar(Sender).SetFocus;
+end;
+
+
+procedure TForm4.TrackBarKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  TrackBarMouseUp(Sender);
 end;
 
 

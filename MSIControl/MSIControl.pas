@@ -7,7 +7,7 @@ uses
   ComCtrls, Controls, StdCtrls, ExtCtrls, StrUtils, TFlatComboBoxUnit, TFlatCheckBoxUnit,
   XiTrackBar, XiButton, CustoHotKey, CustoBevel, CustoTrayIcon, TNTSystem, TNTMenus, WinXP,
   MSIThemes, uHotKey, uNotify, uReadConsole, uSoundThread, uDynamicData, MSIController, Functions,
-  Buttons, TntButtons, TntStdCtrls;
+  Buttons, TntButtons, TntStdCtrls, TypInfo;
 
 type
   TForm1 = class(TForm)
@@ -37,6 +37,14 @@ type
     TrayIcon1: TTrayIcon;
     Label5: TTntLabel;
     Timer1: TTimer;
+    CustoBevel1: TCustoBevel;
+    Label6: TLabel;
+    Label7: TLabel;
+    XiTrackBar1: TXiTrackBar;
+    Label8: TLabel;
+    XiTrackBar2: TXiTrackBar;
+    Label9: TLabel;
+    Label10: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -68,6 +76,11 @@ type
     procedure Label5MouseEnter(Sender: TObject);
     procedure Label5MouseLeave(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
+    procedure TrackBar1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure XiTrackBar1Change(Sender: TObject);
+    procedure XiTrackBar2Change(Sender: TObject);
+    procedure XiTrackBar1MouseUp(Sender: TObject);
+    procedure XiTrackBar1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
   public
@@ -205,6 +218,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   Name: WideString;
   i, v: Integer;
+  pl1Watt, pl2Watt: Integer;
 begin
   Form1.Caption := Application.Title;
   MSI := TMSIController.Create;
@@ -252,6 +266,10 @@ begin
   TrayIcon1.Title := Application.Title;
   TrayIcon1.AddToTray;
 
+  MSI.GetTdpLimits(pl1Watt, pl2Watt);
+  XiTrackBar1.Position := pl1Watt;
+  XiTrackBar2.Position := pl2Watt;
+
   if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, 'SCENARIO_MODE') then begin
     ComboBox2.ItemIndex := v;
     ComboBox2Change(nil);
@@ -298,6 +316,8 @@ begin
   ComboBox1.Enabled := MSI.isECLoaded(True);
   ComboBox2.Enabled := MSI.isECLoaded(True);
   TrackBar1.Enabled := MSI.isECLoaded(True) and TrackBar1.Enabled;
+  XiTrackBar1.Enabled := not MSI.IsTdpLocked;
+  XiTrackBar2.Enabled := not MSI.IsTdpLocked;
   Label5.Enabled := MSI.isECLoaded(True);
   ComboBox3Change(nil);
   Form1.Repaint;
@@ -439,9 +459,18 @@ var
   FansResetValue: Integer;
 begin
   RemoveFocus(Form1);
-  if (not MSI.isECLoaded(True)) then Exit;
-
   Scenario := TScenarioType(ComboBox2.ItemIndex+1);
+  if (not Assigned(MSIAdvanced.AdvancedDynData)) then MSIAdvanced.LoadSettings;
+
+  Name := Format(XiTrackBar1.Hint, [UpperCase(GetEnumName(TypeInfo(TScenarioType), Ord(Scenario)))]);
+  XiTrackBar1.Position := AdvancedDynData.GetValue(AdvancedDynData.FindIndex(0, 'Name', Name), 'Value');
+  XiTrackBar1MouseUp(XiTrackBar1);
+
+  Name := Format(XiTrackBar2.Hint, [UpperCase(GetEnumName(TypeInfo(TScenarioType), Ord(Scenario)))]);
+  XiTrackBar2.Position := AdvancedDynData.GetValue(AdvancedDynData.FindIndex(0, 'Name', Name), 'Value');
+  XiTrackBar1MouseUp(XiTrackBar2);
+
+  if (not MSI.isECLoaded(True)) then Exit;
   CpuFansSpeed := GetCPUFansSpeed(Scenario);
   GpuFansSpeed := GetGPUFansSpeed(Scenario);
   TrackBar1.Position := GetAvarageFanSpeed(Scenario);
@@ -460,6 +489,18 @@ begin
 end;
 
 
+procedure TForm1.XiTrackBar1Change(Sender: TObject);
+begin
+  Label7.Caption := IntToStr(XiTrackBar1.Position) + 'W';
+end;
+
+
+procedure TForm1.XiTrackBar2Change(Sender: TObject);
+begin
+ Label8.Caption := IntToStr(XiTrackBar2.Position) + 'W';
+end;
+
+
 procedure TForm1.TrackBar1MouseUp(Sender: TObject);
 var
   Scenario: TScenarioType;
@@ -473,6 +514,38 @@ begin
   CpuFansSpeed := GetCPUFansSpeed(Scenario);
   GpuFansSpeed := GetGPUFansSpeed(Scenario);
   MSI.SetScenario(Scenario, FansResetValue, FansResetValue, @CpuFansSpeed, @GpuFansSpeed);
+end;
+
+
+procedure TForm1.XiTrackBar1MouseUp(Sender: TObject);
+var
+  CloseAction: TCloseAction;
+  Scenario: TScenarioType;
+  Name: WideString;
+  i: Integer;
+begin
+  MSI.SetTdpLimits(XiTrackBar1.Position, XiTrackBar2.Position);
+
+  Scenario := TScenarioType(Form1.ComboBox2.ItemIndex+1);
+  Name := Format(TXiTrackBar(Sender).Hint, [UpperCase(GetEnumName(TypeInfo(TScenarioType), Ord(Scenario)))]);
+  i := AdvancedDynData.FindIndex(0, 'Name', Name);
+  AdvancedDynData.SetValue(i, 'Value', TXiTrackBar(Sender).Position);
+
+  CloseAction := caNone;
+  Form4.FormClose(nil, CloseAction);
+  if Form1.Visible then TXiTrackBar(Sender).SetFocus;
+end;
+
+
+procedure TForm1.TrackBar1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  TrackBar1MouseUp(Sender);
+end;
+
+
+procedure TForm1.XiTrackBar1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  XiTrackBar1MouseUp(Sender);
 end;
 
 

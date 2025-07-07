@@ -19,19 +19,6 @@ object Form4: TForm4
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
-    Left = 16
-    Top = 8
-    Width = 35
-    Height = 18
-    Caption = 'FAN 1'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -15
-    Font.Name = 'Calibri'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
   object Image1: TImage
     Left = 16
     Top = 224
@@ -100,6 +87,19 @@ object Form4: TForm4
       7F23457B1477F9BFC8F770DF0FDFF9A39DB8FBE3F1FE7457AB4FAFCBF53DBA1B
       4BD57E473773DFFEBA1FFD9A8AF670FBFF00DB9FAC4F7F0FF043FEBDC7F247FF
       D9}
+  end
+  object Label1: TLabel
+    Left = 16
+    Top = 8
+    Width = 35
+    Height = 18
+    Caption = 'FAN 1'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object Bevel1: TCustoBevel
     Left = 16
@@ -400,6 +400,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar1Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object TrackBar4: TXiTrackBar
     Left = 240
@@ -442,6 +443,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar4Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object TrackBar5: TXiTrackBar
     Left = 272
@@ -484,6 +486,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar5Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object TrackBar6: TXiTrackBar
     Left = 304
@@ -526,6 +529,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar6Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object XiPanel1: TXiPanel
     Left = 16
@@ -628,6 +632,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar2Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object TrackBar3: TXiTrackBar
     Left = 208
@@ -670,6 +675,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar3Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object XiPanel5: TXiPanel
     Left = 47
@@ -1117,6 +1123,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar7Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object TrackBar10: TXiTrackBar
     Left = 240
@@ -1159,6 +1166,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar10Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object TrackBar11: TXiTrackBar
     Left = 272
@@ -1201,6 +1209,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar11Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object TrackBar12: TXiTrackBar
     Left = 304
@@ -1243,6 +1252,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar12Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object XiPanel32: TXiPanel
     Left = 16
@@ -1345,6 +1355,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar8Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object TrackBar9: TXiTrackBar
     Left = 208
@@ -1387,6 +1398,7 @@ object Form4: TForm4
     ShowHint = False
     OnChange = TrackBar9Change
     OnMouseUp = TrackBarMouseUp
+    OnKeyUp = TrackBarKeyUp
   end
   object XiPanel36: TXiPanel
     Left = 47

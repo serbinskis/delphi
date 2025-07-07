@@ -20,6 +20,7 @@ This is the source code of MSIControl. MSIControl is an application that will al
 - Control Microphone Volume And Mute.
 - Control Bluetooth.
 - Control Monitors.
+- Control Power Limits (TDP).
 - Set Fixed Volume On Microphone.
 
 ## Download

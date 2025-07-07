@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 192
   Top = 125
   BorderStyle = bsNone
-  ClientHeight = 265
+  ClientHeight = 356
   ClientWidth = 335
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -39,7 +39,7 @@ object Form1: TForm1
   end
   object Bevel3: TCustoBevel
     Left = 3
-    Top = 159
+    Top = 247
     Width = 325
     Height = 1
     Shape = bsFrame
@@ -88,7 +88,7 @@ object Form1: TForm1
   end
   object Label4: TLabel
     Left = 8
-    Top = 136
+    Top = 224
     Width = 59
     Height = 18
     Caption = 'SETTINGS'
@@ -117,6 +117,87 @@ object Form1: TForm1
     OnClick = Label5Click
     OnMouseEnter = Label5MouseEnter
     OnMouseLeave = Label5MouseLeave
+  end
+  object CustoBevel1: TCustoBevel
+    Left = 2
+    Top = 159
+    Width = 325
+    Height = 1
+    Shape = bsFrame
+    Color = clBlack
+  end
+  object Label6: TLabel
+    Left = 8
+    Top = 136
+    Width = 225
+    Height = 18
+    Caption = 'LONG && SHORT POWER LIMITS (TDP)'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label7: TLabel
+    Left = 8
+    Top = 169
+    Width = 35
+    Height = 18
+    Alignment = taCenter
+    AutoSize = False
+    Caption = '150W'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label8: TLabel
+    Left = 8
+    Top = 193
+    Width = 35
+    Height = 18
+    Alignment = taCenter
+    AutoSize = False
+    Caption = '150W'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label9: TLabel
+    Left = 296
+    Top = 169
+    Width = 35
+    Height = 18
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'PL1'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label10: TLabel
+    Left = 296
+    Top = 193
+    Width = 35
+    Height = 18
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'PL2'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Calibri'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object ComboBox1: TFlatComboBox
     Left = 144
@@ -183,7 +264,7 @@ object Form1: TForm1
     DownThumbBorderColor = clBlack
     DownThumbFaceColor = 14120960
     DownThumbGradColor = 14120960
-    SmoothCorners = False
+    SmoothCorners = True
     ColorScheme = csCustom
     Position = 10
     Min = 0
@@ -197,10 +278,11 @@ object Form1: TForm1
     ShowHint = True
     OnChange = TrackBar1Change
     OnMouseUp = TrackBar1MouseUp
+    OnKeyUp = TrackBar1KeyUp
   end
   object Button1: TXiButton
     Left = 10
-    Top = 167
+    Top = 255
     Width = 73
     Height = 25
     HelpKeyword = 'Theme'
@@ -268,7 +350,7 @@ object Form1: TForm1
   end
   object ComboBox3: TFlatComboBox
     Left = 10
-    Top = 233
+    Top = 321
     Width = 287
     Height = 22
     Style = csDropDownList
@@ -288,7 +370,7 @@ object Form1: TForm1
   end
   object CheckBox1: TFlatCheckBox
     Left = 304
-    Top = 235
+    Top = 323
     Width = 17
     Height = 17
     Checked = True
@@ -310,7 +392,7 @@ object Form1: TForm1
   end
   object Button2: TXiButton
     Left = 90
-    Top = 167
+    Top = 255
     Width = 73
     Height = 25
     HelpType = htKeyword
@@ -352,7 +434,7 @@ object Form1: TForm1
   end
   object Button3: TXiButton
     Left = 170
-    Top = 167
+    Top = 255
     Width = 73
     Height = 25
     HelpType = htKeyword
@@ -394,7 +476,7 @@ object Form1: TForm1
   end
   object Button5: TXiButton
     Left = 10
-    Top = 199
+    Top = 287
     Width = 313
     Height = 25
     HelpType = htKeyword
@@ -436,7 +518,7 @@ object Form1: TForm1
   end
   object Button7: TXiButton
     Left = 248
-    Top = 167
+    Top = 255
     Width = 75
     Height = 25
     HelpType = htKeyword
@@ -475,6 +557,92 @@ object Form1: TForm1
     Caption = 'Monitors'
     TabOrder = 10
     OnClick = Button7Click
+  end
+  object XiTrackBar1: TXiTrackBar
+    Left = 48
+    Top = 162
+    Width = 249
+    Height = 33
+    Hint = 'TDP_1_%s'
+    BackColor = clWhite
+    TickColor = clBlack
+    DisabledTickColor = clSilver
+    SlideBorderColor = clBlack
+    SlideFaceColor = clWhite
+    SlideGradColor = clWhite
+    DisabledSlideBorderColor = 12500670
+    DisabledSlideFaceColor = 14211288
+    DisabledSlideGradColor = 15263976
+    DisabledThumbBorderColor = 11908533
+    DisabledThumbFaceColor = 15395562
+    DisabledThumbGradColor = 13619151
+    ThumbBorderColor = clBlack
+    ThumbFaceColor = 14120960
+    ThumbGradColor = 14120960
+    OverThumbBorderColor = clBlack
+    OverThumbFaceColor = 14120960
+    OverThumbGradColor = 14120960
+    DownThumbBorderColor = clBlack
+    DownThumbFaceColor = 14120960
+    DownThumbGradColor = 14120960
+    SmoothCorners = True
+    ColorScheme = csCustom
+    Position = 150
+    Min = 5
+    Max = 300
+    Frequency = 1
+    TickStyle = tsNone
+    TickMarks = tmBottomRight
+    Orientation = trHorizontal
+    BorderWidth = 5
+    ParentShowHint = False
+    ShowHint = False
+    OnChange = XiTrackBar1Change
+    OnMouseUp = XiTrackBar1MouseUp
+    OnKeyUp = XiTrackBar1KeyUp
+  end
+  object XiTrackBar2: TXiTrackBar
+    Left = 48
+    Top = 186
+    Width = 249
+    Height = 33
+    Hint = 'TDP_2_%s'
+    BackColor = clWhite
+    TickColor = clBlack
+    DisabledTickColor = clSilver
+    SlideBorderColor = clBlack
+    SlideFaceColor = clWhite
+    SlideGradColor = clWhite
+    DisabledSlideBorderColor = 12500670
+    DisabledSlideFaceColor = 14211288
+    DisabledSlideGradColor = 15263976
+    DisabledThumbBorderColor = 11908533
+    DisabledThumbFaceColor = 15395562
+    DisabledThumbGradColor = 13619151
+    ThumbBorderColor = clBlack
+    ThumbFaceColor = 14120960
+    ThumbGradColor = 14120960
+    OverThumbBorderColor = clBlack
+    OverThumbFaceColor = 14120960
+    OverThumbGradColor = 14120960
+    DownThumbBorderColor = clBlack
+    DownThumbFaceColor = 14120960
+    DownThumbGradColor = 14120960
+    SmoothCorners = True
+    ColorScheme = csCustom
+    Position = 150
+    Min = 5
+    Max = 300
+    Frequency = 1
+    TickStyle = tsNone
+    TickMarks = tmBottomRight
+    Orientation = trHorizontal
+    BorderWidth = 5
+    ParentShowHint = False
+    ShowHint = False
+    OnChange = XiTrackBar2Change
+    OnMouseUp = XiTrackBar1MouseUp
+    OnKeyUp = XiTrackBar1KeyUp
   end
   object PopupMenu1: TTntPopupMenu
     AutoHotkeys = maManual
