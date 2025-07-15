@@ -159,8 +159,8 @@ begin
     if (ReadFile(DiskInfo.DiskHandle, Result[0], SectorSize, nr, nil)) then Exit else Inc(CurrentRetry);
     nr := DWORD(DiskInfo.IsDVD and ((CurrentRetry = 10) or (CurrentRetry = 20) or (MaxRetry = -1)));
     WriteLn('Error reading data at $', IntToHex(Address, 1), ' (CurrentRetry: ', CurrentRetry, '/', MaxRetry, ' | SectorSize: ', IntToStr(SectorSize), Q((nr = 1), ' | Status: WAITING)', ')'));
-    if ((not DiskInfo.IsRepair) and DiskInfo.IsDVD and (CurrentRetry = 10)) then Sleep(90 * 1000); //Let the DVD-ROM slow down
-    if (DiskInfo.IsDVD and ((CurrentRetry = 20) or (MaxRetry = -1))) then Sleep(180 * 1000); //Again, but longer
+    if ((not DiskInfo.IsRepair) and DiskInfo.IsDVD and (CurrentRetry = 10)) then Sleep(150 * 1000); //Let the DVD-ROM slow down
+    //if (DiskInfo.IsDVD and ((CurrentRetry = 20) or (MaxRetry = -1))) then Sleep(180 * 1000); //Again, but longer
   until (CurrentRetry >= MaxRetry);
 
   Result := InitializeDamagedBuffer(SectorSize);
