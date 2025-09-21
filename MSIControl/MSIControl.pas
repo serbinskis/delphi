@@ -166,6 +166,10 @@ begin
     Form1.ComboBox2Change(nil);
   end;
 
+  if (CustomValue = 'HOTKEY_FORCE_STOP_FANS') then begin
+    MSI.SetScenario(scenarioUnknown, 0, 0, nil, nil);
+  end;
+
   Form1.ComboBox3Change(nil);
 end;
 //HotkeyCallback
@@ -236,10 +240,12 @@ begin
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_AUTO', 'Change Scenario To Auto']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_COOLERBOOST', 'Change Scenario To Cooler Boost']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_ADVANCED', 'Change Scenario To Advanced']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_FORCE_STOP_FANS', 'Force Stop Fans']);
 
   SettingDynData := TDynamicData.Create(['Value', 'EC', 'Name', 'Description']);
   SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [True, False, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
   SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [True, False, 'SETTING_TRAY_STATUS', 'Enable Scenario Tray Status']);
+  SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [True, True, 'SETTING_SCENARIO_ECO_FAN_RESET', 'Enable Fan Reset On Silent Mode']);
   SettingDynData.CreateData(-1, -1, ['Value', 'EC', 'Name', 'Description'], [False, False, 'SETTING_CLEAR_CRASH_DUMPS', 'Clear Crash Dumps On Start']);
 
   for i := 0 to HotkeyDynData.GetLength-1 do begin
@@ -456,7 +462,7 @@ var
   Scenario: TScenarioType;
   CpuFansSpeed: TFanSpeedArray;
   GpuFansSpeed: TFanSpeedArray;
-  FansResetValue: Integer;
+  FansResetValue, i: Integer;
 begin
   RemoveFocus(Form1);
   Scenario := TScenarioType(ComboBox2.ItemIndex+1);
@@ -474,7 +480,11 @@ begin
   CpuFansSpeed := GetCPUFansSpeed(Scenario);
   GpuFansSpeed := GetGPUFansSpeed(Scenario);
   TrackBar1.Position := GetAvarageFanSpeed(Scenario);
-  FansResetValue := Q((Scenario = scenarioSilent), 0, -1);
+
+  FansResetValue := Q((Scenario = scenarioSilent), 0, -1); //Reset fans only on silent mode
+  i := SettingDynData.FindIndex(0, 'Name', 'SETTING_SCENARIO_ECO_FAN_RESET'); //If option disabled then don't reset fans at all
+  if (i <= -1) or not SettingDynData.GetValue(i, 'Value') then FansResetValue := -1;
+
   MSI.SetScenario(Scenario, FansResetValue, FansResetValue, @CpuFansSpeed, @GpuFansSpeed);
 
   Timer1Timer(nil);
