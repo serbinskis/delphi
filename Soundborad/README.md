@@ -6,7 +6,7 @@ This is the source code of Soundboard. Soundboard is an application that will pl
 
 ## Story
 
-One day I was playing with friends and decided to do a little joke, but every single soundboard I downloaded would either be complicated or would require additional setup, so I decided to make my soundboard that could be fully controlled only using numpad, so that I would not be limited by about of shortcuts.
+One day I was playing with friends and decided to do a little joke, but every single soundboard I downloaded would either be complicated or would require additional setup, so I decided to make my soundboard that could be fully controlled only using numpad, so that I would not be limited by amount of shortcuts.
 
 ## Features
 
