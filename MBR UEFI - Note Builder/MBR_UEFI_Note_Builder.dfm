@@ -1952,7 +1952,7 @@ object Form1: TForm1
     Font.Name = 'Terminal'
     Font.Style = [fsBold]
     Lines.Strings = (
-      'Created By WobbyChip. Your Computer Has Been Trashed.')
+      'Created By Serbinskis. Your Computer Has Been Trashed.')
     MaxLength = 3000
     ParentBiDiMode = False
     ParentFont = False
