@@ -1,4 +1,4 @@
-program CustomMBR_Created_By_WobbyChip;
+program CustomMBR_Created_By_Serbinskis;
 
 uses
   SysUtils, Windows, Messages, Forms, TNTSystem, WinXP, Functions;
