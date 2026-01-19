@@ -3,5 +3,6 @@
 *.out
 *.map
 *.list
-bootx64.efi
 NvVars
+**/bootx64.efi
+!Backend/bootx64.efi
