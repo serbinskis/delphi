@@ -64,7 +64,7 @@ rem "%GCC_FOLDER_NAME%\bin\objcopy.exe" -O binary "program.exe" "program.bin"
 "%GCC_FOLDER_NAME%\bin\size.exe" "bootx64.efi"
 echo.
 
-if not exist "bootx64.efi" goto :exit
+if not exist "bootx64.efi" goto :end
 if not exist "%CD%\Testing" mkdir "%CD%\Testing"
 if not exist "%CD%\Testing\EFI" mkdir "%CD%\Testing\EFI"
 if not exist "%CD%\Testing\EFI\BOOT" mkdir "%CD%\Testing\EFI\BOOT"
