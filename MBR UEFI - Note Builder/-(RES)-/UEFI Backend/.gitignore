@@ -4,3 +4,4 @@
 *.map
 *.list
 bootx64.efi
+NvVars

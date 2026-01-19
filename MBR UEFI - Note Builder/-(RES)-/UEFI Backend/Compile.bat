@@ -65,12 +65,11 @@ rem "%GCC_FOLDER_NAME%\bin\objcopy.exe" -O binary "program.exe" "program.bin"
 echo.
 
 if not exist "bootx64.efi" goto :exit
-set UEFI_DIR=%CurDir%\Testing
-if not exist "%UEFI_DIR%" mkdir "%UEFI_DIR%"
-if not exist "%UEFI_DIR%\EFI" mkdir "%UEFI_DIR%\EFI"
-if not exist "%UEFI_DIR%\EFI\BOOT" mkdir "%UEFI_DIR%\EFI\BOOT"
-copy /Y "bootx64.efi" "%UEFI_DIR%\EFI\BOOT\BOOTX64.EFI"
-qemu-system-x86_64.exe -machine q35 -m 256M -drive if=pflash,format=raw,readonly=on,file="%CurDir%\QEMU_OVMF.fd" -hda fat:rw:"%UEFI_DIR%"
+if not exist "%CD%\Testing" mkdir "%CD%\Testing"
+if not exist "%CD%\Testing\EFI" mkdir "%CD%\Testing\EFI"
+if not exist "%CD%\Testing\EFI\BOOT" mkdir "%CD%\Testing\EFI\BOOT"
+copy /Y "bootx64.efi" "%CD%\Testing\EFI\BOOT\BOOTX64.EFI"
+qemu-system-x86_64.exe -machine q35 -m 256M -drive if=pflash,format=raw,readonly=on,file="%CD%\OVMF_CODE.fd" -hda fat:rw:"%CD%\Testing"
 
 :end
 echo.
@@ -81,6 +80,7 @@ del /s /q *.map >nul 2>nul
 del /s /q *.list >nul 2>nul
 echo Press any key to rebuild again...
 pause >nul
+taskkill /f /im qemu-system-x86_64.exe >nul 2>nul
 cls
 goto :start
 endlocal
