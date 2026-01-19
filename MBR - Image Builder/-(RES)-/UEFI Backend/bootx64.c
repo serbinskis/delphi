@@ -12017,7 +12017,6 @@ unsigned char imageBmp[] = {
 	0x66, 0x33, 0x00, 0x66, 0x33, 0x00
 };
 
-
 /**
   Converts a BMP image to a GOP Blt buffer.
 
@@ -12055,7 +12054,6 @@ ConvertBmpToGopBlt (IN VOID *BmpImage, IN UINTN BmpImageSize, IN OUT VOID **GopB
     if (sizeof(BMP_IMAGE_HEADER) > BmpImageSize) { return EFI_INVALID_PARAMETER; }
 
     BmpHeader = (BMP_IMAGE_HEADER *)BmpImage;
-
     if (BmpHeader->CharB != 'B' || BmpHeader->CharM != 'M') { return EFI_UNSUPPORTED; }
 
     // Only support BITMAPINFOHEADER format.
@@ -12089,9 +12087,7 @@ ConvertBmpToGopBlt (IN VOID *BmpImage, IN UINTN BmpImageSize, IN OUT VOID **GopB
         *GopBltSize = (UINTN)BltBufferSize;
         *GopBlt = AllocatePool(*GopBltSize);
         IsAllocated = TRUE;
-        if (*GopBlt == NULL) {
-            return EFI_OUT_OF_RESOURCES;
-        }
+        if (*GopBlt == NULL) { return EFI_OUT_OF_RESOURCES; }
     } else {
         if (*GopBltSize < (UINTN)BltBufferSize) {
             *GopBltSize = (UINTN)BltBufferSize;
@@ -12137,14 +12133,66 @@ ConvertBmpToGopBlt (IN VOID *BmpImage, IN UINTN BmpImageSize, IN OUT VOID **GopB
 
         // Align to a 4-byte boundary.
         ImageIndex = (UINTN)(Image - ImageHeader);
-        if ((ImageIndex % 4) != 0) {
-            Image += (4 - (ImageIndex % 4));
-        }
+        if ((ImageIndex % 4) != 0) { Image += (4 - (ImageIndex % 4)); }
     }
 
     return EFI_SUCCESS;
 }
 
+/**
+  Scales a GOP Blt buffer to a new size using nearest-neighbor algorithm.
+
+  @param  OriginalBlt    Pointer to the source GOP Blt buffer.
+  @param  OriginalWidth  Width of the source buffer.
+  @param  OriginalHeight Height of the source buffer.
+  @param  NewWidth       Width of the new, scaled buffer.
+  @param  NewHeight      Height of the new, scaled buffer.
+  @param  NewBlt         A pointer to receive the newly allocated and scaled buffer.
+
+  @retval EFI_SUCCESS           The scaling was successful.
+  @retval EFI_OUT_OF_RESOURCES  Could not allocate memory for the new buffer.
+  @retval EFI_INVALID_PARAMETER A parameter was invalid.
+**/
+EFI_STATUS
+ScaleGopBlt (
+    IN  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *OriginalBlt,
+    IN  UINTN                         OriginalWidth,
+    IN  UINTN                         OriginalHeight,
+    IN  UINTN                         NewWidth,
+    IN  UINTN                         NewHeight,
+    OUT EFI_GRAPHICS_OUTPUT_BLT_PIXEL **NewBlt
+    )
+{
+    EFI_GRAPHICS_OUTPUT_BLT_PIXEL *ScaledBuffer;
+    UINTN                         ScaledBltSize;
+    UINTN                         x, y;
+    UINTN                         orig_x, orig_y;
+
+    if (OriginalBlt == NULL || NewBlt == NULL || OriginalWidth == 0 || OriginalHeight == 0 || NewWidth == 0 || NewHeight == 0) {
+        return EFI_INVALID_PARAMETER;
+    }
+
+    // Allocate memory for the new, scaled buffer
+    ScaledBltSize = NewWidth * NewHeight * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL);
+    ScaledBuffer = AllocatePool(ScaledBltSize);
+    if (ScaledBuffer == NULL) { return EFI_OUT_OF_RESOURCES; }
+
+    // Loop through each pixel of the NEW buffer
+    for (y = 0; y < NewHeight; y++) {
+        for (x = 0; x < NewWidth; x++) {
+            // Find the corresponding pixel in the ORIGINAL buffer (nearest-neighbor)
+            // We use integer arithmetic to avoid floating point math.
+            orig_x = (x * OriginalWidth) / NewWidth;
+            orig_y = (y * OriginalHeight) / NewHeight;
+
+            // Copy the pixel from the original buffer to the new buffer
+            ScaledBuffer[y * NewWidth + x] = OriginalBlt[orig_y * OriginalWidth + orig_x];
+        }
+    }
+
+    *NewBlt = ScaledBuffer;
+    return EFI_SUCCESS;
+}
 
 /**
   The user Entry Point for Application. The user code starts with this function
@@ -12155,7 +12203,6 @@ ConvertBmpToGopBlt (IN VOID *BmpImage, IN UINTN BmpImageSize, IN OUT VOID **GopB
 
   @retval EFI_SUCCESS       The entry point is executed successfully.
   @retval other             Some error occurs when executing this entry point.
-
 **/
 EFI_STATUS EFIAPI UefiMain (IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
@@ -12164,6 +12211,8 @@ EFI_STATUS EFIAPI UefiMain (IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syst
     VOID *BltBuffer = NULL;
     UINTN BltSize, Height, Width;
     UINTN CoordinateX, CoordinateY;
+    VOID *ScaledBltBuffer = NULL;
+    UINTN ScaledWidth, ScaledHeight;
     
     UINTN                                 Index;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
@@ -12228,9 +12277,31 @@ EFI_STATUS EFIAPI UefiMain (IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syst
         return Status;
     }
 
-    // Calculate the coordinates to center the image.
-    CoordinateX = (GraphicsOutput->Mode->Info->HorizontalResolution - Width) / 2;
-    CoordinateY = (GraphicsOutput->Mode->Info->VerticalResolution - Height) / 2;
+    // Calculate the new dimensions while maintaining aspect ratio based on width.
+    ScaledWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
+    ScaledHeight = (Height * ScaledWidth) / Width;
+
+    // What if the scaled height is too big for the screen? Recalculate based on height.
+    if (ScaledHeight > GraphicsOutput->Mode->Info->VerticalResolution) {
+        ScaledHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+        ScaledWidth = (Width * ScaledHeight) / Height;
+    }
+
+    // Call our new function to scale the image buffer
+    Status = ScaleGopBlt(BltBuffer, Width, Height, ScaledWidth, ScaledHeight, (EFI_GRAPHICS_OUTPUT_BLT_PIXEL **)&ScaledBltBuffer);
+    
+    // We no longer need the original, un-scaled buffer, so free it.
+    FreePool(BltBuffer);
+    BltBuffer = NULL; // Avoid dangling pointer
+
+    if (EFI_ERROR(Status)) {
+        Print(L"Failed to scale the image buffer: %r\n", Status);
+        return Status;
+    }
+
+    // Calculate the coordinates to center the scaled image.
+    CoordinateX = (GraphicsOutput->Mode->Info->HorizontalResolution - ScaledWidth) / 2;
+    CoordinateY = (GraphicsOutput->Mode->Info->VerticalResolution - ScaledHeight) / 2;
 
     // Clear the screen first.
     EFI_GRAPHICS_OUTPUT_BLT_PIXEL Black = {0, 0, 0, 0};
@@ -12241,10 +12312,10 @@ EFI_STATUS EFIAPI UefiMain (IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syst
 
     // Draw the image to the screen.
     Status = GraphicsOutput->Blt(GraphicsOutput,
-        (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)BltBuffer,
+        (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)ScaledBltBuffer,
         EfiBltBufferToVideo, 0, 0,
         CoordinateX, CoordinateY,
-        Width, Height,
+        ScaledWidth, ScaledHeight,
         0
     );
 
