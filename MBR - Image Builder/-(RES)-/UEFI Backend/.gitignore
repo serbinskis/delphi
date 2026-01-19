@@ -1,0 +1,7 @@
+*.d
+*.o
+*.out
+*.map
+*.list
+bootx64.efi
+NvVars
