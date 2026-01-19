@@ -69,7 +69,7 @@ if not exist "%CD%\Testing" mkdir "%CD%\Testing"
 if not exist "%CD%\Testing\EFI" mkdir "%CD%\Testing\EFI"
 if not exist "%CD%\Testing\EFI\BOOT" mkdir "%CD%\Testing\EFI\BOOT"
 copy /Y "bootx64.efi" "%CD%\Testing\EFI\BOOT\BOOTX64.EFI"
-qemu-system-x86_64.exe -machine q35 -m 256M -drive if=pflash,format=raw,readonly=on,file="%CD%\OVMF_CODE.fd" -hda fat:rw:"%CD%\Testing"
+start qemu-system-x86_64.exe -machine q35 -m 256M -drive if=pflash,format=raw,readonly=on,file="%CD%\OVMF_CODE.fd" -hda fat:rw:"%CD%\Testing"
 
 :end
 echo.
