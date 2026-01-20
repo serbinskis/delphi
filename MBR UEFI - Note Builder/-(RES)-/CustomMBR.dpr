@@ -1,4 +1,4 @@
-program CustomMBR_Created_By_Serbinskis;
+program CustomMBR_Text;
 
 uses
  Windows, SysUtils, Messages, Forms, TNTSystem, WinXP, Functions;
