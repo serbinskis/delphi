@@ -11,8 +11,7 @@ EFI_STATUS EFIAPI UefiMain (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTabl
     //Check for text mode 80x25
     for (int i = 0 ; i <= SystemTable->ConOut->Mode->MaxMode ; i++) {
         Status = SystemTable->ConOut->QueryMode(SystemTable->ConOut, i, &Columns, &Rows);
-        if (Status != EFI_SUCCESS) { continue; }
-        if (Columns != 80 || Rows != 25) { continue; }
+        if ((Status != EFI_SUCCESS) || (Columns != 80) || (Rows != 25)) { continue; }
         uefi_call_wrapper(SystemTable->ConOut->SetMode, 1, SystemTable->ConOut, i); //Set text mode 80x25
     }
 
