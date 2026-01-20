@@ -4,7 +4,7 @@ This is the source code of builder MBR/UEFI - Note Builder. MBR/UEFI - Note Buil
 
 <p align="center"><img width="510" height="430" src="https://i.imgur.com/2HtELC4.png"></p>
 
-## MBR/UEFI Locker Features
+## MBR/UEFI - Note Builder Features
 
 - Warns users before starting a locker.
 - Before getting administrator rights adds itself to startup.
