@@ -12035,8 +12035,7 @@ unsigned char imageBmp[] = {
   @retval EFI_OUT_OF_RESOURCES  Could not allocate memory for the Blt buffer.
   @retval EFI_INVALID_PARAMETER Invalid BMP header or data.
 **/
-EFI_STATUS
-ConvertBmpToGopBlt (IN VOID *BmpImage, IN UINTN BmpImageSize, IN OUT VOID **GopBlt, IN OUT UINTN *GopBltSize, OUT UINTN *PixelHeight, OUT UINTN *PixelWidth)
+EFI_STATUS ConvertBmpToGopBlt (IN VOID *BmpImage, IN UINTN BmpImageSize, IN OUT VOID **GopBlt, IN OUT UINTN *GopBltSize, OUT UINTN *PixelHeight, OUT UINTN *PixelWidth)
 {
     UINT8 *Image;
     UINT8 *ImageHeader;
@@ -12153,8 +12152,7 @@ ConvertBmpToGopBlt (IN VOID *BmpImage, IN UINTN BmpImageSize, IN OUT VOID **GopB
   @retval EFI_OUT_OF_RESOURCES  Could not allocate memory for the new buffer.
   @retval EFI_INVALID_PARAMETER A parameter was invalid.
 **/
-EFI_STATUS
-ScaleGopBlt (
+EFI_STATUS ScaleGopBlt (
     IN  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *OriginalBlt,
     IN  UINTN                         OriginalWidth,
     IN  UINTN                         OriginalHeight,
