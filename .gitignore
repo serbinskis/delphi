@@ -13,6 +13,7 @@
 !DriveRescue/*.exe
 !MBR UEFI - Image Builder/*.exe
 !MBR UEFI - Note Builder/*.exe
+!**/UEFI Backend/**/*.exe
 !Soundborad/*.exe
 !Windows XP Horror Edition/*.exe
 !MSIControl/*.exe
@@ -24,5 +25,3 @@ MSIControl/**/*.dll
 MPV/mpv.res
 MPV/mpv.zip
 !MPV/*/*.exe
-
-!**/UEFI Backend/**/*.exe
