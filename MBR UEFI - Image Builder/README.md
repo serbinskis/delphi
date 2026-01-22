@@ -2,7 +2,7 @@
 
 This is the source code of builder MBR/UEFI - Image Builder. MBR/UEFI - Image Builder is an application that will build MBR or UEFI locker with custom image and ending. It is different from the previous because the code was updated since the first time. You probably will not be able to compile this project because it depends on other packages and units, which are not included. And please use this only for educational purposes.
 
-<p align="center"><img width="500" height="420" src="https://i.imgur.com/x01manr.png"></p>
+<p align="center"><img width="500" height="420" src="https://i.imgur.com/28JgypZ.png"></p>
 
 ## MBR/UEFI - Image Builder Features
 
