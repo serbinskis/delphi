@@ -11,7 +11,7 @@
 !AutoStart/*.exe
 !MiniRecycleBin/*.exe
 !DriveRescue/*.exe
-!MBR - Image Builder/*.exe
+!MBR UEFI - Image Builder/*.exe
 !MBR UEFI - Note Builder/*.exe
 !Soundborad/*.exe
 !Windows XP Horror Edition/*.exe
