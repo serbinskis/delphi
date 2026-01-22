@@ -24,3 +24,5 @@ MSIControl/**/*.dll
 MPV/mpv.res
 MPV/mpv.zip
 !MPV/*/*.exe
+
+!**/UEFI Backend/**/*.exe
