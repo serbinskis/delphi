@@ -5,7 +5,7 @@ object Form1: TForm1
   AlphaBlendValue = 0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'MBR - Image Builder'
+  Caption = 'MBR/UEFI - Image Builder'
   ClientHeight = 393
   ClientWidth = 497
   Color = clWhite

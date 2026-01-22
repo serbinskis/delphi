@@ -15,4 +15,4 @@ This is the source code of builder MBR/UEFI - Image Builder. MBR/UEFI - Image Bu
 
 ## Download
 
-You can download the builder [here](https://github.com/serbinskis/delphi/raw/master/MBR%20-%20Image%20Builder/MBR_Image_Builder.exe).
+You can download the builder [here](https://github.com/serbinskis/delphi/raw/master/MBR%20UEFI%20-%20Image%20Builder/MBR_UEFI_Image_Builder.exe).

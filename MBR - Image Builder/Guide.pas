@@ -21,7 +21,7 @@ var
 
 implementation
 
-uses MBR_Image_Builder;
+uses MBR_UEFI_Image_Builder;
 
 {$R *.dfm}
 

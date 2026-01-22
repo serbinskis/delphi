@@ -1,4 +1,4 @@
-unit MBR_Image_Builder;
+unit MBR_UEFI_Image_Builder;
 
 interface
 
