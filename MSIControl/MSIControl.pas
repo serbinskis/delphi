@@ -139,30 +139,35 @@ var
   i: Integer;
 begin
   i := SettingDynData.FindIndex(0, 'Name', 'SETTING_HOTKEY_SOUND');
-  if (i > -1) and SettingDynData.GetValue(i, 'Value') then TSoundThread.PlayResource('HOTKEY', 'WAVE', 1);
+  if (i > -1) and Boolean(SettingDynData.GetValue(i, 'Value')) then TSoundThread.PlayResource('HOTKEY', 'WAVE', 1);
 
   if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_ECO') then begin
-    Form1.ComboBox2.ItemIndex := 0;
+    Form1.ComboBox2.ItemIndex := Ord(scenarioSilent)-1;
+    Form1.ComboBox2Change(nil);
+  end;
+
+  if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_ECO_UNLOCKED') then begin
+    Form1.ComboBox2.ItemIndex := Ord(scenarioSilentUnlocked)-1;
     Form1.ComboBox2Change(nil);
   end;
 
   if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_BALANCED') then begin
-    Form1.ComboBox2.ItemIndex := 1;
+    Form1.ComboBox2.ItemIndex := Ord(scenarioBalanced)-1;
     Form1.ComboBox2Change(nil);
   end;
 
   if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_AUTO') then begin
-    Form1.ComboBox2.ItemIndex := 2;
+    Form1.ComboBox2.ItemIndex := Ord(scenarioAuto)-1;
     Form1.ComboBox2Change(nil);
   end;
 
   if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_COOLERBOOST') then begin
-    Form1.ComboBox2.ItemIndex := 3;
+    Form1.ComboBox2.ItemIndex := Ord(scenarioCoolerBoost)-1;
     Form1.ComboBox2Change(nil);
   end;
 
   if (CustomValue = 'HOTKEY_CHANGE_SCENARIO_ADVANCED') then begin
-    Form1.ComboBox2.ItemIndex := 4;
+    Form1.ComboBox2.ItemIndex := Ord(scenarioAdvanced)-1;
     Form1.ComboBox2Change(nil);
   end;
 
@@ -224,6 +229,7 @@ var
   i, v: Integer;
   pl1Watt, pl2Watt: Integer;
 begin
+  SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
   Form1.Caption := Application.Title;
   MSI := TMSIController.Create;
   ShutdownCallbacks := TList.Create;
@@ -236,6 +242,7 @@ begin
 
   HotkeyDynData := TDynamicData.Create(['Hotkey', 'Name', 'Description']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_ECO', 'Change Scenario To ECO-silent']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_ECO_UNLOCKED', 'Change Scenario To ECO-silent (TDP Unlocked)']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_BALANCED', 'Change Scenario To Balanced']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_AUTO', 'Change Scenario To Auto']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_COOLERBOOST', 'Change Scenario To Cooler Boost']);
@@ -260,7 +267,7 @@ begin
   for i := 0 to SettingDynData.GetLength-1 do begin
     Name := SettingDynData.GetValue(i, 'Name');
     if LoadRegistryInteger(v, DEFAULT_ROOT_KEY, DEFAULT_KEY, Name) then SettingDynData.SetValue(i, 'Value', v);
-    if (not MSI.isECLoaded(True)) and SettingDynData.GetValue(i, 'EC') then continue;
+    if (not MSI.isECLoaded(True)) and Boolean(SettingDynData.GetValue(i, 'EC')) then continue;
     ComboBox3.Items.Add(SettingDynData.GetValue(i, 'Description'));
   end;
 
@@ -481,9 +488,9 @@ begin
   GpuFansSpeed := GetGPUFansSpeed(Scenario);
   TrackBar1.Position := GetAvarageFanSpeed(Scenario);
 
-  FansResetValue := Q((Scenario = scenarioSilent), 0, -1); //Reset fans only on silent mode
+  FansResetValue := Q(((Scenario = scenarioSilent) or (Scenario = scenarioSilentUnlocked)), 0, -1); //Reset fans only on silent mode
   i := SettingDynData.FindIndex(0, 'Name', 'SETTING_SCENARIO_ECO_FAN_RESET'); //If option disabled then don't reset fans at all
-  if (i <= -1) or not SettingDynData.GetValue(i, 'Value') then FansResetValue := -1;
+  if (i <= -1) or not Boolean(SettingDynData.GetValue(i, 'Value')) then FansResetValue := -1;
 
   MSI.SetScenario(Scenario, FansResetValue, FansResetValue, @CpuFansSpeed, @GpuFansSpeed);
 
@@ -565,7 +572,7 @@ var
 begin
   RemoveFocus(Form1);
   i := SettingDynData.FindIndex(0, 'Description', ComboBox3.Text);
-  if (i >= 0) then CheckBox1.Checked := SettingDynData.GetValue(i, 'Value');
+  if (i >= 0) then CheckBox1.Checked := Boolean(SettingDynData.GetValue(i, 'Value'));
 end;
 
 
@@ -683,6 +690,7 @@ begin
   CurrentScenario := MSI.GetScenario();
 
   if (CurrentScenario = scenarioSilent) then TrayIcon1.Icon := LoadIcon(HInstance, '_ECO_SILENT');
+  if (CurrentScenario = scenarioSilentUnlocked) then TrayIcon1.Icon := LoadIcon(HInstance, '_ECO_SILENT_UNLOCKED');
   if (CurrentScenario = scenarioBalanced) then TrayIcon1.Icon := LoadIcon(HInstance, '_BALANCED');
   if (CurrentScenario = scenarioAuto) then TrayIcon1.Icon := LoadIcon(HInstance, '_AUTO');
   if (CurrentScenario = scenarioCoolerBoost) then TrayIcon1.Icon := LoadIcon(HInstance, '_TURBO');

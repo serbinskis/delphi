@@ -200,9 +200,9 @@ object Form1: TForm1
     ParentFont = False
   end
   object ComboBox1: TFlatComboBox
-    Left = 144
+    Left = 120
     Top = 39
-    Width = 177
+    Width = 201
     Height = 22
     Style = csDropDownList
     Color = clWhite
@@ -222,7 +222,7 @@ object Form1: TForm1
   object HotKey1: TCustoHotKey
     Left = 8
     Top = 39
-    Width = 129
+    Width = 105
     Height = 23
     HotKey = 0
     InvalidKeys = []
@@ -241,7 +241,7 @@ object Form1: TForm1
   object TrackBar1: TXiTrackBar
     Left = 48
     Top = 98
-    Width = 153
+    Width = 121
     Height = 33
     BackColor = clWhite
     TickColor = clBlack
@@ -322,9 +322,9 @@ object Form1: TForm1
     OnClick = Button1Click
   end
   object ComboBox2: TFlatComboBox
-    Left = 208
+    Left = 176
     Top = 103
-    Width = 89
+    Width = 121
     Height = 22
     Style = csDropDownList
     Color = clWhite
@@ -338,13 +338,14 @@ object Form1: TForm1
     ItemHeight = 14
     Items.Strings = (
       'ECO-silent'
+      'ECO-silent (TDP Unlocked)'
       'Balanced'
       'Auto'
       'Cooler Boost'
       'Advanced')
     ParentFont = False
     TabOrder = 4
-    Text = 'Balanced'
+    Text = 'ECO-silent (TDP Unlocked)'
     ItemIndex = 1
     OnChange = ComboBox2Change
   end
