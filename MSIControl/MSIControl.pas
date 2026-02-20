@@ -242,7 +242,7 @@ begin
 
   HotkeyDynData := TDynamicData.Create(['Hotkey', 'Name', 'Description']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_ECO', 'Change Scenario To ECO-silent']);
-  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_ECO_UNLOCKED', 'Change Scenario To ECO-silent (TDP Unlocked)']);
+  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_ECO_UNLOCKED', 'Change Scenario To ECO-silent (CPU Unlocked)']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_BALANCED', 'Change Scenario To Balanced']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_AUTO', 'Change Scenario To Auto']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_CHANGE_SCENARIO_COOLERBOOST', 'Change Scenario To Cooler Boost']);

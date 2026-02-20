@@ -338,14 +338,14 @@ object Form1: TForm1
     ItemHeight = 14
     Items.Strings = (
       'ECO-silent'
-      'ECO-silent (TDP Unlocked)'
+      'ECO-silent (CPU Unlocked)'
       'Balanced'
       'Auto'
       'Cooler Boost'
       'Advanced')
     ParentFont = False
     TabOrder = 4
-    Text = 'ECO-silent (TDP Unlocked)'
+    Text = 'ECO-silent (CPU Unlocked)'
     ItemIndex = 1
     OnChange = ComboBox2Change
   end
@@ -588,7 +588,7 @@ object Form1: TForm1
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = 150
+    Position = 10
     Min = 5
     Max = 300
     Frequency = 1
@@ -631,7 +631,7 @@ object Form1: TForm1
     DownThumbGradColor = 14120960
     SmoothCorners = True
     ColorScheme = csCustom
-    Position = 150
+    Position = 10
     Min = 5
     Max = 300
     Frequency = 1
