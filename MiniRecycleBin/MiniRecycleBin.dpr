@@ -225,7 +225,9 @@ begin
       end;
 
       WM_LBUTTONDBLCLK: begin
-        ShellExecute(0, 'open', PChar('shell:RecycleBinFolder'), nil, nil, SW_SHOW);
+        // This crashes when using StartIsBack because of some weird DLL unloading
+        // ShellExecute(0, 'open', PChar('shell:RecycleBinFolder'), nil, nil, SW_SHOW);
+        ShellExecute(0, 'open', 'explorer.exe', 'shell:RecycleBinFolder', nil, SW_SHOW);
       end;
     end;
   end;
