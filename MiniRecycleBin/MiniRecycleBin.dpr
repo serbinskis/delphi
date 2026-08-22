@@ -5,7 +5,7 @@ program MiniRecycleBin;
 {$R MiniRecycleBin.res}
 
 uses
-  Windows, Messages, SysUtils, Classes, ShellAPI, Menus,
+  Windows, Messages, SysUtils, Classes, ShellAPI, Menus, WinXP,
   ExtCtrls, Dialogs, Forms, DateUtils, ShlObj, ShellNotify;
 
 type
@@ -227,7 +227,8 @@ begin
       WM_LBUTTONDBLCLK: begin
         // This crashes when using StartIsBack because of some weird DLL unloading
         // ShellExecute(0, 'open', PChar('shell:RecycleBinFolder'), nil, nil, SW_SHOW);
-        ShellExecute(0, 'open', 'explorer.exe', 'shell:RecycleBinFolder', nil, SW_SHOW);
+        SetForegroundWindow(hMainHandle);
+        ShellExecute(0, 'open', 'explorer.exe', 'shell:RecycleBinFolder', nil, SW_SHOWNORMAL);
       end;
     end;
   end;
