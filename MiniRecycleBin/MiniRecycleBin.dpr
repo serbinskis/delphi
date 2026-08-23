@@ -99,8 +99,9 @@ begin
   SavedTime := Now;
 
   OutputConsole('UpdateRecycleBin -> Triggering status update...');
+  EventHandler.OnTimer(nil);
   Timer.Enabled := False;
-  Timer.Interval := 50;
+  Timer.Interval := UPDATE_TIMEOUT;
   Timer.Enabled := True;
 end;
 // UpdateRecycleBin
