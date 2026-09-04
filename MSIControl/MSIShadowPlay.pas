@@ -93,7 +93,7 @@ var
 begin
   i := SettingDynData.FindIndex(0, 'Name', 'SETTING_IT_ACTIVATE_TYPE');
   if (i > -1) then ITActivateType := SettingDynData.GetValue(i, 'Value') else ITActivateType := 0;
-  if ITActivateType = 0 then Exit;
+  if (ITActivateType = 0) then Exit;
 
   S := GetProcessFromHWND(hwnd);
   if SavedProcess = S then Exit;
