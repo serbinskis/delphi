@@ -30,9 +30,9 @@ object Form3: TForm3
   object Label3: TLabel
     Left = 8
     Top = 80
-    Width = 91
+    Width = 101
     Height = 18
-    Caption = 'SHADOW PLAY'
+    Caption = 'INSTANT REPLAY'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -15
