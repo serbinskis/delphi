@@ -60,6 +60,7 @@ type
 type
   TEventHandler = class
     procedure ToggleSPClick(Sender: TObject);
+    procedure ToggleIRClick(Sender: TObject);
   end;
 
 const
@@ -167,6 +168,12 @@ begin
 end;
 
 
+procedure TEventHandler.ToggleIRClick(Sender: TObject);
+begin
+  ShadowPlay.ToggleInstantReplay;
+end;
+
+
 procedure TForm3.Timer1Timer(Sender: TObject);
 var
   isOn, isStartup: Boolean;
@@ -211,13 +218,14 @@ begin
   GenerateProcessList;
 
   HotkeyDynData := TDynamicData.Create(['Hotkey', 'Name', 'Description']);
-  HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_SP', 'Toggle Shadow Play']);
+  if (ShadowPlay.IsGeforce) then HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_SP', 'Toggle Shadow Play']);
   HotkeyDynData.CreateData(-1, -1, ['Hotkey', 'Name', 'Description'], [0, 'HOTKEY_TOGGLE_IT', 'Toggle Instant Replay']);
 
   SettingDynData := TDynamicData.Create(['Visible', 'Value', 'Name', 'Description']);
   SettingDynData.CreateData(-1, -1, ['Visible', 'Value', 'Name', 'Description'], [True, True, 'SETTING_HOTKEY_SOUND', 'Enable Hotkey Sounds']);
   SettingDynData.CreateData(-1, -1, ['Visible', 'Value', 'Name', 'Description'], [True, False, 'SETTING_AUTO_ENABLE_IT', 'Enable Instant Replay On Startup']);
-  SettingDynData.CreateData(-1, -1, ['Visible', 'Value', 'Name', 'Description'], [True, False, 'SETTING_ENABLE_SP', 'Enable Shadow Play']);
+  if (ShadowPlay.IsGeforce) then SettingDynData.CreateData(-1, -1, ['Visible', 'Value', 'Name', 'Description'], [True, False, 'SETTING_ENABLE_SP', 'Enable Shadow Play']);
+  SettingDynData.CreateData(-1, -1, ['Visible', 'Value', 'Name', 'Description'], [True, False, 'SETTING_ENABLE_IR', 'Enable Instant Play']);
   SettingDynData.CreateData(-1, -1, ['Visible', 'Value', 'Name', 'Description'], [False, 0, 'SETTING_IT_ACTIVATE_TYPE', '']);
 
   for i := 0 to HotkeyDynData.GetLength-1 do begin
@@ -245,6 +253,12 @@ begin
   MenuItem := TMenuItem.Create(nil);
   MenuItem.Caption := 'Toggle Shadow Play';
   MenuItem.OnClick := EventHandler.ToggleSPClick;
+  if (ShadowPlay.IsGeforce) then Form1.PopupMenu1.Items.Find('Toggle').Add(MenuItem);
+
+  EventHandler := TEventHandler.Create;
+  MenuItem := TMenuItem.Create(nil);
+  MenuItem.Caption := 'Toggle Instant Replay';
+  MenuItem.OnClick := EventHandler.ToggleIRClick;
   Form1.PopupMenu1.Items.Find('Toggle').Add(MenuItem);
 
   ComboBox1.ItemIndex := 0;
@@ -253,7 +267,7 @@ begin
   ComboBox4.ItemIndex := 0;
   ComboBox4Change(nil);
 
-  Timer1.Enabled := True;
+  Timer1.Enabled := ShadowPlay.IsGeforce;
   Timer2.Enabled := True;
   ChangeTheme(Theme, self);
 end;
@@ -427,9 +441,10 @@ begin
   if (i < 0) then Exit;
 
   Name := SettingDynData.GetValue(i, 'Name');
-  if Name = 'SETTING_HOTKEY_SOUND' then CheckBox3.Checked := SettingDynData.GetValue(i, 'Value');
-  if Name = 'SETTING_AUTO_ENABLE_IT' then CheckBox3.Checked := SettingDynData.GetValue(i, 'Value');
-  if Name = 'SETTING_ENABLE_SP' then CheckBox3.Checked := ShadowPlay.IsShadowPlayOn;
+  if (Name = 'SETTING_HOTKEY_SOUND') then CheckBox3.Checked := SettingDynData.GetValue(i, 'Value');
+  if (Name = 'SETTING_AUTO_ENABLE_IT') then CheckBox3.Checked := SettingDynData.GetValue(i, 'Value');
+  if (Name = 'SETTING_ENABLE_SP') then CheckBox3.Checked := ShadowPlay.IsShadowPlayOn;
+  if (Name = 'SETTING_ENABLE_IR') then CheckBox3.Checked := ShadowPlay.IsInstantReplayOn;
 end;
 
 
@@ -442,9 +457,10 @@ begin
   if (i < 0) then Exit;
   Name := SettingDynData.GetValue(i, 'Name');
 
-  if Name = 'SETTING_HOTKEY_SOUND' then SettingDynData.SetValue(i, 'Value', CheckBox3.Checked);
-  if Name = 'SETTING_AUTO_ENABLE_IT' then SettingDynData.SetValue(i, 'Value', CheckBox3.Checked);
-  if Name = 'SETTING_ENABLE_SP' then ShadowPlay.EnableShadowPlay(CheckBox3.Checked);
+  if (Name = 'SETTING_HOTKEY_SOUND') then SettingDynData.SetValue(i, 'Value', CheckBox3.Checked);
+  if (Name = 'SETTING_AUTO_ENABLE_IT') then SettingDynData.SetValue(i, 'Value', CheckBox3.Checked);
+  if (Name = 'SETTING_ENABLE_SP') then ShadowPlay.EnableShadowPlay(CheckBox3.Checked);
+  if (Name = 'SETTING_ENABLE_IR') then ShadowPlay.EnableInstantReplay(CheckBox3.Checked);
 end;
 
 end.
